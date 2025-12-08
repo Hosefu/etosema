@@ -25,7 +25,11 @@ export default function CasePage() {
 
   const slug = params.slug as string;
 
-  const { data: caseData, isLoading: caseLoading, error: caseError } = useCaseBySlug(slug);
+  const {
+    data: caseData,
+    isLoading: caseLoading,
+    error: caseError,
+  } = useCaseBySlug(slug);
   const { data: profile, isLoading: profileLoading } = useProfile();
   const applyPinMutation = useApplyPin();
 
@@ -53,12 +57,16 @@ export default function CasePage() {
   };
 
   const renderLockedMessage = () => {
-    const text = profile?.lockedCaseMessage || 'This case requires a PIN to access.';
+    const text =
+      profile?.lockedCaseMessage || 'This case requires a PIN to access.';
     console.log('renderLockedMessage called, profile:', profile, 'text:', text);
     const parts = text.split(/(\[[^\]]+\]\([^)]+\))/g);
 
     return (
-      <Text variant="body" style={{ textAlign: 'center', whiteSpace: 'pre-wrap' }}>
+      <Text
+        variant="body"
+        style={{ textAlign: 'center', whiteSpace: 'pre-wrap' }}
+      >
         {parts.map((part, i) => {
           const match = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
           if (match) {
@@ -82,18 +90,20 @@ export default function CasePage() {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 2147483647,
-        backgroundColor: 'var(--color-bg-page, #fff)'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 2147483647,
+          backgroundColor: 'var(--color-bg-page, #fff)',
+        }}
+      >
         <Loader size={60} />
       </div>
     );

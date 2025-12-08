@@ -15,7 +15,11 @@ export interface AdminRequest extends Request {
 /**
  * Verify admin JWT token
  */
-export function verifyAdminToken(req: AdminRequest, res: Response, next: NextFunction) {
+export function verifyAdminToken(
+  req: AdminRequest,
+  res: Response,
+  next: NextFunction
+) {
   const token = req.headers.authorization?.replace('Bearer ', '');
 
   if (!token) {

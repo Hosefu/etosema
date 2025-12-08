@@ -8,8 +8,7 @@ import styles from './Button.module.scss';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   children: React.ReactNode;
 }

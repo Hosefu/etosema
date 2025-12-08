@@ -24,7 +24,10 @@ export function Text({
   style,
 }: TextProps) {
   return (
-    <Component className={`${styles.text} ${styles[variant]} ${className}`} style={style}>
+    <Component
+      className={`${styles.text} ${styles[variant]} ${className}`}
+      style={style}
+    >
       {children}
     </Component>
   );

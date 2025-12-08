@@ -21,11 +21,13 @@ export function MainLayout({ children }: MainLayoutProps) {
   const [profile, setProfile] = useState<ProfileData | null>(null);
 
   useEffect(() => {
-    getProfile().then(res => {
-      if (res.data) {
-        setProfile(res.data);
-      }
-    }).catch(console.error);
+    getProfile()
+      .then((res) => {
+        if (res.data) {
+          setProfile(res.data);
+        }
+      })
+      .catch(console.error);
   }, []);
 
   // Don't render layout header/nav for admin pages
@@ -41,15 +43,17 @@ export function MainLayout({ children }: MainLayoutProps) {
       <header className={styles.header}>
         <Link href="/" className={styles.logo}>
           {profile?.logoUrl ? (
-             // Svg logo from S3
-             <img 
-               src={profile.logoUrl} 
-               alt="Logo" 
-               className={styles.logoImage} 
-               style={{ maxHeight: 40, width: 'auto' }} 
-             />
+            // Svg logo from S3
+            <img
+              src={profile.logoUrl}
+              alt="Logo"
+              className={styles.logoImage}
+              style={{ maxHeight: 40, width: 'auto' }}
+            />
           ) : (
-            <span className={styles.logoText}>{profile?.logoText || 'сёма'}</span>
+            <span className={styles.logoText}>
+              {profile?.logoText || 'сёма'}
+            </span>
           )}
         </Link>
         <nav className={styles.nav}>

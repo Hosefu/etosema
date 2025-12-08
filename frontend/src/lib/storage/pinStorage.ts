@@ -1,6 +1,6 @@
 /**
  * PIN Storage
- * 
+ *
  * Manages PIN session token in localStorage.
  */
 
@@ -33,4 +33,3 @@ export function removePinToken(): void {
     localStorage.removeItem(PIN_TOKEN_KEY);
   }
 }
-

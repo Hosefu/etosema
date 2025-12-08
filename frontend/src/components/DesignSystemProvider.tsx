@@ -9,12 +9,12 @@ export function DesignSystemProvider() {
 
   useEffect(() => {
     getDesignSettings()
-      .then(res => {
+      .then((res) => {
         if (res.data) {
           setDesign(res.data);
         }
       })
-      .catch(err => console.error('Failed to load design system:', err));
+      .catch((err) => console.error('Failed to load design system:', err));
   }, []);
 
   if (!design || !design.settings) return null;
@@ -23,8 +23,10 @@ export function DesignSystemProvider() {
   const fonts = design.fonts;
 
   const blockAlign = s.grid?.blockAlign ?? 'center';
-  const marginLeft = blockAlign === 'center' || blockAlign === 'right' ? 'auto' : '0';
-  const marginRight = blockAlign === 'center' || blockAlign === 'left' ? 'auto' : '0';
+  const marginLeft =
+    blockAlign === 'center' || blockAlign === 'right' ? 'auto' : '0';
+  const marginRight =
+    blockAlign === 'center' || blockAlign === 'left' ? 'auto' : '0';
 
   // Construct CSS variables
   // Scaled variables (typography, grid, spacing, cards) must be UNITLESS because --scale has 'vw' unit.
@@ -73,7 +75,9 @@ export function DesignSystemProvider() {
     }
   `;
 
-  const fontFaces = fonts.map(f => `
+  const fontFaces = fonts
+    .map(
+      (f) => `
     @font-face {
       font-family: '${f.family}';
       src: url('${f.url}') format('${f.format === 'ttf' ? 'truetype' : f.format}');
@@ -81,7 +85,9 @@ export function DesignSystemProvider() {
       font-style: ${f.style};
       font-display: swap;
     }
-  `).join('\n');
+  `
+    )
+    .join('\n');
 
   return (
     <style dangerouslySetInnerHTML={{ __html: fontFaces + cssVariables }} />

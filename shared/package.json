@@ -8,6 +8,11 @@
     "generate": "cd ../backend && prisma generate",
     "postinstall": "npm run generate"
   },
-  "keywords": ["etosema", "shared", "types", "zod"],
+  "keywords": [
+    "etosema",
+    "shared",
+    "types",
+    "zod"
+  ],
   "private": true
 }

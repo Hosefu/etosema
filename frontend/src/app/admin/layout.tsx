@@ -7,12 +7,22 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Layout, Menu } from 'antd';
-import { FolderOutlined, LockOutlined, UserOutlined, LogoutOutlined, BgColorsOutlined } from '@ant-design/icons';
+import {
+  FolderOutlined,
+  LockOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  BgColorsOutlined,
+} from '@ant-design/icons';
 import { clearAdminToken, adminGetProfile } from '@/lib/adminClient';
 
 const { Header, Content, Sider } = Layout;
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const [selectedKey, setSelectedKey] = useState('cases');
@@ -20,15 +30,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     // Check auth
-    const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('admin_token')
+        : null;
     if (!token && pathname !== '/admin/login') {
       router.push('/admin/login');
     } else if (token) {
-      adminGetProfile().then(res => {
-        if (res.success && res.data) {
-          setLogoText(res.data.logoText || 'Etosema');
-        }
-      }).catch(() => setLogoText('Etosema'));
+      adminGetProfile()
+        .then((res) => {
+          if (res.success && res.data) {
+            setLogoText(res.data.logoText || 'Etosema');
+          }
+        })
+        .catch(() => setLogoText('Etosema'));
     }
 
     // Set active menu item
@@ -85,7 +100,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider width={250} theme="dark">
-        <div style={{ padding: '16px', color: 'white', fontSize: '18px', fontWeight: 'bold' }}>
+        <div
+          style={{
+            padding: '16px',
+            color: 'white',
+            fontSize: '18px',
+            fontWeight: 'bold',
+          }}
+        >
           Админка для «{logoText || '...'}»
         </div>
         <Menu
@@ -96,7 +118,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         />
       </Sider>
       <Layout>
-        <Content style={{ margin: '24px', background: '#fff', padding: '24px', minHeight: 280 }}>
+        <Content
+          style={{
+            margin: '24px',
+            background: '#fff',
+            padding: '24px',
+            minHeight: 280,
+          }}
+        >
           {children}
         </Content>
       </Layout>

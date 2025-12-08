@@ -29,7 +29,10 @@ export function CaseViewer({ case: caseData }: CaseViewerProps) {
         setTimeout(() => {
           const imageElement = document.getElementById(`image-${imageIndex}`);
           if (imageElement) {
-            imageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            imageElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+            });
           }
         }, 100);
       }
@@ -61,17 +64,22 @@ export function CaseViewer({ case: caseData }: CaseViewerProps) {
   }, [useCustomDesign, caseData.backgroundColor]);
 
   // Create a mapping of media items to their global image index
-  const mediaWithIndices: Array<{ blockId: string; mediaIndex: number; globalImageIndex: number }> = [];
+  const mediaWithIndices: Array<{
+    blockId: string;
+    mediaIndex: number;
+    globalImageIndex: number;
+  }> = [];
   let globalImageIndex = 0;
-  
-  caseData.blocks.forEach(block => {
-    if (block.type === 'MEDIA' || !block.type) { // Default to MEDIA if type missing
+
+  caseData.blocks.forEach((block) => {
+    if (block.type === 'MEDIA' || !block.type) {
+      // Default to MEDIA if type missing
       block.medias.forEach((media, mediaIndex) => {
         if (media.type === 'IMAGE') {
           mediaWithIndices.push({
             blockId: block.id,
             mediaIndex,
-            globalImageIndex: globalImageIndex++
+            globalImageIndex: globalImageIndex++,
           });
         }
       });
@@ -80,18 +88,33 @@ export function CaseViewer({ case: caseData }: CaseViewerProps) {
 
   // Determine case-level layout overrides
   const caseBlockAlign = settings.blockAlign;
-  const caseBlockMargins = caseBlockAlign ? {
-    '--case-block-margin-left': caseBlockAlign === 'center' || caseBlockAlign === 'right' ? 'auto' : '0',
-    '--case-block-margin-right': caseBlockAlign === 'center' || caseBlockAlign === 'left' ? 'auto' : '0',
-  } : {};
+  const caseBlockMargins = caseBlockAlign
+    ? {
+        '--case-block-margin-left':
+          caseBlockAlign === 'center' || caseBlockAlign === 'right'
+            ? 'auto'
+            : '0',
+        '--case-block-margin-right':
+          caseBlockAlign === 'center' || caseBlockAlign === 'left'
+            ? 'auto'
+            : '0',
+      }
+    : {};
 
   const caseTextAlign = settings.textAlign;
   const caseTextColumns = settings.textColumns;
 
   // Custom styles for the case page
   const containerStyle = {
-    ...(useCustomDesign && caseData.textColor ? { color: caseData.textColor, '--body-color': caseData.textColor } : {}),
-    ...(useCustomDesign && caseData.fontFamily ? { fontFamily: caseData.fontFamily, '--font-family-body': caseData.fontFamily } : {}),
+    ...(useCustomDesign && caseData.textColor
+      ? { color: caseData.textColor, '--body-color': caseData.textColor }
+      : {}),
+    ...(useCustomDesign && caseData.fontFamily
+      ? {
+          fontFamily: caseData.fontFamily,
+          '--font-family-body': caseData.fontFamily,
+        }
+      : {}),
     // Layout overrides
     ...caseBlockMargins,
     ...(caseTextAlign ? { '--case-text-align': caseTextAlign } : {}),
@@ -99,9 +122,16 @@ export function CaseViewer({ case: caseData }: CaseViewerProps) {
   } as React.CSSProperties;
 
   const titleStyle = {
-    textAlign: (useCustomDesign && settings.titleAlignment) ? settings.titleAlignment : 'inherit',
-    ...(useCustomDesign && settings.headingColor ? { color: settings.headingColor } : {}),
-    ...(useCustomDesign && settings.headingFontFamily ? { fontFamily: settings.headingFontFamily } : {}),
+    textAlign:
+      useCustomDesign && settings.titleAlignment
+        ? settings.titleAlignment
+        : 'inherit',
+    ...(useCustomDesign && settings.headingColor
+      ? { color: settings.headingColor }
+      : {}),
+    ...(useCustomDesign && settings.headingFontFamily
+      ? { fontFamily: settings.headingFontFamily }
+      : {}),
   } as React.CSSProperties;
 
   return (
@@ -119,11 +149,13 @@ export function CaseViewer({ case: caseData }: CaseViewerProps) {
 
       {/* Blocks */}
       <div className={styles.blocks}>
-        {caseData.blocks.map(block => (
-          <CaseBlockComponent 
-            key={block.id} 
+        {caseData.blocks.map((block) => (
+          <CaseBlockComponent
+            key={block.id}
             block={block}
-            mediaIndices={mediaWithIndices.filter(m => m.blockId === block.id)}
+            mediaIndices={mediaWithIndices.filter(
+              (m) => m.blockId === block.id
+            )}
           />
         ))}
       </div>
@@ -131,17 +163,21 @@ export function CaseViewer({ case: caseData }: CaseViewerProps) {
   );
 }
 
-function CaseBlockComponent({ 
+function CaseBlockComponent({
   block,
-  mediaIndices
-}: { 
+  mediaIndices,
+}: {
   block: CaseBlock;
-  mediaIndices: Array<{ blockId: string; mediaIndex: number; globalImageIndex: number }>;
+  mediaIndices: Array<{
+    blockId: string;
+    mediaIndex: number;
+    globalImageIndex: number;
+  }>;
 }) {
   // Handle Text Block
   if (block.type === 'TEXT') {
     const settings = block.settings ? JSON.parse(block.settings) : {};
-    
+
     // Block-level override for positioning
     const blockAlign = settings.blockAlign;
     const blockStyle: React.CSSProperties = {
@@ -149,16 +185,16 @@ function CaseBlockComponent({
     };
 
     if (blockAlign) {
-      blockStyle.marginLeft = blockAlign === 'center' || blockAlign === 'right' ? 'auto' : '0';
-      blockStyle.marginRight = blockAlign === 'center' || blockAlign === 'left' ? 'auto' : '0';
+      blockStyle.marginLeft =
+        blockAlign === 'center' || blockAlign === 'right' ? 'auto' : '0';
+      blockStyle.marginRight =
+        blockAlign === 'center' || blockAlign === 'left' ? 'auto' : '0';
     }
 
     return (
       <div className={styles.textBlock} style={blockStyle}>
         {/* Simple markdown-like rendering: preserve newlines */}
-        <div style={{ whiteSpace: 'pre-wrap' }}>
-          {block.content}
-        </div>
+        <div style={{ whiteSpace: 'pre-wrap' }}>{block.content}</div>
       </div>
     );
   }
@@ -167,15 +203,18 @@ function CaseBlockComponent({
   if (block.layout === 'FULL') {
     const media = block.medias[0];
     if (!media) return null;
-    
-    const mediaInfo = mediaIndices.find(m => m.mediaIndex === 0);
-    const imageId = media.type === 'IMAGE' && mediaInfo ? `image-${mediaInfo.globalImageIndex}` : undefined;
-    
+
+    const mediaInfo = mediaIndices.find((m) => m.mediaIndex === 0);
+    const imageId =
+      media.type === 'IMAGE' && mediaInfo
+        ? `image-${mediaInfo.globalImageIndex}`
+        : undefined;
+
     return (
       <div className={styles.blockFull}>
-        <MediaItem 
-          url={media.url} 
-          type={media.type} 
+        <MediaItem
+          url={media.url}
+          type={media.type}
           alt={media.alt}
           imageId={imageId}
           aspectRatio={media.aspectRatio}
@@ -189,14 +228,17 @@ function CaseBlockComponent({
   return (
     <div className={styles.blockHalf}>
       {block.medias.map((media, index) => {
-        const mediaInfo = mediaIndices.find(m => m.mediaIndex === index);
-        const imageId = media.type === 'IMAGE' && mediaInfo ? `image-${mediaInfo.globalImageIndex}` : undefined;
-        
+        const mediaInfo = mediaIndices.find((m) => m.mediaIndex === index);
+        const imageId =
+          media.type === 'IMAGE' && mediaInfo
+            ? `image-${mediaInfo.globalImageIndex}`
+            : undefined;
+
         return (
           <div key={index} className={styles.halfItem}>
-            <MediaItem 
-              url={media.url} 
-              type={media.type} 
+            <MediaItem
+              url={media.url}
+              type={media.type}
               alt={media.alt}
               imageId={imageId}
               aspectRatio={media.aspectRatio}
@@ -246,7 +288,7 @@ function MediaItem({
       className={styles.imageContainer}
       id={imageId}
       style={{
-        aspectRatio: safeAspectRatio
+        aspectRatio: safeAspectRatio,
       }}
     >
       <OptimizedImage

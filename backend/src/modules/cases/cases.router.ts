@@ -68,10 +68,7 @@ export function createCasesRouter(casesService: CasesService): Router {
     asyncHandler(async (req: RequestWithPin, res: Response) => {
       const { slug } = req.params;
 
-      const caseDetail = await casesService.getCaseBySlug(
-        slug,
-        req.pinContext
-      );
+      const caseDetail = await casesService.getCaseBySlug(slug, req.pinContext);
 
       if (!caseDetail) {
         throw AppError.notFound('Case not found');

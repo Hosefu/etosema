@@ -5,9 +5,31 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Space, Popconfirm, message, Tag, Modal, Form, Input, InputNumber } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, HolderOutlined } from '@ant-design/icons';
-import { adminGetCases, adminDeleteCase, adminCreateCase, adminReorderCases, Case } from '@/lib/adminClient';
+import {
+  Table,
+  Button,
+  Space,
+  Popconfirm,
+  message,
+  Tag,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+} from 'antd';
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  HolderOutlined,
+} from '@ant-design/icons';
+import {
+  adminGetCases,
+  adminDeleteCase,
+  adminCreateCase,
+  adminReorderCases,
+  Case,
+} from '@/lib/adminClient';
 import { useRouter } from 'next/navigation';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { DndContext } from '@dnd-kit/core';
@@ -134,7 +156,7 @@ export default function AdminCasesPage() {
 
       // Save new order to backend
       try {
-        const caseIds = newCases.map(c => c.id);
+        const caseIds = newCases.map((c) => c.id);
         await adminReorderCases(caseIds);
         message.success('Порядок сохранен');
       } catch (e) {
@@ -156,8 +178,21 @@ export default function AdminCasesPage() {
       key: 'coverUrl',
       width: 100,
       render: (url: string) => {
-        const src = url.startsWith('http') ? url : `http://localhost:3001${url}`;
-        return <img src={src} alt="Cover" style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4 }} />;
+        const src = url.startsWith('http')
+          ? url
+          : `http://localhost:3001${url}`;
+        return (
+          <img
+            src={src}
+            alt="Cover"
+            style={{
+              width: 60,
+              height: 60,
+              objectFit: 'cover',
+              borderRadius: 4,
+            }}
+          />
+        );
       },
     },
     {
@@ -222,7 +257,14 @@ export default function AdminCasesPage() {
 
   return (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div
+        style={{
+          marginBottom: 16,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <h1 style={{ margin: 0 }}>Управление кейсами</h1>
         <Button
           type="primary"
@@ -261,13 +303,26 @@ export default function AdminCasesPage() {
         confirmLoading={creating}
       >
         <Form form={createForm} layout="vertical">
-          <Form.Item label="Название" name="title" rules={[{ required: true, message: 'Введите название' }]}>
+          <Form.Item
+            label="Название"
+            name="title"
+            rules={[{ required: true, message: 'Введите название' }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item label="Slug (URL)" name="slug" rules={[{ required: true, message: 'Введите slug' }]}>
+          <Form.Item
+            label="Slug (URL)"
+            name="slug"
+            rules={[{ required: true, message: 'Введите slug' }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item label="Год" name="year" rules={[{ required: true, message: 'Введите год' }]} initialValue={new Date().getFullYear()}>
+          <Form.Item
+            label="Год"
+            name="year"
+            rules={[{ required: true, message: 'Введите год' }]}
+            initialValue={new Date().getFullYear()}
+          >
             <InputNumber style={{ width: '100%' }} />
           </Form.Item>
         </Form>

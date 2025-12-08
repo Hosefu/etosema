@@ -163,6 +163,7 @@ Access at `/admin` with credentials from `.env`:
 ### Usage Tracking
 
 All PIN attempts are logged with:
+
 - IP address
 - User agent
 - Success/failure status
@@ -185,6 +186,7 @@ View analytics in Admin Panel under "Analytics" → "Pin Usages"
 ### LexoRank Ordering
 
 Cases and blocks use `orderRank` field for custom ordering:
+
 - String-based ranking system
 - Allows inserting items between existing items
 - No need to reorder all items when inserting
@@ -214,17 +216,17 @@ npx prisma migrate reset
 
 ## 🌐 Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | - |
-| `PORT` | Server port | 3001 |
-| `NODE_ENV` | Environment (development/production) | development |
-| `ADMIN_EMAIL` | Admin panel email | admin@etosema.ru |
-| `ADMIN_PASSWORD` | Admin panel password | - |
-| `PIN_SESSION_SECRET` | Secret for PIN session JWT | - |
-| `JWT_SECRET` | General JWT secret | - |
-| `SESSION_SECRET` | Express session secret | - |
-| `FRONTEND_URL` | Frontend URL for CORS | http://localhost:3000 |
+| Variable             | Description                          | Default               |
+| -------------------- | ------------------------------------ | --------------------- |
+| `DATABASE_URL`       | PostgreSQL connection string         | -                     |
+| `PORT`               | Server port                          | 3001                  |
+| `NODE_ENV`           | Environment (development/production) | development           |
+| `ADMIN_EMAIL`        | Admin panel email                    | admin@etosema.ru      |
+| `ADMIN_PASSWORD`     | Admin panel password                 | -                     |
+| `PIN_SESSION_SECRET` | Secret for PIN session JWT           | -                     |
+| `JWT_SECRET`         | General JWT secret                   | -                     |
+| `SESSION_SECRET`     | Express session secret               | -                     |
+| `FRONTEND_URL`       | Frontend URL for CORS                | http://localhost:3000 |
 
 ## 📝 Notes
 

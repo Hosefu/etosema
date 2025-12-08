@@ -49,15 +49,18 @@ router.get('/', async (req: Request, res: Response) => {
     const data: ProfileData = {
       title: profile.title,
       description: profile.description,
-      contacts: typeof profile.contactsJson === 'string'
-        ? JSON.parse(profile.contactsJson)
-        : profile.contactsJson as any,
-      projects: typeof profile.projectsJson === 'string'
-        ? JSON.parse(profile.projectsJson)
-        : profile.projectsJson as any,
-      socials: typeof profile.socialsJson === 'string'
-        ? JSON.parse(profile.socialsJson)
-        : profile.socialsJson as any,
+      contacts:
+        typeof profile.contactsJson === 'string'
+          ? JSON.parse(profile.contactsJson)
+          : (profile.contactsJson as any),
+      projects:
+        typeof profile.projectsJson === 'string'
+          ? JSON.parse(profile.projectsJson)
+          : (profile.projectsJson as any),
+      socials:
+        typeof profile.socialsJson === 'string'
+          ? JSON.parse(profile.socialsJson)
+          : (profile.socialsJson as any),
       logoUrl: profile.logoUrl,
       logoText: profile.logoText,
       lockedCaseMessage: profile.lockedCaseMessage,

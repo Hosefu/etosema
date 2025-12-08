@@ -3,9 +3,11 @@
 Comprehensive refactoring of the etosema project following professional best practices and architectural patterns.
 
 ## Date
+
 December 8, 2025
 
 ## Overview
+
 This refactoring transformed the project from a functional prototype into a production-ready, maintainable, and scalable monorepo application.
 
 ---
@@ -13,6 +15,7 @@ This refactoring transformed the project from a functional prototype into a prod
 ## 1. Global Infrastructure & DevOps
 
 ### ✅ ESLint & Prettier Configuration
+
 - **Created**: Root `.eslintrc.json` with TypeScript support
 - **Features**:
   - Unified code style across frontend and backend
@@ -22,12 +25,14 @@ This refactoring transformed the project from a functional prototype into a prod
 - **Files**: `.eslintrc.json`, `.prettierrc`, `.eslintignore`, `.prettierignore`
 
 ### ✅ Husky & Lint-Staged
+
 - **Setup**: Pre-commit hooks for code quality
 - **Runs**: ESLint + Prettier on staged files
 - **Files**: `.husky/pre-commit`, `.lintstagedrc.json`
 - **Benefit**: Enforces code quality automatically before commits
 
 ### ✅ Root Package.json (Monorepo)
+
 - **Created**: Workspace configuration
 - **Workspaces**: `frontend`, `backend`, `shared`
 - **Scripts**:
@@ -42,6 +47,7 @@ This refactoring transformed the project from a functional prototype into a prod
 ## 2. Backend Refactoring
 
 ### ✅ Environment Validation with Zod
+
 - **File**: `backend/src/config/env.ts`
 - **Features**:
   - Runtime validation of all environment variables
@@ -51,6 +57,7 @@ This refactoring transformed the project from a functional prototype into a prod
 - **Impact**: No more runtime errors from missing .env variables
 
 ### ✅ Error Handling Infrastructure
+
 - **Created**:
   - `backend/src/utils/AppError.ts` - Custom error class
   - `backend/src/middleware/errorHandler.ts` - Global error handler
@@ -71,6 +78,7 @@ This refactoring transformed the project from a functional prototype into a prod
 - **Impact**: Eliminated all try-catch blocks in routes, consistent error responses
 
 ### ✅ Pino Logger
+
 - **File**: `backend/src/utils/logger.ts`
 - **Features**:
   - High-performance structured logging
@@ -81,6 +89,7 @@ This refactoring transformed the project from a functional prototype into a prod
 - **Impact**: Replaced all `console.log` with proper logging
 
 ### ✅ Application Architecture
+
 - **Separated**: `app.ts` (Express setup) from `index.ts` (server startup)
 - **Benefits**:
   - Testability (can import app without starting server)
@@ -88,6 +97,7 @@ This refactoring transformed the project from a functional prototype into a prod
   - Better error handling on startup
 
 ### ✅ Router → Controller → Service Pattern
+
 - **Updated**: `backend/src/modules/cases/`
 - **Pattern**:
   - **Router**: Defines routes, uses `asyncHandler`
@@ -97,6 +107,7 @@ This refactoring transformed the project from a functional prototype into a prod
 - **Impact**: Clean separation, easier testing, no try-catch pollution
 
 ### ✅ Testing with Vitest
+
 - **Setup**: `backend/vitest.config.ts`
 - **Created**: `backend/src/modules/cases/cases.service.test.ts`
 - **Features**:
@@ -114,6 +125,7 @@ This refactoring transformed the project from a functional prototype into a prod
 ## 3. Frontend Refactoring
 
 ### ✅ Centralized Query Keys
+
 - **Created**: `frontend/src/lib/queryKeys.ts`
 - **Features**:
   - Type-safe query key factory
@@ -130,6 +142,7 @@ This refactoring transformed the project from a functional prototype into a prod
   ```
 
 ### ✅ Updated React Query Hooks
+
 - **File**: `frontend/src/hooks/useApi.ts`
 - **Changes**:
   - Uses centralized `queryKeys`
@@ -138,6 +151,7 @@ This refactoring transformed the project from a functional prototype into a prod
   - Improved cache invalidation
 
 ### ✅ Component Structure (Already Good)
+
 - **Verified**: Atomic Design structure is well-implemented
 - **Structure**:
   - `atoms/` - Basic UI components
@@ -147,6 +161,7 @@ This refactoring transformed the project from a functional prototype into a prod
   - `providers/` - Context providers
 
 ### ✅ Next.js App Router (Already Optimized)
+
 - **Status**: Frontend already uses Next.js 14 App Router
 - **Features**:
   - Server Components where appropriate
@@ -159,12 +174,14 @@ This refactoring transformed the project from a functional prototype into a prod
 ## 4. Shared Package Optimization
 
 ### ✅ Zod Schema Generation
+
 - **File**: `shared/.gitignore`
 - **Added**: Generated schemas to .gitignore
 - **Benefit**: Cleaner git history, regenerate on install
 - **Size**: 2.7MB of generated files now ignored
 
 ### ✅ Auto-generation on Install
+
 - **File**: `shared/package.json`
 - **Added**: `postinstall` script to regenerate schemas
 - **Impact**: Always fresh schemas after `npm install`
@@ -178,6 +195,7 @@ This refactoring transformed the project from a functional prototype into a prod
 #### Backend Example (cases.router.ts)
 
 **Before:**
+
 ```typescript
 router.get('/:slug', async (req, res) => {
   try {
@@ -186,7 +204,7 @@ router.get('/:slug', async (req, res) => {
 
     if (!caseDetail) {
       res.status(404).json({
-        error: { code: 'not_found', message: 'Case not found' }
+        error: { code: 'not_found', message: 'Case not found' },
       });
       return;
     }
@@ -195,20 +213,21 @@ router.get('/:slug', async (req, res) => {
   } catch (error: any) {
     if (error.code === 'pin_required') {
       res.status(403).json({
-        error: { code: 'pin_required', message: 'PIN required' }
+        error: { code: 'pin_required', message: 'PIN required' },
       });
       return;
     }
 
     console.error('Error:', error);
     res.status(500).json({
-      error: { code: 'internal_error', message: 'Error occurred' }
+      error: { code: 'internal_error', message: 'Error occurred' },
     });
   }
 });
 ```
 
 **After:**
+
 ```typescript
 router.get(
   '/:slug',
@@ -227,6 +246,7 @@ router.get(
 ```
 
 **Improvements:**
+
 - No try-catch clutter
 - Consistent error handling via global middleware
 - Cleaner, more readable code
@@ -235,6 +255,7 @@ router.get(
 #### Service Example (cases.service.ts)
 
 **Before:**
+
 ```typescript
 if (!accessible) {
   const error = new Error('PIN required');
@@ -244,6 +265,7 @@ if (!accessible) {
 ```
 
 **After:**
+
 ```typescript
 if (!accessible) {
   throw AppError.pinRequired('PIN required to access this case');
@@ -255,18 +277,21 @@ if (!accessible) {
 ## 6. Benefits & Impact
 
 ### Development Experience
+
 - ✅ **Faster feedback**: Lint-staged catches issues before commit
 - ✅ **Consistent code**: Automatic formatting
 - ✅ **Type safety**: Runtime validation + TypeScript
 - ✅ **Better debugging**: Structured logs, detailed error tracking
 
 ### Code Quality
+
 - ✅ **Maintainability**: Clear separation of concerns
 - ✅ **Testability**: Service layer isolated from HTTP
 - ✅ **Readability**: Less boilerplate, clearer intent
 - ✅ **Reliability**: Validated config, proper error handling
 
 ### Production Readiness
+
 - ✅ **Monitoring**: Structured logs for observability
 - ✅ **Error tracking**: Detailed error context
 - ✅ **Performance**: Efficient logging (Pino)
@@ -330,23 +355,27 @@ Shared:
 ## 8. Next Steps (Optional Future Improvements)
 
 ### Testing
+
 - [ ] Add integration tests for API endpoints
 - [ ] Add E2E tests with Playwright (folder exists but not configured)
 - [ ] Increase test coverage to 80%+
 
 ### Backend
+
 - [ ] Add request validation middleware with Zod
 - [ ] Implement rate limiting
 - [ ] Add API documentation (Swagger/OpenAPI)
 - [ ] Consider GraphQL layer
 
 ### Frontend
+
 - [ ] Add component tests with React Testing Library
 - [ ] Optimize bundle size
 - [ ] Add Storybook for component documentation
 - [ ] Implement progressive image loading
 
 ### DevOps
+
 - [ ] Docker containerization
 - [ ] CI/CD pipeline (GitHub Actions)
 - [ ] Automated deployment
@@ -359,16 +388,19 @@ Shared:
 ### For New Developers
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 2. **Run development:**
+
    ```bash
    npm run dev  # Starts both frontend and backend
    ```
 
 3. **Run tests:**
+
    ```bash
    npm run test -w backend
    ```
@@ -379,11 +411,13 @@ Shared:
    - Format is automatic
 
 ### Breaking Changes
+
 - **None** - All changes are backwards compatible
 - Existing functionality preserved
 - API contracts unchanged
 
 ### Environment Variables
+
 - Ensure all required variables in `.env` files
 - Backend will now fail-fast if any are missing
 - Check error message for details

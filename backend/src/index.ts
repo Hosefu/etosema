@@ -33,9 +33,7 @@ async function start(): Promise<void> {
       logger.info(`  Environment:  ${config.nodeEnv}`);
       logger.info(`  Server:       http://localhost:${config.port}`);
       logger.info(`  API:          http://localhost:${config.port}/api/public`);
-      logger.info(
-        `  Admin Panel:  http://localhost:${config.port}/admin`
-      );
+      logger.info(`  Admin Panel:  http://localhost:${config.port}/admin`);
       logger.info('');
       logger.info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       logger.info('');

@@ -71,9 +71,11 @@ async function main() {
       title: 'Нейрофестиваль Аида',
       shortTitle: 'Аида',
       year: 2024,
-      summary: 'Айда — первый фестиваль креатива и дизайна с использованием нейросетей. Разработка визуального языка и коммуникационной стратегии.',
+      summary:
+        'Айда — первый фестиваль креатива и дизайна с использованием нейросетей. Разработка визуального языка и коммуникационной стратегии.',
       isNda: false,
-      coverUrl: 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=800',
+      coverUrl:
+        'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=800',
       orderRank: 'a0',
     },
   });
@@ -133,9 +135,11 @@ async function main() {
       title: 'Проект под NDA',
       shortTitle: 'NDA',
       year: 2023,
-      summary: 'Крупный проект по ребрендингу для международной компании. Детали доступны по запросу.',
+      summary:
+        'Крупный проект по ребрендингу для международной компании. Детали доступны по запросу.',
       isNda: true,
-      coverUrl: 'https://images.unsplash.com/photo-1618556450994-a6a128ef0d9d?w=800',
+      coverUrl:
+        'https://images.unsplash.com/photo-1618556450994-a6a128ef0d9d?w=800',
       orderRank: 'a2',
     },
   });

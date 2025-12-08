@@ -18,7 +18,9 @@ dotenv.config();
 const envSchema = z.object({
   // Server
   PORT: z.string().default('3001').transform(Number),
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NODE_ENV: z
+    .enum(['development', 'production', 'test'])
+    .default('development'),
 
   // Database
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
@@ -28,9 +30,13 @@ const envSchema = z.object({
   ADMIN_PASSWORD: z.string().min(6).default('changeme'),
 
   // Security Secrets
-  PIN_SESSION_SECRET: z.string().min(32, 'PIN_SESSION_SECRET must be at least 32 characters'),
+  PIN_SESSION_SECRET: z
+    .string()
+    .min(32, 'PIN_SESSION_SECRET must be at least 32 characters'),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
-  SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be at least 32 characters'),
+  SESSION_SECRET: z
+    .string()
+    .min(32, 'SESSION_SECRET must be at least 32 characters'),
 
   // CORS
   FRONTEND_URL: z.string().url().default('http://localhost:3000'),
@@ -53,7 +59,9 @@ const parseEnv = () => {
     return envSchema.parse(process.env);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const missingVars = error.errors.map(err => `  - ${err.path.join('.')}: ${err.message}`).join('\n');
+      const missingVars = error.errors
+        .map((err) => `  - ${err.path.join('.')}: ${err.message}`)
+        .join('\n');
       throw new Error(
         `\n❌ Invalid environment variables:\n${missingVars}\n\nPlease check your .env file.\n`
       );

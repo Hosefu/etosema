@@ -1,10 +1,34 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, Form, Input, Switch, DatePicker, Select, Button, Table, message, Tag, Space, Divider } from 'antd';
-import { SaveOutlined, ArrowLeftOutlined, CopyOutlined } from '@ant-design/icons';
+import {
+  Card,
+  Form,
+  Input,
+  Switch,
+  DatePicker,
+  Select,
+  Button,
+  Table,
+  message,
+  Tag,
+  Space,
+  Divider,
+} from 'antd';
+import {
+  SaveOutlined,
+  ArrowLeftOutlined,
+  CopyOutlined,
+} from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
-import { adminGetPin, adminUpdatePin, adminGetCases, PinCode, Case, PinUsage } from '@/lib/adminClient';
+import {
+  adminGetPin,
+  adminUpdatePin,
+  adminGetCases,
+  PinCode,
+  Case,
+  PinUsage,
+} from '@/lib/adminClient';
 import dayjs from 'dayjs';
 
 export default function PinDetailsPage({ params }: { params: { id: string } }) {
@@ -14,7 +38,7 @@ export default function PinDetailsPage({ params }: { params: { id: string } }) {
   const [pin, setPin] = useState<PinCode | null>(null);
   const [allCases, setAllCases] = useState<Case[]>([]);
   const [form] = Form.useForm();
-  
+
   const accessAll = Form.useWatch('accessAll', form);
 
   useEffect(() => {
@@ -26,7 +50,7 @@ export default function PinDetailsPage({ params }: { params: { id: string } }) {
     try {
       const [pinRes, casesRes] = await Promise.all([
         adminGetPin(params.id),
-        adminGetCases()
+        adminGetCases(),
       ]);
 
       if (casesRes.success && casesRes.data) {
@@ -38,8 +62,10 @@ export default function PinDetailsPage({ params }: { params: { id: string } }) {
         form.setFieldsValue({
           label: pinRes.data.label,
           accessAll: pinRes.data.accessAll,
-          expiresAt: pinRes.data.expiresAt ? dayjs(pinRes.data.expiresAt) : null,
-          caseIds: pinRes.data.cases?.map(c => c.id) || []
+          expiresAt: pinRes.data.expiresAt
+            ? dayjs(pinRes.data.expiresAt)
+            : null,
+          caseIds: pinRes.data.cases?.map((c) => c.id) || [],
         });
       } else {
         message.error('Пин-код не найден');
@@ -56,7 +82,7 @@ export default function PinDetailsPage({ params }: { params: { id: string } }) {
     try {
       setSaving(true);
       const values = await form.validateFields();
-      
+
       const response = await adminUpdatePin(params.id, {
         ...values,
         expiresAt: values.expiresAt ? values.expiresAt.toISOString() : null,
@@ -113,24 +139,29 @@ export default function PinDetailsPage({ params }: { params: { id: string } }) {
       render: (path: string | null) => {
         if (!path) return <span style={{ color: '#999' }}>Вход (Login)</span>;
         if (path === '/cases') return 'Главная (Список кейсов)';
-        if (path.startsWith('/cases/')) return `Просмотр кейса: ${path.replace('/cases/', '')}`;
+        if (path.startsWith('/cases/'))
+          return `Просмотр кейса: ${path.replace('/cases/', '')}`;
         return path;
-      }
+      },
     },
     {
       title: 'User Agent',
       dataIndex: 'userAgent',
       key: 'userAgent',
       ellipsis: true,
-      render: (ua: string) => <span style={{ fontSize: 12, color: '#888' }} title={ua}>{ua}</span>
+      render: (ua: string) => (
+        <span style={{ fontSize: 12, color: '#888' }} title={ua}>
+          {ua}
+        </span>
+      ),
     },
   ];
 
   return (
     <div>
       <div style={{ marginBottom: 16 }}>
-        <Button 
-          icon={<ArrowLeftOutlined />} 
+        <Button
+          icon={<ArrowLeftOutlined />}
           onClick={() => router.push('/admin/pins')}
           style={{ marginRight: 16 }}
         >
@@ -141,23 +172,56 @@ export default function PinDetailsPage({ params }: { params: { id: string } }) {
         </span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 24 }}>
+      <div
+        style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 24 }}
+      >
         <div>
-          <Card 
-            title="Настройки доступа" 
+          <Card
+            title="Настройки доступа"
             loading={loading}
             extra={
               pin?.shortCode && (
-                <Button type="text" icon={<CopyOutlined />} onClick={handleCopyLink}>
+                <Button
+                  type="text"
+                  icon={<CopyOutlined />}
+                  onClick={handleCopyLink}
+                >
                   Скопировать ссылку
                 </Button>
               )
             }
           >
             {pin?.code && (
-              <div style={{ marginBottom: 24, padding: '16px', background: '#f9f9f9', borderRadius: '8px', textAlign: 'center', border: '1px dashed #d9d9d9' }}>
-                <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px', textTransform: 'uppercase' }}>Пин-код</div>
-                <div style={{ fontSize: '28px', fontWeight: 'bold', letterSpacing: '2px', fontFamily: 'monospace' }}>{pin.code}</div>
+              <div
+                style={{
+                  marginBottom: 24,
+                  padding: '16px',
+                  background: '#f9f9f9',
+                  borderRadius: '8px',
+                  textAlign: 'center',
+                  border: '1px dashed #d9d9d9',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '12px',
+                    color: '#888',
+                    marginBottom: '4px',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Пин-код
+                </div>
+                <div
+                  style={{
+                    fontSize: '28px',
+                    fontWeight: 'bold',
+                    letterSpacing: '2px',
+                    fontFamily: 'monospace',
+                  }}
+                >
+                  {pin.code}
+                </div>
               </div>
             )}
 
@@ -165,23 +229,33 @@ export default function PinDetailsPage({ params }: { params: { id: string } }) {
               <Form.Item label="Метка (Описание)" name="label">
                 <Input placeholder="Например: Клиент Яндекс" />
               </Form.Item>
-              
-              <Form.Item label="Доступ ко всем кейсам" name="accessAll" valuePropName="checked">
+
+              <Form.Item
+                label="Доступ ко всем кейсам"
+                name="accessAll"
+                valuePropName="checked"
+              >
                 <Switch />
               </Form.Item>
-              
+
               {!accessAll && (
                 <Form.Item label="Доступные кейсы" name="caseIds">
-                  <Select 
-                    mode="multiple" 
+                  <Select
+                    mode="multiple"
                     placeholder="Выберите кейсы"
-                    filterOption={(input, option) => 
-                      (option?.children as unknown as string).toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    filterOption={(input, option) =>
+                      (option?.children as unknown as string)
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
                     }
                   >
-                    {allCases.filter(c => c.isNda).map(c => (
-                      <Select.Option key={c.id} value={c.id}>{c.title}</Select.Option>
-                    ))}
+                    {allCases
+                      .filter((c) => c.isNda)
+                      .map((c) => (
+                        <Select.Option key={c.id} value={c.id}>
+                          {c.title}
+                        </Select.Option>
+                      ))}
                   </Select>
                 </Form.Item>
               )}
@@ -190,7 +264,13 @@ export default function PinDetailsPage({ params }: { params: { id: string } }) {
                 <DatePicker showTime style={{ width: '100%' }} />
               </Form.Item>
 
-              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave} loading={saving} block>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                onClick={handleSave}
+                loading={saving}
+                block
+              >
                 Сохранить изменения
               </Button>
             </Form>
@@ -198,7 +278,10 @@ export default function PinDetailsPage({ params }: { params: { id: string } }) {
         </div>
 
         <div>
-          <Card title="История использования (последние 100 записей)" loading={loading}>
+          <Card
+            title="История использования (последние 100 записей)"
+            loading={loading}
+          >
             <Table
               dataSource={pin?.usages || []}
               columns={usageColumns}
@@ -212,4 +295,3 @@ export default function PinDetailsPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
-

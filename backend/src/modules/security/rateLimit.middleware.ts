@@ -68,7 +68,10 @@ export async function checkPinRateLimit(
       };
 
       // Set Retry-After header (in seconds)
-      res.set('Retry-After', String(Math.ceil(config.rateLimit.windowMs / 1000)));
+      res.set(
+        'Retry-After',
+        String(Math.ceil(config.rateLimit.windowMs / 1000))
+      );
 
       res.status(429).json(response);
       return;

@@ -42,13 +42,13 @@ export function usePinAccess(): UsePinAccessReturn {
    * Fetch current PIN status
    */
   const fetchStatus = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
       const response = await getPinStatus();
 
       if (response.error) {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           loading: false,
           error: response.error!.message,
@@ -64,7 +64,7 @@ export function usePinAccess(): UsePinAccessReturn {
         error: null,
       });
     } catch (error) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         loading: false,
         error: 'Failed to fetch PIN status',

@@ -40,8 +40,8 @@ export const errorHandler = (
   const message = isOperational
     ? err.message
     : config.isDevelopment
-    ? err.message
-    : 'An internal error occurred';
+      ? err.message
+      : 'An internal error occurred';
 
   // Log the error with appropriate level
   if (isOperational) {

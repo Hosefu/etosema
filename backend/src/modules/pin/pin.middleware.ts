@@ -33,7 +33,7 @@ export async function attachPinContext(
   try {
     // Read PIN session from Authorization header or cookie
     let token: string | undefined;
-    
+
     // Check Authorization header first (Bearer token)
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -91,7 +91,7 @@ export async function attachPinContext(
     req.pinContext = {
       pinId: pinCode.id,
       accessAll: pinCode.accessAll,
-      caseIds: pinCode.cases.map(c => c.caseId),
+      caseIds: pinCode.cases.map((c) => c.caseId),
     };
 
     next();

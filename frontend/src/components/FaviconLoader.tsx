@@ -18,8 +18,9 @@ export function FaviconLoader() {
         const response = await getDesignSettings();
         if (isMounted && response.data?.settings?.faviconUrl) {
           // Remove existing favicon links
-          const existingFavicons = document.querySelectorAll('link[rel*="icon"]');
-          existingFavicons.forEach(link => link.remove());
+          const existingFavicons =
+            document.querySelectorAll('link[rel*="icon"]');
+          existingFavicons.forEach((link) => link.remove());
 
           // Add new favicon
           const link = document.createElement('link');

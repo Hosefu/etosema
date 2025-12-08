@@ -21,18 +21,18 @@ const s3Client = new S3Client({
     accessKeyId: envConfig.S3_ACCESS_KEY,
     secretAccessKey: envConfig.S3_SECRET_KEY,
   },
-  forcePathStyle: true, 
+  forcePathStyle: true,
 });
 
 async function configureCors() {
   console.log(`Configuring CORS for bucket: ${envConfig.S3_BUCKET}...`);
-  
+
   const params = {
     Bucket: envConfig.S3_BUCKET,
     CORSConfiguration: {
       CORSRules: [
         {
-          AllowedOrigins: ['*'], 
+          AllowedOrigins: ['*'],
           AllowedMethods: ['GET', 'HEAD'],
           AllowedHeaders: ['*'],
           MaxAgeSeconds: 3000,

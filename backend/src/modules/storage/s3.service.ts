@@ -4,7 +4,11 @@
  * Handles file uploads to S3-compatible storage.
  */
 
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
 import { config } from '../../config/env';
 import path from 'path';
 
@@ -94,4 +98,3 @@ export async function deleteFileFromS3(fileUrl: string): Promise<void> {
 export function getPublicUrl(key: string): string {
   return `${config.s3.publicUrl}/${key}`;
 }
-

@@ -93,10 +93,7 @@ export function createPinSession(
 ): string {
   // Calculate session expiration
   const maxAge = expiresAt
-    ? Math.min(
-        expiresAt.getTime() - Date.now(),
-        config.pinSession.maxAge
-      )
+    ? Math.min(expiresAt.getTime() - Date.now(), config.pinSession.maxAge)
     : config.pinSession.maxAge;
 
   // Create JWT payload
@@ -140,7 +137,7 @@ export async function applyPin(
   // Build response
   const caseSlugs = pinCode.accessAll
     ? [] // If accessAll, we don't return specific slugs (frontend will show all)
-    : pinCode.cases.map(c => c.case.slug);
+    : pinCode.cases.map((c) => c.case.slug);
 
   return {
     pinId: pinCode.id,
@@ -186,7 +183,7 @@ export async function applyPinById(
   // Build response
   const caseSlugs = pinCode.accessAll
     ? []
-    : pinCode.cases.map(c => c.case.slug);
+    : pinCode.cases.map((c) => c.case.slug);
 
   return {
     pinId: pinCode.id,
@@ -229,6 +226,6 @@ export async function getPinStatus(
   return {
     hasSession: true,
     accessAll: pinContext.accessAll,
-    caseSlugs: cases.map(c => c.slug),
+    caseSlugs: cases.map((c) => c.slug),
   };
 }

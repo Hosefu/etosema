@@ -16,12 +16,14 @@
 ### Технологии
 
 **Frontend:**
+
 - Next.js 14 (App Router)
 - TypeScript
 - SCSS с системой скейлинга
 - Атомарная архитектура компонентов
 
 **Backend:**
+
 - Node.js + Express.js
 - TypeScript
 - Prisma ORM
@@ -88,12 +90,14 @@ cp .env.local.example .env.local
 ### 4. Запуск в dev-режиме
 
 **Терминал 1 - Бэкенд:**
+
 ```bash
 cd backend
 npm run dev
 ```
 
 **Терминал 2 - Фронтенд:**
+
 ```bash
 cd frontend
 npm run dev
@@ -151,7 +155,7 @@ etosema/
 ```scss
 // В компонентах
 .element {
-  padding: s(24);  // Масштабируется от 375px (mobile) до 1440px (desktop)
+  padding: s(24); // Масштабируется от 375px (mobile) до 1440px (desktop)
 }
 ```
 
@@ -159,10 +163,10 @@ etosema/
 
 ```scss
 .container {
-  @include page-grid;  // 12-колоночная сетка
+  @include page-grid; // 12-колоночная сетка
 
   .item {
-    @include grid-span(6);  // Занимает 6 колонок
+    @include grid-span(6); // Занимает 6 колонок
   }
 }
 ```
@@ -237,6 +241,7 @@ npm start
 ```
 
 Нужно:
+
 - PostgreSQL база
 - Правильные переменные окружения в production
 
@@ -301,15 +306,18 @@ npm run prisma:seed       # Восстановит тестовые данные
 ## 🐛 Частые проблемы
 
 **База данных не подключается**
+
 - Проверьте `DATABASE_URL` в `.env`
 - Убедитесь, что PostgreSQL запущен
 - Проверьте права доступа
 
 **CORS ошибки**
+
 - Проверьте `FRONTEND_URL` в backend `.env`
 - Убедитесь, что фронтенд и бэк запущены на правильных портах
 
 **PIN не работает**
+
 - Проверьте, что сессионные секреты одинаковые
 - Очистите cookies браузера
 - Проверьте логи в AdminJS → Pin Usages
@@ -321,5 +329,6 @@ MIT
 ## 👥 Контакты
 
 Для вопросов и предложений:
+
 - Telegram: @sema_tsekh
 - Email: iam@etosema.ru

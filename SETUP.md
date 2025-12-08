@@ -11,6 +11,7 @@
 - ✅ **npm** (устанавливается вместе с Node.js)
 
 Проверить версии:
+
 ```bash
 node --version  # должно быть >= 18
 npm --version
@@ -208,6 +209,7 @@ npm run dev
 Перейдите по адресу: **http://localhost:3000**
 
 Вы должны увидеть:
+
 - Навигацию: "Работы" / "Обо мне"
 - Сетку с 2 кейсами
 - Один кейс открыт, другой с замком (NDA)
@@ -232,10 +234,12 @@ PIN автоматически применится, и NDA-кейс разбл�
 Перейдите: **http://localhost:3001/admin**
 
 Войдите с данными из `.env`:
+
 - Email: `admin@etosema.ru` (или ваш)
 - Password: ваш пароль из `ADMIN_PASSWORD`
 
 В админке вы увидите:
+
 - **Portfolio**: Cases, Case Blocks, Case Block Medias
 - **Access Control**: Pin Codes, Pin Code Cases
 - **Analytics**: Pin Usages
@@ -364,6 +368,7 @@ npm run lint
 **Проблема:** Backend не может подключиться к PostgreSQL.
 
 **Решение:**
+
 1. Убедитесь, что PostgreSQL запущен: `pg_isready`
 2. Проверьте `DATABASE_URL` в `.env`
 3. Проверьте пароль и имя базы
@@ -374,6 +379,7 @@ npm run lint
 **Проблема:** Фронтенд не может обращаться к бэкенду.
 
 **Решение:**
+
 1. Проверьте, что backend запущен на порту 3001
 2. Проверьте `FRONTEND_URL` в backend `.env`
 3. Проверьте `NEXT_PUBLIC_API_URL` в frontend `.env.local`
@@ -383,6 +389,7 @@ npm run lint
 **Проблема:** PIN не применяется или не открывает кейсы.
 
 **Решение:**
+
 1. Очистите cookies браузера
 2. Проверьте в админке: Analytics → Pin Usages
 3. Убедитесь, что PIN связан с кейсом через Pin Code Cases
@@ -393,6 +400,7 @@ npm run lint
 **Проблема:** Админка не открывается.
 
 **Решение:**
+
 1. Проверьте, что backend запущен
 2. Попробуйте другой браузер
 3. Проверьте email/password в `.env`
@@ -403,6 +411,7 @@ npm run lint
 **Проблема:** Ошибка импорта модуля.
 
 **Решение:**
+
 ```bash
 # Переустановите зависимости
 rm -rf node_modules package-lock.json

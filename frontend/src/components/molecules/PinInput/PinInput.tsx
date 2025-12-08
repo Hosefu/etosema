@@ -6,7 +6,13 @@
 
 'use client';
 
-import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from 'react';
+import {
+  useState,
+  useRef,
+  useEffect,
+  KeyboardEvent,
+  ClipboardEvent,
+} from 'react';
 import styles from './PinInput.module.scss';
 
 export interface PinInputProps {
@@ -16,7 +22,12 @@ export interface PinInputProps {
   onErrorClear?: () => void;
 }
 
-export function PinInput({ onComplete, disabled = false, error, onErrorClear }: PinInputProps) {
+export function PinInput({
+  onComplete,
+  disabled = false,
+  error,
+  onErrorClear,
+}: PinInputProps) {
   const [digits, setDigits] = useState(['', '', '', '']);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -49,7 +60,7 @@ export function PinInput({ onComplete, disabled = false, error, onErrorClear }: 
     }
 
     // Check if complete
-    if (newDigits.every(d => d !== '')) {
+    if (newDigits.every((d) => d !== '')) {
       const pin = newDigits.join('');
       onComplete(pin);
     }
@@ -94,13 +105,13 @@ export function PinInput({ onComplete, disabled = false, error, onErrorClear }: 
         {digits.map((digit, index) => (
           <input
             key={index}
-            ref={el => (inputRefs.current[index] = el)}
+            ref={(el) => (inputRefs.current[index] = el)}
             type="text"
             inputMode="numeric"
             maxLength={1}
             value={digit}
-            onChange={e => handleChange(index, e.target.value)}
-            onKeyDown={e => handleKeyDown(index, e)}
+            onChange={(e) => handleChange(index, e.target.value)}
+            onKeyDown={(e) => handleKeyDown(index, e)}
             onPaste={index === 0 ? handlePaste : undefined}
             disabled={disabled}
             className={`${styles.input} ${error ? styles.error : ''}`}

@@ -22,11 +22,18 @@ import styles from './CaseCard.module.scss';
 
 export interface CaseCardProps {
   case: CasePreview;
-  onPinSubmit?: (pin: string, caseSlug: string) => Promise<{ success: boolean; error?: string }>;
+  onPinSubmit?: (
+    pin: string,
+    caseSlug: string
+  ) => Promise<{ success: boolean; error?: string }>;
   lockedCaseMessage?: string | null;
 }
 
-export function CaseCard({ case: caseData, onPinSubmit, lockedCaseMessage }: CaseCardProps) {
+export function CaseCard({
+  case: caseData,
+  onPinSubmit,
+  lockedCaseMessage,
+}: CaseCardProps) {
   const router = useRouter();
   const [showPinInput, setShowPinInput] = useState(false);
   const [pinError, setPinError] = useState<string | undefined>();
@@ -66,18 +73,19 @@ export function CaseCard({ case: caseData, onPinSubmit, lockedCaseMessage }: Cas
         className={styles.card}
         data-locked="true"
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => !isSubmitting && !isPinActive && setIsHovered(false)}
+        onMouseLeave={() =>
+          !isSubmitting && !isPinActive && setIsHovered(false)
+        }
       >
         <div className={styles.cover}>
           <div className={styles.lockContent}>
-            {isSubmitting ? (
-              <Loader size={70} />
-            ) : (
-              <IconLock size={70} />
-            )}
+            {isSubmitting ? <Loader size={70} /> : <IconLock size={70} />}
             {(isHovered || isPinActive) && (
               <>
-                <div className={styles.pinInputContainer} onFocus={handlePinInputFocus}>
+                <div
+                  className={styles.pinInputContainer}
+                  onFocus={handlePinInputFocus}
+                >
                   <PinInput
                     onComplete={handlePinComplete}
                     disabled={isSubmitting}
@@ -107,7 +115,7 @@ export function CaseCard({ case: caseData, onPinSubmit, lockedCaseMessage }: Cas
 
   // Collect all media from blocks for scrolling preview
   const previewMedia = caseData.blocks
-    .flatMap(block => block.medias)
+    .flatMap((block) => block.medias)
     .sort((a, b) => {
       // Sort by block rank then media position would be ideal,
       // but flatMap loses block context. Assuming blocks are sorted.
@@ -116,19 +124,20 @@ export function CaseCard({ case: caseData, onPinSubmit, lockedCaseMessage }: Cas
 
   // If no preview media, we used to fallback to cover, but now we assume first media IS the cover equivalent.
   // If absolutely no media, the card will be empty/placeholder.
-  const mediaToShow = previewMedia.length > 0
-    ? previewMedia
-    : [];
+  const mediaToShow = previewMedia.length > 0 ? previewMedia : [];
 
   // Calculate global image indices (only for IMAGE type, same logic as CaseViewer)
-  const mediaWithIndices: Array<{ mediaIndex: number; globalImageIndex: number }> = [];
+  const mediaWithIndices: Array<{
+    mediaIndex: number;
+    globalImageIndex: number;
+  }> = [];
   let globalImageIndex = 0;
 
   mediaToShow.forEach((media, index) => {
     if (media.type === 'IMAGE') {
       mediaWithIndices.push({
         mediaIndex: index,
-        globalImageIndex: globalImageIndex++
+        globalImageIndex: globalImageIndex++,
       });
     }
   });
@@ -138,11 +147,13 @@ export function CaseCard({ case: caseData, onPinSubmit, lockedCaseMessage }: Cas
     e.stopPropagation();
 
     // Find the global image index for this media item
-    const mediaInfo = mediaWithIndices.find(m => m.mediaIndex === index);
+    const mediaInfo = mediaWithIndices.find((m) => m.mediaIndex === index);
 
     if (mediaToShow[index].type === 'IMAGE' && mediaInfo) {
       // Navigate to case page with image anchor
-      router.push(`/cases/${caseData.slug}#image-${mediaInfo.globalImageIndex}`);
+      router.push(
+        `/cases/${caseData.slug}#image-${mediaInfo.globalImageIndex}`
+      );
     } else {
       // For videos or if no index found, just go to the case page
       router.push(`/cases/${caseData.slug}`);
@@ -160,7 +171,7 @@ export function CaseCard({ case: caseData, onPinSubmit, lockedCaseMessage }: Cas
               className={styles.imageWrapper}
               onClick={(e) => handleImageClick(e, index)}
               style={{
-                aspectRatio: item.aspectRatio?.replace(':', '/') || '16/9'
+                aspectRatio: item.aspectRatio?.replace(':', '/') || '16/9',
               }}
             >
               {item.type === 'VIDEO' ? (

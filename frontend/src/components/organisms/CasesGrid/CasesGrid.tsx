@@ -12,14 +12,21 @@ import styles from './CasesGrid.module.scss';
 
 export interface CasesGridProps {
   cases: CasePreview[];
-  onPinSubmit?: (pin: string, caseSlug: string) => Promise<{ success: boolean; error?: string }>;
+  onPinSubmit?: (
+    pin: string,
+    caseSlug: string
+  ) => Promise<{ success: boolean; error?: string }>;
   lockedCaseMessage?: string | null;
 }
 
-export function CasesGrid({ cases, onPinSubmit, lockedCaseMessage }: CasesGridProps) {
+export function CasesGrid({
+  cases,
+  onPinSubmit,
+  lockedCaseMessage,
+}: CasesGridProps) {
   return (
     <div className={styles.grid}>
-      {cases.map(caseItem => (
+      {cases.map((caseItem) => (
         <CaseCard
           key={caseItem.id}
           case={caseItem}

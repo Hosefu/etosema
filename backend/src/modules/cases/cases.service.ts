@@ -51,21 +51,31 @@ export class CasesService {
       },
     });
 
-    return cases.map(caseItem => {
-      const isLocked = !isCaseAccessible(caseItem.id, caseItem.isNda, pinContext);
+    return cases.map((caseItem) => {
+      const isLocked = !isCaseAccessible(
+        caseItem.id,
+        caseItem.isNda,
+        pinContext
+      );
 
       // Transform blocks and medias for preview
-      const blocks: CaseBlockData[] = isLocked ? [] : caseItem.blocks.map(block => ({
-        id: block.id,
-        layout: block.layout as 'FULL' | 'HALF',
-        medias: block.medias.map(media => ({
-          url: media.url,
-          type: media.type as 'IMAGE' | 'VIDEO',
-          position: media.position,
-          alt: media.alt || undefined,
-          aspectRatio: media.aspectRatio as '16:9' | '4:3' | '1:1' | undefined,
-        })),
-      }));
+      const blocks: CaseBlockData[] = isLocked
+        ? []
+        : caseItem.blocks.map((block) => ({
+            id: block.id,
+            layout: block.layout as 'FULL' | 'HALF',
+            medias: block.medias.map((media) => ({
+              url: media.url,
+              type: media.type as 'IMAGE' | 'VIDEO',
+              position: media.position,
+              alt: media.alt || undefined,
+              aspectRatio: media.aspectRatio as
+                | '16:9'
+                | '4:3'
+                | '1:1'
+                | undefined,
+            })),
+          }));
 
       // Compute coverUrl from first media
       let coverUrl = '/placeholder.png';
@@ -138,13 +148,13 @@ export class CasesService {
     }
 
     // Transform blocks and medias
-    const blocks: CaseBlockData[] = caseItem.blocks.map(block => ({
+    const blocks: CaseBlockData[] = caseItem.blocks.map((block) => ({
       id: block.id,
       type: (block.type as 'MEDIA' | 'TEXT') || 'MEDIA',
       content: block.content || undefined,
       settings: block.settings || undefined,
       layout: block.layout as 'FULL' | 'HALF',
-      medias: block.medias.map(media => ({
+      medias: block.medias.map((media) => ({
         url: media.url,
         type: media.type as 'IMAGE' | 'VIDEO',
         position: media.position,

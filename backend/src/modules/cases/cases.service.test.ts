@@ -212,9 +212,9 @@ describe('CasesService', () => {
       vi.mocked(mockPrisma.case.findUnique).mockResolvedValue(mockCase);
 
       // Act & Assert
-      await expect(
-        casesService.getCaseBySlug('nda-case')
-      ).rejects.toThrow(AppError);
+      await expect(casesService.getCaseBySlug('nda-case')).rejects.toThrow(
+        AppError
+      );
       await expect(
         casesService.getCaseBySlug('nda-case')
       ).rejects.toMatchObject({

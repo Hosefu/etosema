@@ -23,11 +23,18 @@ const upload = multer({
   storage,
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
   fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp|svg|mp4|webm|ttf|otf|woff|woff2/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = /jpeg|jpg|png|gif|webp|svg|xml|mp4|webm|font|application/.test(file.mimetype);
+    const allowedTypes =
+      /jpeg|jpg|png|gif|webp|svg|mp4|webm|ttf|otf|woff|woff2/;
+    const extname = allowedTypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
+    const mimetype =
+      /jpeg|jpg|png|gif|webp|svg|xml|mp4|webm|font|application/.test(
+        file.mimetype
+      );
 
-    if (mimetype || extname) { // Relaxed check because SVGs and Fonts can have various mimetypes
+    if (mimetype || extname) {
+      // Relaxed check because SVGs and Fonts can have various mimetypes
       return cb(null, true);
     } else {
       cb(new Error('Only images, videos, and fonts are allowed'));
@@ -77,45 +84,49 @@ router.use(verifyAdminToken);
  * POST /api/admin/upload
  * Upload a file to S3
  */
-router.post('/upload', upload.single('file'), async (req: AdminRequest, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({
+router.post(
+  '/upload',
+  upload.single('file'),
+  async (req: AdminRequest, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          error: {
+            code: 'no_file',
+            message: 'No file uploaded',
+          },
+        });
+      }
+
+      // Upload to S3
+      const fileUrl = await uploadFileToS3(
+        {
+          buffer: req.file.buffer,
+          originalname: req.file.originalname,
+          mimetype: req.file.mimetype,
+        },
+        'medias'
+      );
+
+      res.json({
+        success: true,
+        data: {
+          url: fileUrl,
+          originalname: req.file.originalname,
+          size: req.file.size,
+        },
+      });
+    } catch (error) {
+      console.error('Error uploading file to S3:', error);
+      res.status(500).json({
         error: {
-          code: 'no_file',
-          message: 'No file uploaded',
+          code: 'upload_failed',
+          message: 'Failed to upload file',
         },
       });
     }
-
-    // Upload to S3
-    const fileUrl = await uploadFileToS3(
-      {
-        buffer: req.file.buffer,
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-      },
-      'medias'
-    );
-
-    res.json({
-      success: true,
-      data: {
-        url: fileUrl,
-        originalname: req.file.originalname,
-        size: req.file.size,
-      },
-    });
-  } catch (error) {
-    console.error('Error uploading file to S3:', error);
-    res.status(500).json({
-      error: {
-        code: 'upload_failed',
-        message: 'Failed to upload file',
-      },
-    });
   }
-});
+);
 
 // ============================================================================
 // CASES
@@ -140,7 +151,7 @@ router.get('/cases', async (req: AdminRequest, res) => {
     },
   });
 
-  const casesWithCover = cases.map(c => {
+  const casesWithCover = cases.map((c) => {
     let coverUrl = '/placeholder.png';
     if (c.blocks.length > 0) {
       for (const block of c.blocks) {
@@ -218,7 +229,7 @@ router.post('/cases', async (req: AdminRequest, res) => {
 router.put('/cases/:id', async (req: AdminRequest, res) => {
   const { id } = req.params;
   const { coverUrl, blocks, ...data } = req.body; // Also exclude blocks if sent
-  
+
   const caseData = await prisma.case.update({
     where: { id },
     data,
@@ -370,9 +381,9 @@ router.get('/pins', async (req: AdminRequest, res) => {
     orderBy: { createdAt: 'desc' },
     include: {
       _count: {
-        select: { cases: true }
-      }
-    }
+        select: { cases: true },
+      },
+    },
   });
 
   res.json({ success: true, data: pins });
@@ -391,31 +402,36 @@ router.get('/pins/:id', async (req: AdminRequest, res) => {
       cases: {
         include: {
           case: {
-            select: { id: true, title: true, slug: true }
-          }
-        }
+            select: { id: true, title: true, slug: true },
+          },
+        },
       },
       usages: {
         orderBy: { createdAt: 'desc' },
-        take: 100 // Limit history to last 100 entries
-      }
-    }
+        take: 100, // Limit history to last 100 entries
+      },
+    },
   });
 
   if (!pin) {
-    return res.status(404).json({ error: { code: 'not_found', message: 'Pin not found' } });
+    return res
+      .status(404)
+      .json({ error: { code: 'not_found', message: 'Pin not found' } });
   }
 
   // Flatten cases structure for easier frontend consumption
-  const cases = pin.cases.map(c => c.case);
-  
+  const cases = pin.cases.map((c) => c.case);
+
   res.json({ success: true, data: { ...pin, cases } });
 });
 
 import crypto from 'crypto';
 
 function generateShortCode(length = 6): string {
-  return crypto.randomBytes(Math.ceil(length / 2)).toString('hex').slice(0, length);
+  return crypto
+    .randomBytes(Math.ceil(length / 2))
+    .toString('hex')
+    .slice(0, length);
 }
 
 // ...
@@ -429,7 +445,7 @@ router.post('/pins', async (req: AdminRequest, res) => {
 
   if (!code) {
     return res.status(400).json({
-      error: { code: 'validation_error', message: 'Code is required' }
+      error: { code: 'validation_error', message: 'Code is required' },
     });
   }
 
@@ -445,10 +461,11 @@ router.post('/pins', async (req: AdminRequest, res) => {
       accessAll: accessAll || false,
       expiresAt: expiresAt ? new Date(expiresAt) : null,
       cases: {
-        create: caseIds && Array.isArray(caseIds) 
-          ? caseIds.map((id: string) => ({ caseId: id })) 
-          : []
-      }
+        create:
+          caseIds && Array.isArray(caseIds)
+            ? caseIds.map((id: string) => ({ caseId: id }))
+            : [],
+      },
     },
   });
 
@@ -476,9 +493,9 @@ router.put('/pins/:id', async (req: AdminRequest, res) => {
     // Since we are in an update, we first delete existing relations then create new ones
     // Ideally this should be transactional
     await prisma.pinCodeCase.deleteMany({ where: { pinCodeId: id } });
-    
+
     data.cases = {
-      create: caseIds.map((caseId: string) => ({ caseId }))
+      create: caseIds.map((caseId: string) => ({ caseId })),
     };
   }
 
@@ -510,7 +527,7 @@ router.delete('/pins/:id', async (req: AdminRequest, res) => {
  */
 router.get('/profile', async (req: AdminRequest, res) => {
   let profile = await prisma.profile.findUnique({ where: { id: 1 } });
-  
+
   // If no profile exists, create a default one
   if (!profile) {
     profile = await prisma.profile.create({
@@ -520,7 +537,7 @@ router.get('/profile', async (req: AdminRequest, res) => {
         contactsJson: JSON.stringify({ title: 'Контакты', items: [] }),
         projectsJson: JSON.stringify({ title: 'Проекты', items: [] }),
         socialsJson: JSON.stringify({ title: 'Соцсети', items: [] }),
-      }
+      },
     });
   }
 
@@ -533,7 +550,7 @@ router.get('/profile', async (req: AdminRequest, res) => {
  */
 router.put('/profile', async (req: AdminRequest, res) => {
   const { logoUrl, logoText, lockedCaseMessage, ...rest } = req.body;
-  
+
   const profile = await prisma.profile.update({
     where: { id: 1 },
     data: {

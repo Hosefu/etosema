@@ -84,7 +84,10 @@ export function clearAdminToken() {
 /**
  * Admin login
  */
-export async function adminLogin(email: string, password: string): Promise<AdminLoginResponse> {
+export async function adminLogin(
+  email: string,
+  password: string
+): Promise<AdminLoginResponse> {
   const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
     method: 'POST',
     headers: {
@@ -99,7 +102,10 @@ export async function adminLogin(email: string, password: string): Promise<Admin
 /**
  * Get all cases (admin)
  */
-export async function adminGetCases(): Promise<{ success: boolean; data?: Case[] }> {
+export async function adminGetCases(): Promise<{
+  success: boolean;
+  data?: Case[];
+}> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -115,7 +121,9 @@ export async function adminGetCases(): Promise<{ success: boolean; data?: Case[]
 /**
  * Create a case (admin)
  */
-export async function adminCreateCase(data: Partial<Case>): Promise<{ success: boolean; data?: Case }> {
+export async function adminCreateCase(
+  data: Partial<Case>
+): Promise<{ success: boolean; data?: Case }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -134,7 +142,10 @@ export async function adminCreateCase(data: Partial<Case>): Promise<{ success: b
 /**
  * Update a case (admin)
  */
-export async function adminUpdateCase(id: string, data: Partial<Case>): Promise<{ success: boolean; data?: Case }> {
+export async function adminUpdateCase(
+  id: string,
+  data: Partial<Case>
+): Promise<{ success: boolean; data?: Case }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -153,7 +164,9 @@ export async function adminUpdateCase(id: string, data: Partial<Case>): Promise<
 /**
  * Delete a case (admin)
  */
-export async function adminDeleteCase(id: string): Promise<{ success: boolean }> {
+export async function adminDeleteCase(
+  id: string
+): Promise<{ success: boolean }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -170,7 +183,9 @@ export async function adminDeleteCase(id: string): Promise<{ success: boolean }>
 /**
  * Reorder cases
  */
-export async function adminReorderCases(caseIds: string[]): Promise<{ success: boolean }> {
+export async function adminReorderCases(
+  caseIds: string[]
+): Promise<{ success: boolean }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -189,7 +204,9 @@ export async function adminReorderCases(caseIds: string[]): Promise<{ success: b
 /**
  * Get a single case (admin)
  */
-export async function adminGetCase(id: string): Promise<{ success: boolean; data?: Case }> {
+export async function adminGetCase(
+  id: string
+): Promise<{ success: boolean; data?: Case }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -205,7 +222,9 @@ export async function adminGetCase(id: string): Promise<{ success: boolean; data
 /**
  * Upload a file (admin)
  */
-export async function adminUploadFile(file: File): Promise<{ success: boolean; data?: { url: string } }> {
+export async function adminUploadFile(
+  file: File
+): Promise<{ success: boolean; data?: { url: string } }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -226,7 +245,9 @@ export async function adminUploadFile(file: File): Promise<{ success: boolean; d
 /**
  * Create a block (admin)
  */
-export async function adminCreateBlock(data: Partial<Block>): Promise<{ success: boolean; data?: Block }> {
+export async function adminCreateBlock(
+  data: Partial<Block>
+): Promise<{ success: boolean; data?: Block }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -245,7 +266,10 @@ export async function adminCreateBlock(data: Partial<Block>): Promise<{ success:
 /**
  * Update a block (admin)
  */
-export async function adminUpdateBlock(id: string, data: Partial<Block>): Promise<{ success: boolean; data?: Block }> {
+export async function adminUpdateBlock(
+  id: string,
+  data: Partial<Block>
+): Promise<{ success: boolean; data?: Block }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -264,7 +288,9 @@ export async function adminUpdateBlock(id: string, data: Partial<Block>): Promis
 /**
  * Delete a block (admin)
  */
-export async function adminDeleteBlock(id: string): Promise<{ success: boolean }> {
+export async function adminDeleteBlock(
+  id: string
+): Promise<{ success: boolean }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -281,7 +307,9 @@ export async function adminDeleteBlock(id: string): Promise<{ success: boolean }
 /**
  * Create a media (admin)
  */
-export async function adminCreateMedia(data: Partial<Media>): Promise<{ success: boolean; data?: Media }> {
+export async function adminCreateMedia(
+  data: Partial<Media>
+): Promise<{ success: boolean; data?: Media }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -300,7 +328,10 @@ export async function adminCreateMedia(data: Partial<Media>): Promise<{ success:
 /**
  * Update a media (admin)
  */
-export async function adminUpdateMedia(id: string, data: Partial<Media>): Promise<{ success: boolean; data?: Media }> {
+export async function adminUpdateMedia(
+  id: string,
+  data: Partial<Media>
+): Promise<{ success: boolean; data?: Media }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -319,7 +350,9 @@ export async function adminUpdateMedia(id: string, data: Partial<Media>): Promis
 /**
  * Delete a media (admin)
  */
-export async function adminDeleteMedia(id: string): Promise<{ success: boolean }> {
+export async function adminDeleteMedia(
+  id: string
+): Promise<{ success: boolean }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -361,7 +394,10 @@ export interface PinUsage {
 /**
  * Get all pins (admin)
  */
-export async function adminGetPins(): Promise<{ success: boolean; data?: PinCode[] }> {
+export async function adminGetPins(): Promise<{
+  success: boolean;
+  data?: PinCode[];
+}> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -377,7 +413,9 @@ export async function adminGetPins(): Promise<{ success: boolean; data?: PinCode
 /**
  * Delete a pin (admin)
  */
-export async function adminDeletePin(id: string): Promise<{ success: boolean }> {
+export async function adminDeletePin(
+  id: string
+): Promise<{ success: boolean }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -394,7 +432,9 @@ export async function adminDeletePin(id: string): Promise<{ success: boolean }> 
 /**
  * Get a single pin (admin)
  */
-export async function adminGetPin(id: string): Promise<{ success: boolean; data?: PinCode }> {
+export async function adminGetPin(
+  id: string
+): Promise<{ success: boolean; data?: PinCode }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -410,7 +450,10 @@ export async function adminGetPin(id: string): Promise<{ success: boolean; data?
 /**
  * Update a pin (admin)
  */
-export async function adminUpdatePin(id: string, data: Partial<PinCode> & { caseIds?: string[] }): Promise<{ success: boolean; data?: PinCode }> {
+export async function adminUpdatePin(
+  id: string,
+  data: Partial<PinCode> & { caseIds?: string[] }
+): Promise<{ success: boolean; data?: PinCode }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -429,7 +472,9 @@ export async function adminUpdatePin(id: string, data: Partial<PinCode> & { case
 /**
  * Create a pin (admin)
  */
-export async function adminCreatePin(data: Partial<PinCode> & { caseIds?: string[] }): Promise<{ success: boolean; data?: PinCode }> {
+export async function adminCreatePin(
+  data: Partial<PinCode> & { caseIds?: string[] }
+): Promise<{ success: boolean; data?: PinCode }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -461,7 +506,7 @@ export interface Profile {
   description: string;
   contactsJson: string; // JSON string of LinkBlock
   projectsJson: string; // JSON string of LinkBlock
-  socialsJson: string;  // JSON string of LinkBlock
+  socialsJson: string; // JSON string of LinkBlock
   logoUrl?: string | null;
   logoText?: string | null;
   lockedCaseMessage?: string | null;
@@ -472,7 +517,10 @@ export interface Profile {
 /**
  * Get profile (admin)
  */
-export async function adminGetProfile(): Promise<{ success: boolean; data?: Profile }> {
+export async function adminGetProfile(): Promise<{
+  success: boolean;
+  data?: Profile;
+}> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -488,7 +536,9 @@ export async function adminGetProfile(): Promise<{ success: boolean; data?: Prof
 /**
  * Update profile (admin)
  */
-export async function adminUpdateProfile(data: Partial<Profile>): Promise<{ success: boolean; data?: Profile }> {
+export async function adminUpdateProfile(
+  data: Partial<Profile>
+): Promise<{ success: boolean; data?: Profile }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -566,7 +616,10 @@ export interface Font {
 /**
  * Get design settings
  */
-export async function adminGetDesign(): Promise<{ success: boolean; data?: { settings: DesignSettings; fonts: Font[] } }> {
+export async function adminGetDesign(): Promise<{
+  success: boolean;
+  data?: { settings: DesignSettings; fonts: Font[] };
+}> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -582,7 +635,9 @@ export async function adminGetDesign(): Promise<{ success: boolean; data?: { set
 /**
  * Update design settings
  */
-export async function adminUpdateDesign(data: Partial<DesignSettings>): Promise<{ success: boolean; data?: DesignSettings }> {
+export async function adminUpdateDesign(
+  data: Partial<DesignSettings>
+): Promise<{ success: boolean; data?: DesignSettings }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -601,7 +656,10 @@ export async function adminUpdateDesign(data: Partial<DesignSettings>): Promise<
 /**
  * Upload font
  */
-export async function adminUploadFont(file: File, metadata: { family?: string; weight?: string; style?: string }): Promise<{ success: boolean; data?: Font }> {
+export async function adminUploadFont(
+  file: File,
+  metadata: { family?: string; weight?: string; style?: string }
+): Promise<{ success: boolean; data?: Font }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -625,7 +683,9 @@ export async function adminUploadFont(file: File, metadata: { family?: string; w
 /**
  * Delete font
  */
-export async function adminDeleteFont(id: string): Promise<{ success: boolean }> {
+export async function adminDeleteFont(
+  id: string
+): Promise<{ success: boolean }> {
   const token = getAdminToken();
   if (!token) throw new Error('Not authenticated');
 
@@ -638,5 +698,3 @@ export async function adminDeleteFont(id: string): Promise<{ success: boolean }>
 
   return response.json();
 }
-
-

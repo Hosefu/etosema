@@ -7,7 +7,10 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import { RequestWithPin, ApiResponse, ErrorCode } from '../../types/api';
-import { checkPinRateLimit, logPinAttempt } from '../security/rateLimit.middleware';
+import {
+  checkPinRateLimit,
+  logPinAttempt,
+} from '../security/rateLimit.middleware';
 import { applyPin, getPinStatus, applyPinById } from './pin.service';
 import { prisma } from '../../db/prisma';
 
@@ -32,41 +35,72 @@ const applyShortCodeSchema = z.object({
 /**
  * POST /api/public/pin/apply-by-shortcode
  */
-router.post('/apply-by-shortcode', async (req: RequestWithPin, res: Response) => {
-  try {
-    const validation = applyShortCodeSchema.safeParse(req.body);
-    if (!validation.success) {
-      res.status(400).json({ error: { code: ErrorCode.VALIDATION_ERROR, message: 'Invalid short code' } });
-      return;
+router.post(
+  '/apply-by-shortcode',
+  async (req: RequestWithPin, res: Response) => {
+    try {
+      const validation = applyShortCodeSchema.safeParse(req.body);
+      if (!validation.success) {
+        res
+          .status(400)
+          .json({
+            error: {
+              code: ErrorCode.VALIDATION_ERROR,
+              message: 'Invalid short code',
+            },
+          });
+        return;
+      }
+
+      const { shortCode } = validation.data;
+      // The shortCode from the schema is `string | null | undefined`. We use `required()` so it's `string`.
+      // But to be safe against future schema changes, we check.
+      if (!shortCode) {
+        res
+          .status(400)
+          .json({
+            error: {
+              code: ErrorCode.VALIDATION_ERROR,
+              message: 'Short code cannot be empty',
+            },
+          });
+        return;
+      }
+
+      const pin = await prisma.pinCode.findUnique({ where: { shortCode } });
+
+      if (!pin) {
+        res
+          .status(404)
+          .json({
+            error: { code: ErrorCode.NOT_FOUND, message: 'Pin not found' },
+          });
+        return;
+      }
+
+      const data = await applyPinById(pin.id, res);
+
+      const ip = req.socket.remoteAddress || 'unknown';
+      const userAgent = req.headers['user-agent'];
+      await logPinAttempt(
+        ip,
+        userAgent,
+        pin.id,
+        true,
+        '/shortlink/' + shortCode
+      );
+
+      res.json({ data });
+    } catch (error) {
+      console.error('Error applying short code:', error);
+      res
+        .status(500)
+        .json({
+          error: { code: ErrorCode.INTERNAL_ERROR, message: 'Internal error' },
+        });
     }
-
-    const { shortCode } = validation.data;
-    // The shortCode from the schema is `string | null | undefined`. We use `required()` so it's `string`.
-    // But to be safe against future schema changes, we check.
-    if (!shortCode) {
-      res.status(400).json({ error: { code: ErrorCode.VALIDATION_ERROR, message: 'Short code cannot be empty' } });
-      return;
-    }
-    
-    const pin = await prisma.pinCode.findUnique({ where: { shortCode } });
-
-    if (!pin) {
-      res.status(404).json({ error: { code: ErrorCode.NOT_FOUND, message: 'Pin not found' } });
-      return;
-    }
-
-    const data = await applyPinById(pin.id, res);
-    
-    const ip = req.socket.remoteAddress || 'unknown';
-    const userAgent = req.headers['user-agent'];
-    await logPinAttempt(ip, userAgent, pin.id, true, '/shortlink/' + shortCode);
-
-    res.json({ data });
-  } catch (error) {
-    console.error('Error applying short code:', error);
-    res.status(500).json({ error: { code: ErrorCode.INTERNAL_ERROR, message: 'Internal error' } });
   }
-});
+);
 
 /**
  * POST /api/public/pin/apply
@@ -86,61 +120,65 @@ router.post('/apply-by-shortcode', async (req: RequestWithPin, res: Response) =>
  *   - 400: Invalid PIN
  *   - 429: Too many attempts
  */
-router.post('/apply', checkPinRateLimit, async (req: RequestWithPin, res: Response) => {
-  try {
-    // Validate request body
-    const validation = applyPinSchema.safeParse(req.body);
-
-    if (!validation.success) {
-      const response: ApiResponse = {
-        error: {
-          code: ErrorCode.VALIDATION_ERROR,
-          message: validation.error.errors[0].message,
-        },
-      };
-      res.status(400).json(response);
-      return;
-    }
-
-    const { pin } = validation.data;
-
-    // Get client info for logging
-    const ip = req.socket.remoteAddress || 'unknown';
-    const userAgent = req.headers['user-agent'];
-
+router.post(
+  '/apply',
+  checkPinRateLimit,
+  async (req: RequestWithPin, res: Response) => {
     try {
-      // Attempt to apply PIN
-      const data = await applyPin(pin, res);
+      // Validate request body
+      const validation = applyPinSchema.safeParse(req.body);
 
-      // Log successful attempt
-      await logPinAttempt(ip, userAgent, data.pinId, true);
+      if (!validation.success) {
+        const response: ApiResponse = {
+          error: {
+            code: ErrorCode.VALIDATION_ERROR,
+            message: validation.error.errors[0].message,
+          },
+        };
+        res.status(400).json(response);
+        return;
+      }
 
-      const response: ApiResponse = { data };
-      res.json(response);
+      const { pin } = validation.data;
+
+      // Get client info for logging
+      const ip = req.socket.remoteAddress || 'unknown';
+      const userAgent = req.headers['user-agent'];
+
+      try {
+        // Attempt to apply PIN
+        const data = await applyPin(pin, res);
+
+        // Log successful attempt
+        await logPinAttempt(ip, userAgent, data.pinId, true);
+
+        const response: ApiResponse = { data };
+        res.json(response);
+      } catch (error) {
+        // Log failed attempt
+        await logPinAttempt(ip, userAgent, null, false);
+
+        const response: ApiResponse = {
+          error: {
+            code: ErrorCode.INVALID_PIN,
+            message: 'Invalid PIN code',
+          },
+        };
+        res.status(400).json(response);
+      }
     } catch (error) {
-      // Log failed attempt
-      await logPinAttempt(ip, userAgent, null, false);
+      console.error('Error in /pin/apply:', error);
 
       const response: ApiResponse = {
         error: {
-          code: ErrorCode.INVALID_PIN,
-          message: 'Invalid PIN code',
+          code: ErrorCode.INTERNAL_ERROR,
+          message: 'An error occurred while processing your request',
         },
       };
-      res.status(400).json(response);
+      res.status(500).json(response);
     }
-  } catch (error) {
-    console.error('Error in /pin/apply:', error);
-
-    const response: ApiResponse = {
-      error: {
-        code: ErrorCode.INTERNAL_ERROR,
-        message: 'An error occurred while processing your request',
-      },
-    };
-    res.status(500).json(response);
   }
-});
+);
 
 /**
  * GET /api/public/pin/status
@@ -172,4 +210,3 @@ router.get('/status', async (req: RequestWithPin, res: Response) => {
 });
 
 export default router;
-

@@ -25,7 +25,10 @@ export function Heading({
   const Component = level;
 
   return (
-    <Component className={`${styles.heading} ${styles[variant]} ${className}`} {...props}>
+    <Component
+      className={`${styles.heading} ${styles[variant]} ${className}`}
+      {...props}
+    >
       {children}
     </Component>
   );

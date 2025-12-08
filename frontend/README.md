@@ -79,6 +79,7 @@ frontend/
    ```
 
    Edit `.env.local`:
+
    ```
    NEXT_PUBLIC_API_URL=http://localhost:3001
    ```
@@ -108,12 +109,13 @@ All sizes use a responsive scaling function that adapts to viewport width:
 @import '@/styles/tokens.scss';
 
 .myComponent {
-  padding: s(24);        // Scales from 24 units
+  padding: s(24); // Scales from 24 units
   width: cap(200px, s(400), 600px); // With min/max bounds
 }
 ```
 
 **Breakpoints:**
+
 - Mobile: 375px baseline
 - Desktop: 1440px baseline
 - Switch point: 1280px
@@ -123,11 +125,11 @@ All sizes use a responsive scaling function that adapts to viewport width:
 Pre-defined mixins for consistent typography:
 
 ```scss
-@include text-body;           // Running text
-@include text-heading-large;  // Large headings
-@include text-heading-small;  // Small headings
-@include text-card-title;     // Card titles
-@include text-small;          // Small text
+@include text-body; // Running text
+@include text-heading-large; // Large headings
+@include text-heading-small; // Small headings
+@include text-card-title; // Card titles
+@include text-small; // Small text
 ```
 
 **Font:** Inter Display (loaded in `app/layout.tsx`)
@@ -138,10 +140,10 @@ Pre-defined mixins for consistent typography:
 
 ```scss
 .container {
-  @include page-grid;  // Creates 12-column grid
+  @include page-grid; // Creates 12-column grid
 
   .item {
-    @include grid-span(6);  // Spans 6 columns (50%)
+    @include grid-span(6); // Spans 6 columns (50%)
 
     @include mobile {
       @include grid-span(12); // Full width on mobile
@@ -151,6 +153,7 @@ Pre-defined mixins for consistent typography:
 ```
 
 **Grid properties:**
+
 - Columns: 12
 - Gutter: 40 (scaled)
 - Margin: 80 (scaled)
@@ -231,7 +234,7 @@ import { PinInput } from '@/components/molecules/PinInput';
   onComplete={(pin) => handlePin(pin)}
   error={errorMessage}
   disabled={loading}
-/>
+/>;
 ```
 
 ### Case Card
@@ -245,7 +248,7 @@ import { CaseCard } from '@/components/molecules/CaseCard';
     const result = await applyPin(pin);
     return { success: !result.error, error: result.error?.message };
   }}
-/>
+/>;
 ```
 
 ## 🎯 Pages
@@ -281,6 +284,7 @@ Follow atomic design principles:
 3. **Organisms**: Complex sections (CasesGrid, CaseViewer)
 
 Each component should have:
+
 - TypeScript interface for props
 - SCSS module for styles (using tokens)
 - Clear single responsibility
@@ -288,6 +292,7 @@ Each component should have:
 ### Styling Guidelines
 
 ✅ **DO:**
+
 - Use `s()` function for all sizes
 - Use design tokens for colors
 - Use typography mixins
@@ -295,6 +300,7 @@ Each component should have:
 - Use SCSS modules for component styles
 
 ❌ **DON'T:**
+
 - Use pixel values directly
 - Hardcode colors
 - Mix inline styles
@@ -333,8 +339,8 @@ Each component should have:
 
 ## 📝 Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
+| Variable              | Description     | Default               |
+| --------------------- | --------------- | --------------------- |
 | `NEXT_PUBLIC_API_URL` | Backend API URL | http://localhost:3001 |
 
 ## 🚧 Future Enhancements

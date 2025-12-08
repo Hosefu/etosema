@@ -29,8 +29,7 @@ export function useHorizontalScroll<T extends HTMLElement>(
       if (e.deltaY === 0) return;
 
       // Check if there's horizontal scroll available
-      const hasHorizontalScroll =
-        element.scrollWidth > element.clientWidth;
+      const hasHorizontalScroll = element.scrollWidth > element.clientWidth;
 
       if (hasHorizontalScroll) {
         // Prevent default vertical scroll

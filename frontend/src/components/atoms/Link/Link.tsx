@@ -14,7 +14,12 @@ export interface LinkProps {
   className?: string;
 }
 
-export function Link({ href, children, external = false, className }: LinkProps) {
+export function Link({
+  href,
+  children,
+  external = false,
+  className,
+}: LinkProps) {
   if (external) {
     return (
       <a
@@ -34,4 +39,3 @@ export function Link({ href, children, external = false, className }: LinkProps)
     </NextLink>
   );
 }
-
