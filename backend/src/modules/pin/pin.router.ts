@@ -10,7 +10,6 @@ import { RequestWithPin, ApiResponse, ErrorCode } from '../../types/api';
 import { checkPinRateLimit, logPinAttempt } from '../security/rateLimit.middleware';
 import { applyPin, getPinStatus, applyPinById } from './pin.service';
 import { prisma } from '../../db/prisma';
-import { pinCodeSchema } from '../../../shared/zod';
 
 const router = Router();
 
@@ -22,7 +21,9 @@ const applyPinSchema = z.object({
   pin: z.string().min(1, 'PIN is required').max(20),
 });
 
-const applyShortCodeSchema = pinCodeSchema.pick({ shortCode: true }).required();
+const applyShortCodeSchema = z.object({
+  shortCode: z.string().min(1, 'Short code is required'),
+});
 
 // ============================================================================
 // ROUTES
