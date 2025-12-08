@@ -81,7 +81,7 @@ async function main() {
   });
 
   // Add blocks to case1
-  const case1Block1 = await prisma.caseBlock.create({
+  await prisma.caseBlock.create({
     data: {
       caseId: case1.id,
       layout: 'FULL',
@@ -100,7 +100,7 @@ async function main() {
     },
   });
 
-  const case1Block2 = await prisma.caseBlock.create({
+  await prisma.caseBlock.create({
     data: {
       caseId: case1.id,
       layout: 'HALF',

@@ -108,12 +108,22 @@ export interface SocialLink {
   url: string;
 }
 
+export interface LinkItem {
+  label: string;
+  url: string;
+}
+
+export interface LinkBlock {
+  title: string;
+  items: LinkItem[];
+}
+
 export interface ProfileData {
   title: string;
   description: string;
-  contacts: any; // LinkBlock
-  projects: any; // LinkBlock
-  socials: any; // LinkBlock
+  contacts: LinkBlock;
+  projects: LinkBlock;
+  socials: LinkBlock;
   logoUrl?: string | null;
   logoText?: string | null;
   lockedCaseMessage?: string | null;

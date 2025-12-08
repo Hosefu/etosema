@@ -116,7 +116,7 @@ export const notFoundHandler = (
  * Logs the error and exits the process in production.
  */
 export const setupGlobalErrorHandlers = (): void => {
-  process.on('unhandledRejection', (reason: Error | any) => {
+  process.on('unhandledRejection', (reason: unknown) => {
     logger.fatal(
       { err: reason },
       'Unhandled Promise Rejection - shutting down'

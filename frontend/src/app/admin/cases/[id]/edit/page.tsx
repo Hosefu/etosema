@@ -16,7 +16,6 @@ import {
   Space,
   Upload,
   message,
-  Divider,
   Select,
   Popconfirm,
   ColorPicker,
@@ -47,7 +46,6 @@ import {
   adminUpdateMedia,
   adminDeleteMedia,
   adminGetDesign,
-  Case,
   Block,
   Font,
 } from '@/lib/adminClient';

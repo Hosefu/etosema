@@ -195,11 +195,12 @@ router.post('/fonts', upload.single('file'), async (req: AdminRequest, res) => {
     });
 
     res.json({ success: true, data: font });
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : 'Unknown error';
     console.error('Error uploading font:', e);
     res
       .status(500)
-      .json({ error: { code: 'upload_error', message: e.message } });
+      .json({ error: { code: 'upload_error', message } });
   }
 });
 

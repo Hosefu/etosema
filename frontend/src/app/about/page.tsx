@@ -60,8 +60,8 @@ export default function AboutPage() {
               {profile.contacts.title}
             </Heading>
             <div className={styles.links}>
-              {profile.contacts.items.map((item, index) => (
-                <Link key={index} href={item.url} external>
+              {profile.contacts.items.map((item, index: number) => (
+                <Link key={`${profile.contacts.title}-${index}`} href={item.url} external>
                   {item.label}
                 </Link>
               ))}
@@ -73,8 +73,8 @@ export default function AboutPage() {
               {profile.projects.title}
             </Heading>
             <div className={styles.links}>
-              {profile.projects.items.map((item, index) => (
-                <Link key={index} href={item.url} external>
+              {profile.projects.items.map((item, index: number) => (
+                <Link key={`${profile.projects.title}-${index}`} href={item.url} external>
                   {item.label}
                 </Link>
               ))}
@@ -86,8 +86,8 @@ export default function AboutPage() {
               {profile.socials.title}
             </Heading>
             <div className={styles.links}>
-              {profile.socials.items.map((item, index) => (
-                <Link key={index} href={item.url} external>
+              {profile.socials.items.map((item, index: number) => (
+                <Link key={`${profile.socials.title}-${index}`} href={item.url} external>
                   {item.label}
                 </Link>
               ))}

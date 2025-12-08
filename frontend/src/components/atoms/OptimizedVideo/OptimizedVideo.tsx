@@ -48,7 +48,8 @@ export function OptimizedVideo({
 }: OptimizedVideoProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(!lazy);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   // Lazy loading with Intersection Observer
   useEffect(() => {
@@ -68,8 +69,8 @@ export function OptimizedVideo({
       }
     );
 
-    if (videoRef.current) {
-      observer.observe(videoRef.current);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
 
     return () => observer.disconnect();
@@ -82,7 +83,7 @@ export function OptimizedVideo({
   const finalPreload = preload || (lazy ? 'metadata' : 'auto');
 
   return (
-    <div className={`${styles.container} ${className || ''}`}>
+    <div ref={containerRef} className={`${styles.container} ${className || ''}`}>
       {shouldLoad ? (
         <video
           ref={videoRef}
@@ -102,7 +103,7 @@ export function OptimizedVideo({
         </video>
       ) : (
         // Placeholder while waiting to load
-        <div ref={videoRef} className={styles.placeholder}>
+        <div className={styles.placeholder}>
           {poster && <img src={poster} alt={alt} className={styles.poster} />}
         </div>
       )}

@@ -12,8 +12,6 @@ import {
   Table,
   message,
   Tag,
-  Space,
-  Divider,
 } from 'antd';
 import {
   SaveOutlined,
@@ -27,7 +25,6 @@ import {
   adminGetCases,
   PinCode,
   Case,
-  PinUsage,
 } from '@/lib/adminClient';
 import dayjs from 'dayjs';
 

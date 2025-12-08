@@ -4,7 +4,7 @@
  * Sets up the admin panel for managing cases, blocks, PIN codes, and profile.
  */
 
-import AdminJS from 'adminjs';
+import AdminJS, { type ActionRequest } from 'adminjs';
 import AdminJSExpress from '@adminjs/express';
 import { Database, Resource } from '@adminjs/prisma';
 import { PrismaClient } from '@prisma/client';
@@ -135,7 +135,7 @@ export function createAdmin(prisma: PrismaClient) {
           actions: {
             // Custom action for creating PIN with plain text code
             new: {
-              before: async (request: any) => {
+              before: async (request: ActionRequest) => {
                 if (request.payload?.plainPin) {
                   const hash = await hashPin(request.payload.plainPin);
                   request.payload.codeHash = hash;

@@ -37,9 +37,10 @@ export default function CasePage() {
 
   const loading = caseLoading || profileLoading;
 
+  const caseErrorMessage = caseError instanceof Error ? caseError.message : null;
   // Check if error indicates PIN required
-  const needsPin = caseError && (caseError as any).message?.includes('PIN');
-  const error = caseError && !needsPin ? (caseError as Error).message : null;
+  const needsPin = !!caseErrorMessage && caseErrorMessage.includes('PIN');
+  const error = caseError && !needsPin ? caseErrorMessage : null;
 
   const handlePinComplete = async (pin: string) => {
     setPinError(undefined);
@@ -59,7 +60,6 @@ export default function CasePage() {
   const renderLockedMessage = () => {
     const text =
       profile?.lockedCaseMessage || 'This case requires a PIN to access.';
-    console.log('renderLockedMessage called, profile:', profile, 'text:', text);
     const parts = text.split(/(\[[^\]]+\]\([^)]+\))/g);
 
     return (

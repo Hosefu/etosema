@@ -20,7 +20,7 @@ export default function WorksPage() {
   const error = casesError ? (casesError as Error).message : null;
   const lockedCaseMessage = profile?.lockedCaseMessage || null;
 
-  const handlePinSubmit = async (pin: string, caseSlug: string) => {
+  const handlePinSubmit = async (pin: string, _caseSlug: string) => {
     const result = await pinAccess.applyPinCode(pin);
 
     if (result.success) {

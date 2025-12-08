@@ -601,6 +601,7 @@ export interface DesignSettings {
   spacing: {
     baseGap: number;
   };
+  faviconUrl?: string | null;
 }
 
 export interface Font {

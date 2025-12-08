@@ -11,7 +11,6 @@ import {
   Divider,
   Row,
   Col,
-  Space,
 } from 'antd';
 import {
   SaveOutlined,
@@ -23,7 +22,6 @@ import {
   adminGetProfile,
   adminUpdateProfile,
   adminUploadFile,
-  Profile,
   LinkBlock,
   LinkItem,
 } from '@/lib/adminClient';
@@ -119,7 +117,6 @@ const LinksBlockEditor = ({
 export default function AdminProfilePage() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -215,7 +212,6 @@ export default function AdminProfilePage() {
   };
 
   const handleUploadLogo = async (file: File) => {
-    setUploading(true);
     try {
       const response = await adminUploadFile(file);
       if (response.success && response.data) {
@@ -224,8 +220,6 @@ export default function AdminProfilePage() {
       }
     } catch (error) {
       message.error('Ошибка загрузки файла');
-    } finally {
-      setUploading(false);
     }
   };
 

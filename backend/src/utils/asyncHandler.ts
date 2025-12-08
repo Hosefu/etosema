@@ -13,7 +13,7 @@ type AsyncFunction = (
   req: Request,
   res: Response,
   next: NextFunction
-) => Promise<any>;
+) => Promise<unknown>;
 
 /**
  * Wraps an async function to catch any errors and pass them to next()

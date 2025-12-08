@@ -35,7 +35,6 @@ export function CaseCard({
   lockedCaseMessage,
 }: CaseCardProps) {
   const router = useRouter();
-  const [showPinInput, setShowPinInput] = useState(false);
   const [pinError, setPinError] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -116,7 +115,7 @@ export function CaseCard({
   // Collect all media from blocks for scrolling preview
   const previewMedia = caseData.blocks
     .flatMap((block) => block.medias)
-    .sort((a, b) => {
+    .sort((_a, _b) => {
       // Sort by block rank then media position would be ideal,
       // but flatMap loses block context. Assuming blocks are sorted.
       return 0;

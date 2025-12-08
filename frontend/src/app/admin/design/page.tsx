@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import type { CSSProperties } from 'react';
 import {
   Layout,
   Card,
@@ -17,7 +18,6 @@ import {
   Col,
   Typography,
   Divider,
-  Slider,
   Radio,
 } from 'antd';
 import {
@@ -34,6 +34,7 @@ import {
   Font,
   TypographyConfig,
 } from '@/lib/adminClient';
+import type { UploadProps } from 'antd';
 
 const { Text } = Typography;
 
@@ -94,6 +95,7 @@ const defaultSettings: DesignSettings = {
   spacing: {
     baseGap: 12,
   },
+  faviconUrl: null,
 };
 
 // Typography Editor Component
@@ -110,7 +112,10 @@ const TypographyEditor = ({
   fonts,
   label,
 }: TypographyEditorProps) => {
-  const handleChange = (key: keyof TypographyConfig, val: any) => {
+  const handleChange = (
+    key: keyof TypographyConfig,
+    val: number | string | null
+  ) => {
     onChange({ ...value, [key]: val });
   };
 
@@ -158,7 +163,7 @@ const TypographyEditor = ({
           <Form.Item label="Цвет" style={{ marginBottom: 8 }}>
             <ColorPicker
               value={value.color}
-              onChange={(c, hex) => handleChange('color', hex)}
+              onChange={(_c, hex) => handleChange('color', hex)}
               showText
             />
           </Form.Item>
@@ -200,7 +205,7 @@ const TypographyEditor = ({
 export default function DesignPage() {
   const [settings, setSettings] = useState<DesignSettings>(defaultSettings);
   const [fonts, setFonts] = useState<Font[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [saving, setSave] = useState(false);
 
   useEffect(() => {
@@ -261,21 +266,48 @@ export default function DesignPage() {
     }
   };
 
-  const handleFontUpload = async (options: any) => {
+  const handleFontUpload: UploadProps['customRequest'] = async (options) => {
     const { file, onSuccess, onError } = options;
     try {
-      const res = await adminUploadFont(file, {
-        family: file.name.split('.')[0],
+      const uploadFile = file as File;
+      const res = await adminUploadFont(uploadFile, {
+        family: uploadFile.name.split('.')[0],
       });
       if (res.success) {
         message.success('Шрифт загружен');
         loadData(); // Reload to get updated list
-        onSuccess(res.data);
+        onSuccess?.(res.data as unknown as void);
       } else {
-        onError(new Error('Upload failed'));
+        onError?.(new Error('Upload failed'));
       }
     } catch (e) {
-      onError(e);
+      onError?.(e as Error);
+    }
+  };
+
+  const handleFaviconUpload: UploadProps['customRequest'] = async (
+    options
+  ) => {
+    const { file, onSuccess, onError } = options;
+    try {
+      const uploadFile = file as File;
+      const formData = new FormData();
+      formData.append('file', uploadFile);
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (data.data?.url) {
+        setSettings((prev) => ({ ...prev, faviconUrl: data.data.url }));
+        message.success('Фавикон загружен');
+        onSuccess?.(data.data as unknown as void);
+      } else {
+        onError?.(new Error('Upload failed'));
+      }
+    } catch (e) {
+      onError?.(e as Error);
     }
   };
 
@@ -332,7 +364,7 @@ export default function DesignPage() {
 
       // Scale emulation for preview (fixed scale 1)
       '--scale': 1,
-    } as React.CSSProperties;
+    } as CSSProperties;
   }, [settings]);
 
   const fontFaceStyles = useMemo(() => {
@@ -428,7 +460,7 @@ export default function DesignPage() {
                       <Form.Item label="Фон страницы">
                         <ColorPicker
                           value={settings.colors.background}
-                          onChange={(c, hex) =>
+                          onChange={(_c, hex) =>
                             setSettings({
                               ...settings,
                               colors: { ...settings.colors, background: hex },
@@ -440,7 +472,7 @@ export default function DesignPage() {
                       <Form.Item label="Фон карточек">
                         <ColorPicker
                           value={settings.colors.card}
-                          onChange={(c, hex) =>
+                          onChange={(_c, hex) =>
                             setSettings({
                               ...settings,
                               colors: { ...settings.colors, card: hex },
@@ -679,7 +711,7 @@ export default function DesignPage() {
                       <Form.Item label="Цвет подчеркивания">
                         <ColorPicker
                           value={settings.links.color}
-                          onChange={(c, hex) =>
+                          onChange={(_c, hex) =>
                             setSettings({
                               ...settings,
                               links: { ...settings.links, color: hex },
@@ -700,31 +732,7 @@ export default function DesignPage() {
                         <Upload
                           accept="image/*,.ico"
                           showUploadList={false}
-                          customRequest={async (options: any) => {
-                            const { file, onSuccess, onError } = options;
-                            try {
-                              const formData = new FormData();
-                              formData.append('file', file);
-                              const res = await fetch('/api/admin/upload', {
-                                method: 'POST',
-                                body: formData,
-                                credentials: 'include',
-                              });
-                              const data = await res.json();
-                              if (data.data?.url) {
-                                setSettings({
-                                  ...settings,
-                                  faviconUrl: data.data.url,
-                                });
-                                message.success('Фавикон загружен');
-                                onSuccess(data.data);
-                              } else {
-                                onError(new Error('Upload failed'));
-                              }
-                            } catch (e) {
-                              onError(e);
-                            }
-                          }}
+                          customRequest={handleFaviconUpload}
                         >
                           <Button icon={<UploadOutlined />}>
                             {settings.faviconUrl
@@ -749,9 +757,7 @@ export default function DesignPage() {
                               danger
                               type="text"
                               size="small"
-                              onClick={() =>
-                                setSettings({ ...settings, faviconUrl: null })
-                              }
+                              onClick={() => setSettings({ ...settings, faviconUrl: null })}
                               style={{ marginLeft: 8 }}
                             >
                               Удалить

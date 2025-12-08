@@ -33,7 +33,7 @@ export interface OptimizedImageProps extends Omit<ImageProps, 'quality'> {
 export function OptimizedImage({
   quality = 85,
   showPlaceholder = true,
-  placeholder,
+  placeholder: _placeholder,
   blurDataURL,
   className,
   onLoadingComplete,
@@ -41,7 +41,9 @@ export function OptimizedImage({
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true);
 
-  const handleLoadingComplete = (result: any) => {
+  const handleLoadingComplete: NonNullable<ImageProps['onLoadingComplete']> = (
+    result
+  ) => {
     setIsLoading(false);
     onLoadingComplete?.(result);
   };

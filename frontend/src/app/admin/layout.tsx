@@ -16,7 +16,7 @@ import {
 } from '@ant-design/icons';
 import { clearAdminToken, adminGetProfile } from '@/lib/adminClient';
 
-const { Header, Content, Sider } = Layout;
+const { Content, Sider } = Layout;
 
 export default function AdminLayout({
   children,

@@ -9,10 +9,11 @@ import jwt from 'jsonwebtoken';
 import multer from 'multer';
 import bcrypt from 'bcryptjs';
 import path from 'path';
+import type { Prisma } from '@prisma/client';
 import { config } from '../../config/env';
 import { prisma } from '../../db/prisma';
 import { verifyAdminToken, AdminRequest } from './admin.middleware';
-import { uploadFileToS3, deleteFileFromS3 } from '../storage/s3.service';
+import { uploadFileToS3 } from '../storage/s3.service';
 
 const router = Router();
 
@@ -214,7 +215,7 @@ router.get('/cases/:id', async (req: AdminRequest, res) => {
  * Create a new case
  */
 router.post('/cases', async (req: AdminRequest, res) => {
-  const { coverUrl, ...data } = req.body;
+  const { ...data } = req.body;
   const caseData = await prisma.case.create({
     data,
   });
@@ -228,7 +229,7 @@ router.post('/cases', async (req: AdminRequest, res) => {
  */
 router.put('/cases/:id', async (req: AdminRequest, res) => {
   const { id } = req.params;
-  const { coverUrl, blocks, ...data } = req.body; // Also exclude blocks if sent
+  const { blocks: _blocks, ...data } = req.body; // Also exclude blocks if sent
 
   const caseData = await prisma.case.update({
     where: { id },
@@ -481,7 +482,7 @@ router.put('/pins/:id', async (req: AdminRequest, res) => {
   const { label, accessAll, expiresAt, caseIds } = req.body;
 
   // Prepare update data
-  const data: any = {
+  const data: Prisma.PinCodeUpdateInput = {
     label,
     accessAll,
     expiresAt: expiresAt ? new Date(expiresAt) : null,

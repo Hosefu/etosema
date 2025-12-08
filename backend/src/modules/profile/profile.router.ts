@@ -6,7 +6,38 @@
 
 import { Router, Response, Request } from 'express';
 import { prisma } from '../../db/prisma';
-import { ApiResponse, ErrorCode, ProfileData } from '../../types/api';
+import { ApiResponse, ErrorCode, ProfileData, LinkBlock } from '../../types/api';
+
+const isLinkBlock = (value: unknown): value is LinkBlock => {
+  if (!value || typeof value !== 'object') return false;
+  const block = value as Partial<LinkBlock>;
+  return (
+    typeof block.title === 'string' &&
+    Array.isArray(block.items) &&
+    block.items.every(
+      (item) =>
+        item &&
+        typeof item === 'object' &&
+        typeof (item as LinkBlock['items'][number]).label === 'string' &&
+        typeof (item as LinkBlock['items'][number]).url === 'string'
+    )
+  );
+};
+
+const parseLinkBlock = (value: unknown): LinkBlock => {
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (isLinkBlock(parsed)) return parsed;
+    } catch (error) {
+      // fall through to default
+    }
+  } else if (isLinkBlock(value)) {
+    return value;
+  }
+
+  return { title: '', items: [] };
+};
 
 const router = Router();
 
@@ -49,18 +80,9 @@ router.get('/', async (req: Request, res: Response) => {
     const data: ProfileData = {
       title: profile.title,
       description: profile.description,
-      contacts:
-        typeof profile.contactsJson === 'string'
-          ? JSON.parse(profile.contactsJson)
-          : (profile.contactsJson as any),
-      projects:
-        typeof profile.projectsJson === 'string'
-          ? JSON.parse(profile.projectsJson)
-          : (profile.projectsJson as any),
-      socials:
-        typeof profile.socialsJson === 'string'
-          ? JSON.parse(profile.socialsJson)
-          : (profile.socialsJson as any),
+      contacts: parseLinkBlock(profile.contactsJson),
+      projects: parseLinkBlock(profile.projectsJson),
+      socials: parseLinkBlock(profile.socialsJson),
       logoUrl: profile.logoUrl,
       logoText: profile.logoText,
       lockedCaseMessage: profile.lockedCaseMessage,
