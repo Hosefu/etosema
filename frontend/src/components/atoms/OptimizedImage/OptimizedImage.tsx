@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image, { ImageProps } from 'next/image';
 import styles from './OptimizedImage.module.scss';
 
@@ -25,9 +25,20 @@ export interface OptimizedImageProps extends Omit<ImageProps, 'quality'> {
   showPlaceholder?: boolean;
 
   /**
-   * Custom placeholder blur data URL
-   */
+ * Custom placeholder blur data URL
+ */
   blurDataURL?: string;
+
+  /**
+   * Optional low-res placeholder URL (e.g., 100px wide) shown until main image loads.
+   * If not provided, component will try to derive it by appending ?w=100&q=20 to src.
+   */
+  placeholderSrc?: string;
+
+  /**
+   * Blur intensity for the low-res placeholder.
+   */
+  placeholderBlur?: number;
 }
 
 export function OptimizedImage({
@@ -35,27 +46,50 @@ export function OptimizedImage({
   showPlaceholder = true,
   placeholder: _placeholder,
   blurDataURL,
-  className,
-  onLoadingComplete,
+  className = '',
+  placeholderSrc,
+  placeholderBlur = 15,
+  onLoad,
   ...props
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true);
+  const [derivedPlaceholder, setDerivedPlaceholder] = useState<string | null>(
+    placeholderSrc || null
+  );
 
-  const handleLoadingComplete: NonNullable<ImageProps['onLoadingComplete']> = (
-    result
-  ) => {
+  // Try to build a low-res URL automatically if none provided
+  useEffect(() => {
+    if (placeholderSrc) return;
+    if (typeof props.src === 'string') {
+      const hasQuery = props.src.includes('?');
+      setDerivedPlaceholder(`${props.src}${hasQuery ? '&' : '?'}w=100&q=20`);
+    }
+  }, [placeholderSrc, props.src]);
+
+  const handleLoad: NonNullable<ImageProps['onLoad']> = (event) => {
     setIsLoading(false);
-    onLoadingComplete?.(result);
+    onLoad?.(event);
   };
 
   return (
-    <Image
-      {...props}
-      quality={quality}
-      placeholder={showPlaceholder ? (blurDataURL ? 'blur' : 'empty') : 'empty'}
-      blurDataURL={blurDataURL}
-      className={`${className || ''} ${isLoading ? styles.loading : styles.loaded}`}
-      onLoadingComplete={handleLoadingComplete}
-    />
+    <div className={`${styles.wrapper} ${className}`}>
+      {showPlaceholder && derivedPlaceholder && isLoading && (
+        <img
+          src={derivedPlaceholder}
+          alt=""
+          aria-hidden
+          className={styles.placeholder}
+          style={{ filter: `blur(${placeholderBlur}px)` }}
+        />
+      )}
+      <Image
+        {...props}
+        quality={quality}
+        placeholder={showPlaceholder && blurDataURL ? 'blur' : 'empty'}
+        blurDataURL={blurDataURL}
+        className={`${styles.image} ${isLoading ? styles.loading : styles.loaded}`}
+        onLoad={handleLoad}
+      />
+    </div>
   );
 }

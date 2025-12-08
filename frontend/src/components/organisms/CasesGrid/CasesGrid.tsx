@@ -26,12 +26,13 @@ export function CasesGrid({
 }: CasesGridProps) {
   return (
     <div className={styles.grid}>
-      {cases.map((caseItem) => (
+      {cases.map((caseItem, index) => (
         <CaseCard
           key={caseItem.id}
           case={caseItem}
           onPinSubmit={onPinSubmit}
           lockedCaseMessage={lockedCaseMessage}
+          priority={index < 2}
         />
       ))}
     </div>

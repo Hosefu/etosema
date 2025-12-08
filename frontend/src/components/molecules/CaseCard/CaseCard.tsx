@@ -27,12 +27,14 @@ export interface CaseCardProps {
     caseSlug: string
   ) => Promise<{ success: boolean; error?: string }>;
   lockedCaseMessage?: string | null;
+  priority?: boolean; // hint to preload first visual
 }
 
 export function CaseCard({
   case: caseData,
   onPinSubmit,
   lockedCaseMessage,
+  priority = false,
 }: CaseCardProps) {
   const router = useRouter();
   const [pinError, setPinError] = useState<string | undefined>();
@@ -164,38 +166,46 @@ export function CaseCard({
     <div className={styles.card}>
       <Link href={`/cases/${caseData.slug}`} className={styles.cover}>
         <div className={styles.imagesContainer}>
-          {mediaToShow.map((item, index) => (
+          {mediaToShow.map((item, index) => {
+            const ratio = item.aspectRatio || '16:9';
+            const [w, h] = ratio.split(':').map(Number);
+            const pad =
+              w && h ? `${Math.max((h / w) * 100, 1)}%` : undefined;
+            return (
             <div
               key={index}
               className={styles.imageWrapper}
               onClick={(e) => handleImageClick(e, index)}
               style={{
-                aspectRatio: item.aspectRatio?.replace(':', '/') || '16/9',
+                aspectRatio: ratio.replace(':', '/'),
+                ...(pad ? { ['--image-pad' as string]: pad } : {}),
               }}
             >
               {item.type === 'VIDEO' ? (
                 <OptimizedVideo
                   src={item.url}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  lazy={index > 0}
-                  className={styles.image}
-                />
-              ) : (
-                <OptimizedImage
-                  src={item.url}
-                  alt={`${caseData.title} - ${index + 1}`}
-                  fill
-                  priority={index === 0}
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className={styles.image}
-                  quality={85}
-                />
-              )}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    lazy={index > 0}
+                    className={styles.image}
+                  />
+                ) : (
+                  <OptimizedImage
+                    src={item.url}
+                    alt={`${caseData.title} - ${index + 1}`}
+                    fill
+                    priority={priority && index === 0}
+                    fetchPriority={priority && index === 0 ? 'high' : 'auto'}
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className={styles.image}
+                    quality={85}
+                  />
+                )}
             </div>
-          ))}
+            );
+          })}
         </div>
       </Link>
       <Link href={`/cases/${caseData.slug}`} className={styles.info}>

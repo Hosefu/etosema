@@ -321,52 +321,6 @@ export default function DesignPage() {
     }
   };
 
-  // --- Preview Logic ---
-  const previewStyle = useMemo(() => {
-    const s = settings;
-    return {
-      '--body-size': s.typography.body.size,
-      '--body-line-height': s.typography.body.lineHeight / 100,
-      '--body-letter-spacing': `${s.typography.body.letterSpacing / 100}em`,
-      '--body-color': s.typography.body.color,
-      '--font-family-body': `'${s.typography.body.family}'`,
-
-      '--heading-small-size': s.typography.headingSmall.size,
-      '--heading-small-line-height': s.typography.headingSmall.lineHeight / 100,
-      '--heading-small-letter-spacing': `${s.typography.headingSmall.letterSpacing / 100}em`,
-      '--heading-small-color': s.typography.headingSmall.color,
-      '--font-family-heading-small': `'${s.typography.headingSmall.family}'`,
-
-      '--heading-large-size': s.typography.headingLarge.size,
-      '--heading-large-line-height': s.typography.headingLarge.lineHeight / 100,
-      '--heading-large-letter-spacing': `${s.typography.headingLarge.letterSpacing / 100}em`,
-      '--heading-large-color': s.typography.headingLarge.color,
-      '--font-family-heading-large': `'${s.typography.headingLarge.family}'`,
-
-      '--color-bg-page': s.colors.background,
-      '--color-bg-card': s.colors.card,
-
-      '--link-offset': `${s.links.offset}px`,
-      '--link-thickness': `${s.links.thickness || 1}px`,
-      '--link-color': s.links.color,
-
-      '--card-radius': `${s.cards.borderRadius}px`,
-      '--card-padding': `${s.cards.padding}px`,
-      '--card-height': s.cards.height ? `${s.cards.height}px` : 'auto',
-
-      '--grid-margin': `${s.grid.margin}px`,
-      '--grid-gutter': `${s.grid.gutter}px`,
-      '--case-text-columns': s.grid.textColumns || 8,
-      '--case-text-align': s.grid.textAlign || 'left',
-      '--case-block-align': s.grid.blockAlign || 'center',
-
-      '--base-gap': `${s.spacing.baseGap}px`,
-
-      // Scale emulation for preview (fixed scale 1)
-      '--scale': 1,
-    } as CSSProperties;
-  }, [settings]);
-
   const fontFaceStyles = useMemo(() => {
     return fonts
       .map(
@@ -386,9 +340,9 @@ export default function DesignPage() {
     <Layout style={{ background: 'transparent' }}>
       <style dangerouslySetInnerHTML={{ __html: fontFaceStyles }} />
 
-      <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
-        {/* LEFT COLUMN: EDITOR */}
-        <div style={{ flex: 1, maxWidth: 600 }}>
+      <div style={{ display: 'block' }}>
+        {/* EDITOR */}
+        <div style={{ maxWidth: 600 }}>
           <Card
             title="Настройки Дизайна"
             extra={
@@ -808,165 +762,6 @@ export default function DesignPage() {
                 },
               ]}
             />
-          </Card>
-        </div>
-
-        {/* RIGHT COLUMN: PREVIEW */}
-        <div style={{ flex: 1, position: 'sticky', top: 24 }}>
-          <Card
-            title="Live Preview"
-            bodyStyle={{ padding: 0, overflow: 'hidden' }}
-          >
-            <div
-              style={{
-                ...previewStyle,
-                backgroundColor: 'var(--color-bg-page)',
-                padding: 'var(--grid-margin)',
-                minHeight: 600,
-                fontFamily: 'var(--font-family-body)',
-                color: 'var(--body-color)',
-              }}
-            >
-              {/* Large Heading Preview */}
-              <div style={{ marginBottom: 'calc(var(--base-gap) * 5)' }}>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-family-heading-large)',
-                    fontSize: 'calc(var(--scale) * var(--heading-large-size))',
-                    lineHeight: 'var(--heading-large-line-height)',
-                    letterSpacing: 'var(--heading-large-letter-spacing)',
-                    color: 'var(--heading-large-color)',
-                    fontWeight: 500,
-                  }}
-                >
-                  Я коммуникационный дизайнер
-                </div>
-              </div>
-
-              {/* Grid Preview with Cards */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: 'var(--grid-gutter)',
-                  marginBottom: 'calc(var(--base-gap) * 5)',
-                }}
-              >
-                {/* Card 1 */}
-                <div
-                  style={{
-                    background: 'var(--color-bg-card)',
-                    borderRadius: 'var(--card-radius)',
-                    padding: 'var(--card-padding)',
-                    height: 'var(--card-height)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 'var(--base-gap)',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '100%',
-                      height: 200,
-                      flex: '1 0 auto',
-                      background: '#ddd',
-                      borderRadius:
-                        'max(0px, calc(var(--card-radius) - var(--card-padding)))',
-                    }}
-                  ></div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-family-body)',
-                      fontSize: 'calc(var(--scale) * var(--body-size))',
-                      lineHeight: 'var(--body-line-height)',
-                      letterSpacing: 'var(--body-letter-spacing)',
-                      color: 'var(--body-color)',
-                      fontWeight: 500,
-                      marginTop: 'auto',
-                    }}
-                  >
-                    Нейрофестиваль
-                  </div>
-                </div>
-
-                {/* Card 2 */}
-                <div
-                  style={{
-                    background: 'var(--color-bg-card)',
-                    borderRadius: 'var(--card-radius)',
-                    padding: 'var(--card-padding)',
-                    height: 'var(--card-height)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 'var(--base-gap)',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '100%',
-                      height: 200,
-                      flex: '1 0 auto',
-                      background: '#ddd',
-                      borderRadius:
-                        'max(0px, calc(var(--card-radius) - var(--card-padding)))',
-                    }}
-                  ></div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-family-body)',
-                      fontSize: 'calc(var(--scale) * var(--body-size))',
-                      lineHeight: 'var(--body-line-height)',
-                      letterSpacing: 'var(--body-letter-spacing)',
-                      color: 'var(--body-color)',
-                      fontWeight: 500,
-                      marginTop: 'auto',
-                    }}
-                  >
-                    Аида
-                  </div>
-                </div>
-              </div>
-
-              {/* Small Heading / Links Preview */}
-              <div style={{ marginBottom: 'calc(var(--base-gap) * 3)' }}>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-family-heading-small)',
-                    fontSize: 'calc(var(--scale) * var(--heading-small-size))',
-                    lineHeight: 'var(--heading-small-line-height)',
-                    letterSpacing: 'var(--heading-small-letter-spacing)',
-                    color: 'var(--heading-small-color)',
-                    fontWeight: 500,
-                    marginBottom: 'var(--base-gap)',
-                  }}
-                >
-                  Контакты
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 'calc(var(--base-gap) * 0.5)',
-                  }}
-                >
-                  <a
-                    href="#"
-                    style={{
-                      fontFamily: 'var(--font-family-body)',
-                      fontSize: 'calc(var(--scale) * var(--body-size))',
-                      textDecoration: 'underline',
-                      textDecorationColor: 'var(--link-color)',
-                      textUnderlineOffset: 'var(--link-offset)',
-                      textDecorationThickness: 'var(--link-thickness)',
-                      color: 'inherit',
-                      width: 'fit-content',
-                    }}
-                  >
-                    Telegram
-                  </a>
-                </div>
-              </div>
-            </div>
           </Card>
         </div>
       </div>

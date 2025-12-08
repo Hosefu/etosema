@@ -64,6 +64,8 @@
   position: relative;
   flex: 0 0 auto;
   width: 100%;
+  min-height: s(200);
+  padding-bottom: var(--image-pad, 56.25%); // ensures height for fill images on SSR
   // Using derived radius for inner content
   border-radius: calc($card-radius * 0.33); 
   overflow: hidden;

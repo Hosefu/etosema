@@ -5,11 +5,14 @@
 .container {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: auto;
+  padding-bottom: var(--image-pad, 56.25%); // default 16:9
   overflow: hidden;
 }
 
 .video {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;

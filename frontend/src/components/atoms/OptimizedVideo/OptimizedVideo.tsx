@@ -82,8 +82,17 @@ export function OptimizedVideo({
 
   const finalPreload = preload || (lazy ? 'metadata' : 'auto');
 
+  // Fallback for SSR: set an aspect-ratio pad to avoid 0 height
+  const padStyle = {
+    ['--image-pad' as string]: '56.25%',
+  };
+
   return (
-    <div ref={containerRef} className={`${styles.container} ${className || ''}`}>
+    <div
+      ref={containerRef}
+      className={`${styles.container} ${className || ''}`}
+      style={padStyle}
+    >
       {shouldLoad ? (
         <video
           ref={videoRef}

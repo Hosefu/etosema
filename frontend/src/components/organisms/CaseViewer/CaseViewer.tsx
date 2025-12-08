@@ -86,6 +86,15 @@ export function CaseViewer({ case: caseData }: CaseViewerProps) {
     }
   });
 
+  // Find first visual (image or video) to preload
+  const priorityMedia =
+    caseData.blocks
+      .map((block) => ({
+        blockId: block.id,
+        medias: block.medias,
+      }))
+      .find((entry) => entry.medias.length > 0) ?? null;
+
   // Determine case-level layout overrides
   const caseBlockAlign = settings.blockAlign;
   const caseBlockMargins = caseBlockAlign
@@ -153,6 +162,9 @@ export function CaseViewer({ case: caseData }: CaseViewerProps) {
           <CaseBlockComponent
             key={block.id}
             block={block}
+            priorityMedia={
+              priorityMedia?.blockId === block.id ? 0 : undefined
+            }
             mediaIndices={mediaWithIndices.filter(
               (m) => m.blockId === block.id
             )}
@@ -166,6 +178,7 @@ export function CaseViewer({ case: caseData }: CaseViewerProps) {
 function CaseBlockComponent({
   block,
   mediaIndices,
+  priorityMedia,
 }: {
   block: CaseBlock;
   mediaIndices: Array<{
@@ -173,6 +186,7 @@ function CaseBlockComponent({
     mediaIndex: number;
     globalImageIndex: number;
   }>;
+  priorityMedia?: number;
 }) {
   // Handle Text Block
   if (block.type === 'TEXT') {
@@ -210,6 +224,7 @@ function CaseBlockComponent({
         ? `image-${mediaInfo.globalImageIndex}`
         : undefined;
 
+    const shouldPreload = priorityMedia === 0;
     return (
       <div className={styles.blockFull}>
         <MediaItem
@@ -218,7 +233,7 @@ function CaseBlockComponent({
           alt={media.alt}
           imageId={imageId}
           aspectRatio={media.aspectRatio}
-          priority={true} // First image is likely LCP
+          priority={shouldPreload}
         />
       </div>
     );
@@ -242,7 +257,7 @@ function CaseBlockComponent({
               alt={media.alt}
               imageId={imageId}
               aspectRatio={media.aspectRatio}
-              priority={index === 0}
+              priority={priorityMedia === index}
             />
           </div>
         );
@@ -281,7 +296,10 @@ function MediaItem({
   }
 
   // Default aspect ratio if not provided to prevent layout shift/collapse
-  const safeAspectRatio = aspectRatio?.replace(':', '/') || '16/9';
+  const ratio = aspectRatio || '16:9';
+  const safeAspectRatio = ratio.replace(':', '/');
+  const [w, h] = ratio.split(':').map(Number);
+  const pad = w && h ? `${Math.max((h / w) * 100, 1)}%` : undefined;
 
   return (
     <div
@@ -289,6 +307,7 @@ function MediaItem({
       id={imageId}
       style={{
         aspectRatio: safeAspectRatio,
+        ...(pad ? { ['--image-pad' as string]: pad } : {}),
       }}
     >
       <OptimizedImage
@@ -296,6 +315,7 @@ function MediaItem({
         alt={alt || ''}
         fill
         priority={priority}
+        fetchPriority={priority ? 'high' : 'auto'}
         sizes="(max-width: 768px) 100vw, (max-width: 1280px) 80vw, 1200px"
         className={styles.media}
         quality={90}

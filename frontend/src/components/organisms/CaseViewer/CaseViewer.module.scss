@@ -101,6 +101,8 @@
 .imageContainer {
   position: relative;
   width: 100%;
+  min-height: s(220);
+  padding-bottom: var(--image-pad, 56.25%); // ensures height for fill images on SSR
   background: $color-bg-page; // Or transparent if overriding bg?
   background: rgba(0,0,0,0.05); // Use semi-transparent for neutrality
   border-radius: $card-radius;
