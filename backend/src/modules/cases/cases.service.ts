@@ -10,10 +10,10 @@ import {
   CasePreview,
   CaseDetail,
   CaseBlockData,
-  CaseMedia,
   PinContext,
 } from '../../types/api';
 import { isCaseAccessible } from '../pin/pin.middleware';
+import { AppError } from '../../utils/AppError';
 
 /**
  * Cases Service Class
@@ -127,12 +127,14 @@ export class CasesService {
     }
 
     // Check access
-    const accessible = isCaseAccessible(caseItem.id, caseItem.isNda, pinContext);
+    const accessible = isCaseAccessible(
+      caseItem.id,
+      caseItem.isNda,
+      pinContext
+    );
 
     if (!accessible) {
-      const error = new Error('PIN required to access this case');
-      (error as any).code = 'pin_required';
-      throw error;
+      throw AppError.pinRequired('PIN required to access this case');
     }
 
     // Transform blocks and medias

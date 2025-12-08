@@ -5,7 +5,8 @@
   "main": "index.ts",
   "types": "index.ts",
   "scripts": {
-    "generate": "prisma generate"
+    "generate": "cd ../backend && prisma generate",
+    "postinstall": "npm run generate"
   },
   "keywords": ["etosema", "shared", "types", "zod"],
   "private": true

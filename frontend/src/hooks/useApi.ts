@@ -2,6 +2,7 @@
  * React Query Hooks for API
  *
  * Custom hooks for data fetching using React Query.
+ * Uses centralized query keys for better cache management.
  */
 
 'use client';
@@ -22,18 +23,7 @@ import {
   PinStatusResponse,
   ApplyPinResponse,
 } from '@/lib/apiClient';
-
-// ============================================================================
-// QUERY KEYS
-// ============================================================================
-
-export const queryKeys = {
-  cases: ['cases'] as const,
-  caseBySlug: (slug: string) => ['cases', slug] as const,
-  profile: ['profile'] as const,
-  design: ['design'] as const,
-  pinStatus: ['pinStatus'] as const,
-};
+import { queryKeys } from '@/lib/queryKeys';
 
 // ============================================================================
 // CASES HOOKS
@@ -43,8 +33,8 @@ export const queryKeys = {
  * Hook to fetch all cases
  */
 export function useCases() {
-  return useQuery({
-    queryKey: queryKeys.cases,
+  return useQuery<CasePreview[]>({
+    queryKey: queryKeys.cases.all,
     queryFn: async () => {
       const response = await getCases();
 
@@ -61,8 +51,8 @@ export function useCases() {
  * Hook to fetch a single case by slug
  */
 export function useCaseBySlug(slug: string | null) {
-  return useQuery({
-    queryKey: queryKeys.caseBySlug(slug || ''),
+  return useQuery<CaseDetail | null>({
+    queryKey: queryKeys.cases.detail(slug || ''),
     queryFn: async () => {
       if (!slug) return null;
 
@@ -86,8 +76,8 @@ export function useCaseBySlug(slug: string | null) {
  * Hook to fetch profile data
  */
 export function useProfile() {
-  return useQuery({
-    queryKey: queryKeys.profile,
+  return useQuery<ProfileData>({
+    queryKey: queryKeys.profile.data,
     queryFn: async () => {
       const response = await getProfile();
 
@@ -108,8 +98,8 @@ export function useProfile() {
  * Hook to fetch design settings
  */
 export function useDesignSettings() {
-  return useQuery({
-    queryKey: queryKeys.design,
+  return useQuery<DesignData>({
+    queryKey: queryKeys.design.settings,
     queryFn: async () => {
       const response = await getDesignSettings();
 
@@ -130,8 +120,8 @@ export function useDesignSettings() {
  * Hook to fetch PIN session status
  */
 export function usePinStatus() {
-  return useQuery({
-    queryKey: queryKeys.pinStatus,
+  return useQuery<PinStatusResponse>({
+    queryKey: queryKeys.pin.status,
     queryFn: async () => {
       const response = await getPinStatus();
 
@@ -150,7 +140,7 @@ export function usePinStatus() {
 export function useApplyPin() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<ApplyPinResponse, Error, string>({
     mutationFn: async (pin: string) => {
       const response = await applyPin(pin);
 
@@ -165,8 +155,8 @@ export function useApplyPin() {
       setPinToken(data.token);
 
       // Invalidate queries that depend on PIN status
-      queryClient.invalidateQueries({ queryKey: queryKeys.pinStatus });
-      queryClient.invalidateQueries({ queryKey: queryKeys.cases });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pin.status });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cases.all });
     },
   });
 }

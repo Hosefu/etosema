@@ -1,0 +1,6 @@
+# Generated Zod schemas
+zod/schemas/
+.prisma-zod-generator-manifest.json
+
+# Keep the main index
+!zod/schemas/index.ts
