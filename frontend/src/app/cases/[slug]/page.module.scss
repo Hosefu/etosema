@@ -1,0 +1,27 @@
+@import '@/styles/tokens.scss';
+
+.page {
+  min-height: 50vh;
+}
+
+.loading,
+.error,
+.ndaScreen {
+  @include page-grid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: s(24);
+  padding-block: s(80);
+  text-align: center;
+}
+
+.error {
+  color: $color-text-secondary;
+}
+
+.ndaScreen {
+  max-width: s(400);
+  margin-inline: auto;
+}

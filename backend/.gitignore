@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Prisma
+prisma/migrations/
+.env.test
+
+# Uploads (keep folder structure)
+public/uploads/*
+!public/uploads/cases/
+!public/uploads/medias/
+public/uploads/cases/*
+public/uploads/medias/*
+!public/uploads/**/.gitkeep

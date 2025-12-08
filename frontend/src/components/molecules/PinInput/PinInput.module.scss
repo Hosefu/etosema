@@ -1,0 +1,68 @@
+@import '@/styles/tokens.scss';
+
+// Shake animation based on Ilya Birman's formula
+// [1 / (x^1.25 / 20 + 0.5) − 0.05] × sin (x / 2) × 25
+@keyframes shake {
+  0% { transform: translateX(0); }
+  5% { transform: translateX(21px); }
+  10% { transform: translateX(31px); }
+  15% { transform: translateX(32px); }
+  20% { transform: translateX(26px); }
+  25% { transform: translateX(14px); }
+  30% { transform: translateX(3px); }
+  35% { transform: translateX(-8px); }
+  40% { transform: translateX(-18px); }
+  45% { transform: translateX(-21px); }
+  50% { transform: translateX(-20px); }
+  55% { transform: translateX(-15px); }
+  60% { transform: translateX(-8px); }
+  65% { transform: translateX(-2px); }
+  70% { transform: translateX(3px); }
+  75% { transform: translateX(6px); }
+  80% { transform: translateX(7px); }
+  85% { transform: translateX(5px); }
+  90% { transform: translateX(2px); }
+  95% { transform: translateX(0); }
+  100% { transform: translateX(0); }
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: gap(1);
+}
+
+.inputs {
+  display: flex;
+  gap: gap(1);
+  justify-content: center;
+
+  &.shake {
+    animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  }
+}
+
+.input {
+  width: s(48);
+  height: s(56);
+  @include text-card-title;
+  text-align: center;
+  background: $color-bg-card;
+  border: 1px solid $color-lock-border;
+  border-radius: $border-radius-sm;
+  transition: all $transition-fast;
+
+  &:focus {
+    outline: none;
+    border-color: $color-text-primary;
+  }
+
+  &.error {
+    border-color: #d32f2f;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

@@ -1,0 +1,18 @@
+@import '@/styles/tokens.scss';
+
+.link {
+  @include text-body;
+  font-size: s(18);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: $color-text-primary;
+  text-decoration: underline;
+  text-decoration-color: rgba(0, 0, 0, 0.3);
+  text-underline-offset: 25%;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.6;
+  }
+}
+

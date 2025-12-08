@@ -1,0 +1,65 @@
+@import '@/styles/tokens.scss';
+
+.page {
+  min-height: 50vh;
+}
+
+.container {
+  @include page-grid;
+  row-gap: gap(6);
+  padding-block: gap(6);
+}
+
+.titleSection {
+  @include grid-full;
+  max-width: s(1000);
+}
+
+.descriptionSection {
+  @include grid-full;
+  max-width: s(700);
+}
+
+.columnsSection {
+  @include grid-full;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: gap(5);
+  
+  @include mobile {
+    grid-template-columns: 1fr;
+    gap: gap(4);
+  }
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: gap(2);
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: gap(1);
+}
+
+.loading,
+.error {
+  @include page-grid;
+  @include text-body;
+  text-align: center;
+  padding-block: gap(6);
+  color: $color-text-secondary;
+}
+
+.error {
+  color: #d32f2f;
+}
+
+// Responsive
+@include mobile {
+  .container {
+    row-gap: gap(4);
+  }
+}

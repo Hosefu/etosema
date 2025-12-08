@@ -1,0 +1,7 @@
+@import '@/styles/tokens.scss';
+
+.icon {
+  display: block;
+  flex-shrink: 0;
+  color: $color-text-secondary;
+}

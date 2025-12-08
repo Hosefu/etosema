@@ -1,0 +1,234 @@
+/**
+ * Design Tokens
+ *
+ * Core design system values: scaling, colors, typography, spacing.
+ * This file provides the foundation for all component styles.
+ */
+
+// ============================================================================
+// SCALING SYSTEM
+// ============================================================================
+
+/**
+ * Responsive scaling based on viewport width.
+ *
+ * Mobile baseline: 375px
+ * Desktop baseline: 1440px
+ *
+ * All sizes should use the s() function to scale proportionally.
+ *
+ * NOTE: The --scale CSS variable is defined in globals.scss
+ */
+
+/**
+ * Scale function
+ * Converts design units to responsive CSS values.
+ *
+ * Usage: width: s(100); // Scales 100 units responsively
+ */
+@function s($value) {
+  @return calc(var(--scale) * #{$value});
+}
+
+/**
+ * Capped scale function
+ * Scales with minimum and maximum bounds.
+ *
+ * Usage: padding: cap(16px, s(24), 32px);
+ */
+@function cap($min, $scaled, $max) {
+  @return clamp(#{$min}, #{$scaled}, #{$max});
+}
+
+// ============================================================================
+// COLORS
+// ============================================================================
+
+$color-bg-page: var(--color-bg-page); 
+$color-bg-card: var(--color-bg-card); 
+$color-text-primary: var(--body-color); 
+$color-text-secondary: #666666; // Static for now unless user requested
+$color-text-tertiary: #999999;
+
+$color-border-light: rgba(0, 0, 0, 0.1);
+$color-border-medium: rgba(0, 0, 0, 0.2);
+
+$color-overlay: rgba(0, 0, 0, 0.5);
+
+// NDA/Lock styling
+$color-lock-bg: rgba(0, 0, 0, 0.03);
+$color-lock-border: rgba(0, 0, 0, 0.15);
+
+// Interactive states
+$color-hover: rgba(0, 0, 0, 0.05);
+$color-active: rgba(0, 0, 0, 0.1);
+
+// ============================================================================
+// TYPOGRAPHY
+// ============================================================================
+
+/**
+ * Font family
+ * Defined in CSS variables
+ */
+$font-family: var(--font-family-body);
+
+/**
+ * Typography mixins
+ */
+
+// Body/Running text (Main text, Menu, Case Titles)
+@mixin text-body {
+  font-family: var(--font-family-body);
+  font-weight: 500;
+  font-size: calc(var(--scale) * var(--body-size));
+  line-height: var(--body-line-height);
+  letter-spacing: var(--body-letter-spacing);
+  color: var(--body-color);
+}
+
+// Large heading (Case Title inside Case, "I am a comm designer")
+@mixin text-heading-large {
+  font-family: var(--font-family-heading-large);
+  font-weight: 500;
+  font-size: calc(var(--scale) * var(--heading-large-size));
+  line-height: var(--heading-large-line-height);
+  letter-spacing: var(--heading-large-letter-spacing);
+  color: var(--heading-large-color);
+}
+
+// Small heading (Link blocks in About)
+@mixin text-heading-small {
+  font-family: var(--font-family-heading-small);
+  font-weight: 500;
+  font-size: calc(var(--scale) * var(--heading-small-size));
+  line-height: var(--heading-small-line-height);
+  letter-spacing: var(--heading-small-letter-spacing);
+  color: var(--heading-small-color);
+}
+
+// Card title (Mapped to Body as per request)
+@mixin text-card-title {
+  @include text-body;
+}
+
+// Small text (Utility)
+@mixin text-small {
+  font-family: var(--font-family-body);
+  font-weight: 500;
+  font-size: s(14);
+  line-height: 130%;
+  letter-spacing: -0.02em;
+}
+
+// ============================================================================
+// GRID SYSTEM
+// ============================================================================
+
+/**
+ * 12-column grid with stretch columns
+ */
+
+$grid-columns: 12;
+$grid-gutter: calc(var(--grid-gutter) * var(--scale)); // Responsive gutter
+$grid-margin: calc(var(--grid-margin) * var(--scale)); // Responsive margin
+
+@mixin page-grid {
+  display: grid;
+  grid-template-columns: repeat($grid-columns, minmax(0, 1fr));
+  column-gap: $grid-gutter;
+  padding-inline: $grid-margin;
+}
+
+/**
+ * Grid span utilities
+ */
+@mixin grid-span($columns) {
+  grid-column: span $columns;
+}
+
+@mixin grid-full {
+  grid-column: 1 / -1;
+}
+
+// ============================================================================
+// SPACING
+// ============================================================================
+
+/**
+ * Spacing function based on base-gap
+ */
+@function gap($multiplier: 1) {
+  @return calc(var(--base-gap) * var(--scale) * #{$multiplier});
+}
+
+// Backward compatibility or fixed steps if needed (now using gap() mostly)
+$spacing-xs: gap(1); // Assuming base gap is small
+$spacing-sm: gap(2);
+$spacing-md: gap(3);
+$spacing-lg: gap(4);
+$spacing-xl: gap(5);
+$spacing-xxl: gap(8);
+
+// ============================================================================
+// BREAKPOINTS
+// ============================================================================
+
+$breakpoint-mobile: 0;
+$breakpoint-tablet: 768px;
+$breakpoint-desktop: 1280px;
+
+@mixin mobile {
+  @media (max-width: #{$breakpoint-tablet - 1px}) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: #{$breakpoint-tablet}) and (max-width: #{$breakpoint-desktop - 1px}) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: #{$breakpoint-desktop}) {
+    @content;
+  }
+}
+
+@mixin tablet-and-up {
+  @media (min-width: #{$breakpoint-tablet}) {
+    @content;
+  }
+}
+
+// ============================================================================
+// TRANSITIONS
+// ============================================================================
+
+$transition-fast: 150ms ease-out;
+$transition-normal: 250ms ease-out;
+$transition-slow: 400ms ease-out;
+
+// ============================================================================
+// BORDERS & RADIUS
+// ============================================================================
+
+$card-radius: calc(var(--card-radius) * var(--scale));
+$card-padding: calc(var(--card-padding) * var(--scale));
+$card-padding-bottom: $card-padding;
+
+$border-radius-sm: s(8); // Keep for small elements? Or unify?
+$border-radius-md: s(16);
+$border-radius-lg: s(24);
+
+// ============================================================================
+// Z-INDEX LAYERS
+// ============================================================================
+
+$z-base: 1;
+$z-dropdown: 100;
+$z-sticky: 200;
+$z-overlay: 300;
+$z-modal: 400;
+$z-toast: 500;

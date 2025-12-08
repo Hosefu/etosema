@@ -1,0 +1,20 @@
+@import '@/styles/tokens.scss';
+
+.text {
+  color: $color-text-primary;
+  margin: 0;
+}
+
+.body {
+  @include text-body;
+}
+
+.small {
+  @include text-small;
+  color: $color-text-secondary;
+}
+
+.caption {
+  @include text-small;
+  color: $color-text-tertiary;
+}

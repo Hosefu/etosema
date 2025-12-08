@@ -1,0 +1,70 @@
+@import '@/styles/tokens.scss';
+
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: gap(4) $grid-margin;
+
+  @include mobile {
+    padding: gap(2) $grid-margin;
+  }
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: gap(1);
+  text-decoration: none;
+  color: $color-text-primary;
+}
+
+.logoText {
+  font-weight: 500;
+  font-size: s(24);
+  color: $color-text-primary;
+  letter-spacing: -0.03em;
+}
+
+.nav {
+  display: flex;
+  gap: gap(3); // was s(40), gap(3)=36 if base 12
+
+  @include mobile {
+    gap: gap(2); // was s(24)
+  }
+}
+
+.navLink {
+  @include text-card-title;
+  color: $color-text-primary;
+  transition: opacity $transition-fast;
+  text-decoration: underline;
+  text-decoration-color: rgba(0, 0, 0, 0.3);
+  text-underline-offset: 25%;
+  text-decoration-thickness: var(--link-thickness);
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  &.active {
+    opacity: 0.4;
+    text-decoration: none;
+  }
+}
+
+.main {
+  flex: 1;
+  padding-block: gap(5); // was s(60)
+
+  @include mobile {
+    padding-block: gap(3); // was s(40)
+  }
+}

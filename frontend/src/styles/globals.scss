@@ -1,0 +1,275 @@
+/**
+ * Global Styles
+ *
+ * Base styles, resets, and utilities applied across the entire application.
+ */
+
+@import './tokens.scss';
+
+// ============================================================================
+// CSS VARIABLES
+// ============================================================================
+
+:root {
+  // Scale
+  --scale: calc(100vw / 375); // Mobile default
+
+  // Typography Defaults
+  --font-family-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-heading-small: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-heading-large: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  // Body / Main Text (Menu, Case Titles on Grid)
+  --body-size: 18;
+  --body-line-height: 1.35;
+  --body-letter-spacing: -0.03em;
+  --body-color: #1a1a1a;
+
+  // Heading Large (Case Title inside Case, "I am a comm designer")
+  --heading-large-size: 90;
+  --heading-large-line-height: 0.9;
+  --heading-large-letter-spacing: -0.03em;
+  --heading-large-color: #1a1a1a;
+
+  // Heading Small (Link Blocks in About)
+  --heading-small-size: 26;
+  --heading-small-line-height: 1.0;
+  --heading-small-letter-spacing: -0.03em;
+  --heading-small-color: #1a1a1a;
+
+  // Colors
+  --color-bg-page: rgba(0, 0, 0, 0.05);
+  --color-bg-card: #ffffff;
+  
+  // Links
+  --link-offset: 2px;
+  --link-color: rgba(0, 0, 0, 0.2);
+  --link-thickness: 1px;
+
+  // Cards
+  --card-radius: 0;
+  --card-padding: 0;
+  --card-padding-bottom: 0;
+  --card-height-css: auto;
+  
+  // Grid
+  --grid-margin: 24;
+  --grid-gutter: 24;
+  --case-text-columns: 8;
+  --case-text-align: left;
+  --case-block-align: center;
+  --case-block-margin-left: auto;
+  --case-block-margin-right: auto;
+
+  // Spacing
+  --base-gap: 12;
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --scale: calc(100vw / 1440); // Desktop
+  }
+}
+
+// ============================================================================
+// MODERN CSS RESET
+// ============================================================================
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100vh;
+  font-family: $font-family;
+  background-color: $color-bg-page;
+  color: $color-text-primary;
+  overflow-x: hidden;
+}
+
+// ============================================================================
+// TYPOGRAPHY DEFAULTS
+// ============================================================================
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+p {
+  @include text-body;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity $transition-fast;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+// ============================================================================
+// FORM ELEMENTS
+// ============================================================================
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+button {
+  cursor: pointer;
+  user-select: none;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+// ============================================================================
+// IMAGES & MEDIA
+// ============================================================================
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+// ============================================================================
+// SCROLLBAR STYLING
+// ============================================================================
+
+::-webkit-scrollbar {
+  width: s(8);
+  height: s(8);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: s(4);
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+}
+
+// ============================================================================
+// UTILITY CLASSES
+// ============================================================================
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.no-scroll {
+  overflow: hidden;
+}
+
+// ============================================================================
+// GRID UTILITIES
+// ============================================================================
+
+.page-grid {
+  @include page-grid;
+}
+
+.grid-full {
+  @include grid-full;
+}
+
+// Span utilities (1-12 columns)
+@for $i from 1 through 12 {
+  .grid-span-#{$i} {
+    @include grid-span($i);
+  }
+}
+
+// ============================================================================
+// ANIMATIONS
+// ============================================================================
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(s(20));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+// ============================================================================
+// RESPONSIVE HELPERS
+// ============================================================================
+
+.mobile-only {
+  @include tablet-and-up {
+    display: none !important;
+  }
+}
+
+.desktop-only {
+  @include mobile {
+    display: none !important;
+  }
+}

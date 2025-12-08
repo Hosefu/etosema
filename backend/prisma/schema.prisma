@@ -1,0 +1,206 @@
+// Prisma schema for Etosema Portfolio Backend (SQLite for local dev)
+// Documentation: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ============================================================================
+// CASE MODELS - Portfolio Cases/Projects
+// ============================================================================
+
+/// Represents a single portfolio case/project
+model Case {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  title      String
+  shortTitle String?  // Optional shorter title for cards
+  year       Int
+  summary    String?  // Brief description for case header
+  isNda      Boolean  @default(false) // Whether this case requires NDA access
+  orderRank  String   // LexoRank string for custom sorting
+
+  // Case-specific overrides
+  useCustomDesign Boolean @default(false)
+  backgroundColor String?
+  textColor       String?
+  fontFamily      String?
+  settings        String? // JSON: { titleAlignment, headingColor, headingFontFamily, ... }
+
+  blocks     CaseBlock[]
+  pinAccess  PinCodeCase[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([orderRank])
+  @@index([isNda])
+  @@map("cases")
+}
+
+/// Represents a content block within a case (1/1 or 1/2+1/2 layout)
+model CaseBlock {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  
+  type      String   @default("MEDIA") // "MEDIA" or "TEXT"
+  content   String?  // Markdown content for TEXT blocks
+  settings  String?  // JSON settings { align: "left", ... }
+
+  layout    String   // "FULL" or "HALF" (Relevant for MEDIA)
+  orderRank String   // LexoRank for ordering blocks within a case
+
+  medias    CaseBlockMedia[]
+
+  @@index([caseId, orderRank])
+  @@map("case_blocks")
+}
+
+/// Represents media (image/video) within a case block
+model CaseBlockMedia {
+  id          String    @id @default(cuid())
+  blockId     String
+  block       CaseBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  position    Int       // 0 or 1 for HALF blocks, always 0 for FULL
+  type        String    // "IMAGE" or "VIDEO" (String instead of enum for SQLite)
+  url         String    // URL to the media file
+  alt         String?   // Alt text for accessibility
+  aspectRatio String?   // "16:9", "4:3", "1:1" - for consistent rendering in preview and detail view
+
+  @@index([blockId, position])
+  @@map("case_block_medias")
+}
+
+// ============================================================================
+// PIN CODE MODELS - NDA Access Control
+// ============================================================================
+
+/// PIN code for accessing NDA-protected cases
+model PinCode {
+  id        String    @id @default(cuid())
+  label     String?   // Optional label for admin reference (e.g., "Client XYZ")
+  codeHash  String    @unique // bcrypt hash of the actual PIN code
+  code      String?   // Plain text code (for admin view)
+  shortCode String?   @unique // Unique short code for sharing URLs
+  accessAll Boolean   @default(false) // If true, grants access to ALL NDA cases
+  expiresAt DateTime? // Optional expiration date
+
+  cases     PinCodeCase[]
+  usages    PinUsage[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([codeHash])
+  @@map("pin_codes")
+}
+
+/// Many-to-many relationship between PIN codes and cases
+model PinCodeCase {
+  pinCodeId String
+  caseId    String
+
+  pinCode   PinCode @relation(fields: [pinCodeId], references: [id], onDelete: Cascade)
+  case      Case    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@id([pinCodeId, caseId])
+  @@map("pin_code_cases")
+}
+
+/// Tracks PIN code usage attempts for security and analytics
+model PinUsage {
+  id        String   @id @default(cuid())
+  pinCodeId String?  // Nullable - null if PIN was invalid
+  pinCode   PinCode? @relation(fields: [pinCodeId], references: [id], onDelete: SetNull)
+  ip        String   // IP address of the user
+  userAgent String?  // Browser user agent
+  success   Boolean  // Whether the PIN was correct
+  path      String?  // The page/resource accessed (e.g. "/cases/case-1")
+  createdAt DateTime @default(now())
+
+  @@index([ip, createdAt])
+  @@index([pinCodeId])
+  @@map("pin_usages")
+}
+
+// ============================================================================
+// PROFILE MODEL - "About Me" Page Content
+// ============================================================================
+
+/// Single profile entity for "About Me" page
+/// There should only be one record with id = 1
+/// JSON fields stored as strings in SQLite
+model Profile {
+  id           Int    @id @default(1)
+  title        String // Large heading on About page
+  description  String // Main bio text
+  contactsJson String // JSON string: { telegram: "...", email: "..." }
+  projectsJson String // JSON string: [{ label: "...", url: "..." }, ...]
+  socialsJson  String // JSON string: [{ label: "...", url: "..." }, ...]
+
+  logoUrl      String? // Optional SVG URL (S3)
+  logoText     String? // Optional text logo
+  lockedCaseMessage String? // Optional message for locked cases
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+// ============================================================================
+// DESIGN SYSTEM MODELS
+// ============================================================================
+
+/// Stores global design settings (typography, colors, links)
+/// Singleton (id=1)
+model DesignSystem {
+  id Int @id @default(1)
+
+  // JSON configurations stored as strings
+  // Typography: { body: { family, size, lineHeight, letterSpacing, color }, headingSmall: {...}, headingLarge: {...} }
+  typography String
+
+  // Colors: { background, card }
+  colors     String
+
+  // Links: { offset, color }
+  links      String
+
+  // Cards: { borderRadius: number, padding: number }
+  cards      String?
+
+  // Grid: { margin: number, gutter: number }
+  grid       String?
+
+  // Spacing: { baseGap: number }
+  spacing    String?
+
+  // Favicon URL
+  faviconUrl String?
+
+  updatedAt DateTime @updatedAt
+
+  @@map("design_system")
+}
+
+/// Uploaded custom fonts
+model Font {
+  id        String   @id @default(cuid())
+  name      String   // Display name (e.g. "Inter Regular")
+  family    String   // CSS font-family name (e.g. "Inter")
+  url       String   // S3 URL
+  format    String   // woff, woff2, ttf, etc.
+  weight    String   @default("400")
+  style     String   @default("normal")
+  
+  createdAt DateTime @default(now())
+  
+  @@map("fonts")
+}

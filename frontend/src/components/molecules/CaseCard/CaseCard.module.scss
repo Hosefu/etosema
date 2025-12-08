@@ -1,0 +1,146 @@
+@import '@/styles/tokens.scss';
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  text-decoration: none;
+
+  &[data-locked='true'] {
+    .cover {
+      background: $color-bg-card;
+      // border: 1px solid $color-border-light; // Removed as per request
+      padding: $card-padding;
+    }
+
+    .info {
+      opacity: 0.4;
+    }
+  }
+}
+
+// Regular case styling
+.cover {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: var(--card-height-css);
+  background: $color-bg-card;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: $card-radius;
+  // padding moved to inner container to fix overflow scrolling
+  text-decoration: none;
+  color: inherit;
+
+  // Hide scrollbar but keep scroll functionality
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; // IE/Edge
+
+  &::-webkit-scrollbar {
+    display: none; // Chrome/Safari/Opera
+  }
+
+  transition: opacity $transition-fast;
+
+  &:hover {
+    opacity: 0.98;
+  }
+}
+
+.imagesContainer {
+  position: relative;
+  width: 100%;
+  min-height: 100%; // Allow growing
+  padding: $card-padding; // Padding on content
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: gap(3); // was s(40)
+}
+
+.imageWrapper {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  // Using derived radius for inner content
+  border-radius: calc($card-radius * 0.33); 
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform $transition-fast;
+
+  &:hover {
+    transform: scale(0.99);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.image {
+  object-fit: cover;
+}
+
+.info {
+  display: flex;
+  gap: gap(0.5); // was s(7)
+  margin-top: gap(1.5); // was s(20)
+  align-items: center;
+  @include text-body;
+  font-size: s(18);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.title {
+  margin: 0;
+  color: $color-text-primary;
+  text-decoration: underline;
+  text-decoration-color: rgba(0, 0, 0, 0.3);
+  text-underline-offset: 25%;
+  font-weight: 500;
+}
+
+.separator {
+  opacity: 0.4;
+}
+
+// Locked case styling
+.lockContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  gap: gap(3); // was s(40)
+}
+
+.lockMessage {
+  max-width: s(300);
+  opacity: 0.6;
+  padding: 0 gap(2);
+  text-align: center;
+}
+
+.pinInputContainer {
+  width: 100%;
+  max-width: s(300);
+}
+
+// Responsive
+@include mobile {
+  .info {
+    // padding: s(16) s(20);
+    // Use card padding scaling? Or fixed?
+    padding-block: gap(1);
+    padding-inline: gap(1);
+  }
+
+  .lockContent {
+    padding: gap(2);
+    min-height: s(250);
+  }
+}

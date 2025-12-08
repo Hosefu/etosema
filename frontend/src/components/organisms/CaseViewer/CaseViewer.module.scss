@@ -1,0 +1,131 @@
+@import '@/styles/tokens.scss';
+
+.viewer {
+  @include page-grid;
+  row-gap: gap(6);
+  padding-block: gap(6);
+  min-height: 100vh; // Ensure background color fills screen
+  transition: background-color $transition-normal, color $transition-normal;
+}
+
+.header {
+  @include grid-full;
+  display: flex;
+  flex-direction: column;
+  gap: gap(2);
+  text-align: var(--case-text-align);
+  // Match text block width
+  width: calc(
+    (100% - 11 * $grid-gutter) / 12 * var(--case-text-columns) + 
+    (var(--case-text-columns) - 1) * $grid-gutter
+  );
+  margin-left: var(--case-block-margin-left, auto);
+  margin-right: var(--case-block-margin-right, auto);
+  
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+
+  @include mobile {
+    width: 100%;
+  }
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: gap(1);
+}
+
+.blocks {
+  @include grid-full;
+  display: flex;
+  flex-direction: column;
+  gap: gap(3);
+}
+
+// Block layouts
+.blockFull {
+  width: 100%;
+}
+
+.blockHalf {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $grid-gutter;
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.halfItem {
+  width: 100%;
+}
+
+// Text Block
+.textBlock {
+  @include text-body;
+  text-align: var(--case-text-align);
+  // Calculate width based on columns
+  // Formula: N * ColumnWidth + (N-1) * Gutter
+  // ColumnWidth = (100% - 11 * Gutter) / 12
+  width: calc(
+    (100% - 11 * $grid-gutter) / 12 * var(--case-text-columns) + 
+    (var(--case-text-columns) - 1) * $grid-gutter
+  );
+  margin-left: var(--case-block-margin-left, auto);
+  margin-right: var(--case-block-margin-right, auto);
+  
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  
+  @include mobile {
+    width: 100%;
+  }
+  
+  // Ensure links inside text block use global styles
+  a {
+    text-decoration: underline;
+    text-decoration-color: var(--link-color);
+    text-underline-offset: var(--link-offset);
+    text-decoration-thickness: var(--link-thickness);
+    
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+}
+
+// Media styling
+.imageContainer {
+  position: relative;
+  width: 100%;
+  background: $color-bg-page; // Or transparent if overriding bg?
+  background: rgba(0,0,0,0.05); // Use semi-transparent for neutrality
+  border-radius: $card-radius;
+  overflow: hidden;
+}
+
+.media {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+video.media {
+  border-radius: $card-radius;
+}
+
+// Responsive
+@include mobile {
+  .viewer {
+    row-gap: gap(4);
+    padding-block: gap(4);
+  }
+
+  .blocks {
+    gap: gap(2);
+  }
+}

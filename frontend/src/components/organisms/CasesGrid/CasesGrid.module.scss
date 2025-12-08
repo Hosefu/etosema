@@ -1,0 +1,13 @@
+@import '@/styles/tokens.scss';
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $grid-gutter;
+  padding-inline: $grid-margin;
+
+  @include mobile {
+    grid-template-columns: 1fr;
+    // Gutter and margin scale automatically with --scale
+  }
+}
