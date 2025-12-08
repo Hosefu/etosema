@@ -6,10 +6,11 @@
 
 import { Router, Response } from 'express';
 import { z } from 'zod';
-import { RequestWithPin, ApiResponse, ErrorCode, ApplyPinRequest } from '../../types/api';
+import { RequestWithPin, ApiResponse, ErrorCode } from '../../types/api';
 import { checkPinRateLimit, logPinAttempt } from '../security/rateLimit.middleware';
 import { applyPin, getPinStatus, applyPinById } from './pin.service';
 import { prisma } from '../../db/prisma';
+import { pinCodeSchema } from '../../../shared/zod';
 
 const router = Router();
 
@@ -21,9 +22,7 @@ const applyPinSchema = z.object({
   pin: z.string().min(1, 'PIN is required').max(20),
 });
 
-const applyShortCodeSchema = z.object({
-  shortCode: z.string().min(1),
-});
+const applyShortCodeSchema = pinCodeSchema.pick({ shortCode: true }).required();
 
 // ============================================================================
 // ROUTES
@@ -41,6 +40,13 @@ router.post('/apply-by-shortcode', async (req: RequestWithPin, res: Response) =>
     }
 
     const { shortCode } = validation.data;
+    // The shortCode from the schema is `string | null | undefined`. We use `required()` so it's `string`.
+    // But to be safe against future schema changes, we check.
+    if (!shortCode) {
+      res.status(400).json({ error: { code: ErrorCode.VALIDATION_ERROR, message: 'Short code cannot be empty' } });
+      return;
+    }
+    
     const pin = await prisma.pinCode.findUnique({ where: { shortCode } });
 
     if (!pin) {
@@ -95,7 +101,7 @@ router.post('/apply', checkPinRateLimit, async (req: RequestWithPin, res: Respon
       return;
     }
 
-    const { pin } = validation.data as ApplyPinRequest;
+    const { pin } = validation.data;
 
     // Get client info for logging
     const ip = req.socket.remoteAddress || 'unknown';
@@ -165,3 +171,4 @@ router.get('/status', async (req: RequestWithPin, res: Response) => {
 });
 
 export default router;
+

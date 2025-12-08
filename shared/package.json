@@ -1,0 +1,12 @@
+{
+  "name": "@etosema/shared",
+  "version": "1.0.0",
+  "description": "Shared types and schemas for Etosema project",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "generate": "prisma generate"
+  },
+  "keywords": ["etosema", "shared", "types", "zod"],
+  "private": true
+}

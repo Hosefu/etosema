@@ -1,56 +1,29 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getCases, CasePreview, getProfile } from '@/lib/apiClient';
 import { CasesGrid } from '@/components/organisms/CasesGrid/CasesGrid';
 import { usePinAccess } from '@/lib/hooks/usePinAccess';
 import { Loader } from '@/components/atoms/Loader/Loader';
+import { useCases, useProfile, useApplyPin } from '@/hooks/useApi';
 import styles from './page.module.scss';
 
 export default function WorksPage() {
   const pinAccess = usePinAccess();
-  const [cases, setCases] = useState<CasePreview[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lockedCaseMessage, setLockedCaseMessage] = useState<string | null>(null);
+  const { data: cases, isLoading: casesLoading, error: casesError } = useCases();
+  const { data: profile, isLoading: profileLoading } = useProfile();
+  const applyPinMutation = useApplyPin();
 
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const [casesResponse, profileResponse] = await Promise.all([
-          getCases(),
-          getProfile()
-        ]);
-
-        if (casesResponse.error) {
-          setError(casesResponse.error.message);
-          return;
-        }
-
-        setCases(casesResponse.data || []);
-        setLockedCaseMessage(profileResponse.data?.lockedCaseMessage || null);
-      } catch (err) {
-        setError('Failed to load data');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, []);
+  const loading = casesLoading || profileLoading;
+  const error = casesError ? (casesError as Error).message : null;
+  const lockedCaseMessage = profile?.lockedCaseMessage || null;
 
   const handlePinSubmit = async (pin: string, caseSlug: string) => {
     const result = await pinAccess.applyPinCode(pin);
 
     if (result.success) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      const response = await getCases();
-      if (response.data) {
-        setCases(response.data);
-      }
+      // Trigger React Query mutation to update cache
+      await applyPinMutation.mutateAsync(pin).catch(() => {
+        // Ignore errors - PIN was already applied via pinAccess
+      });
     }
 
     return result;
@@ -58,10 +31,10 @@ export default function WorksPage() {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         position: 'fixed',
         top: 0,
         left: 0,
@@ -86,7 +59,7 @@ export default function WorksPage() {
   return (
     <div className={styles.page}>
       <CasesGrid
-        cases={cases}
+        cases={cases || []}
         onPinSubmit={handlePinSubmit}
         lockedCaseMessage={lockedCaseMessage}
       />

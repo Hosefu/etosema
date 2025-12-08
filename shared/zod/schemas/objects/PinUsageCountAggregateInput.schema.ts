@@ -1,0 +1,16 @@
+import * as z from 'zod';
+import type { Prisma } from '@prisma/client';
+
+
+const makeSchema = () => z.object({
+  id: z.literal(true).optional(),
+  pinCodeId: z.literal(true).optional(),
+  ip: z.literal(true).optional(),
+  userAgent: z.literal(true).optional(),
+  success: z.literal(true).optional(),
+  path: z.literal(true).optional(),
+  createdAt: z.literal(true).optional(),
+  _all: z.literal(true).optional()
+}).strict();
+export const PinUsageCountAggregateInputObjectSchema: z.ZodType<Prisma.PinUsageCountAggregateInputType> = makeSchema() as unknown as z.ZodType<Prisma.PinUsageCountAggregateInputType>;
+export const PinUsageCountAggregateInputObjectZodSchema = makeSchema();

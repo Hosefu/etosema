@@ -10,6 +10,7 @@ import { Inter } from 'next/font/google';
 import { MainLayout } from '@/components/layout/MainLayout/MainLayout';
 import { DesignSystemProvider } from '@/components/DesignSystemProvider';
 import { FaviconLoader } from '@/components/FaviconLoader';
+import { QueryProvider } from '@/components/providers/QueryProvider';
 import '@/styles/globals.scss';
 
 const inter = Inter({
@@ -35,7 +36,9 @@ export default function RootLayout({
       <body className={inter.variable}>
         <FaviconLoader />
         <DesignSystemProvider />
-        <MainLayout>{children}</MainLayout>
+        <QueryProvider>
+          <MainLayout>{children}</MainLayout>
+        </QueryProvider>
       </body>
     </html>
   );

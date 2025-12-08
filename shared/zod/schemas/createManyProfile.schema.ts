@@ -1,0 +1,7 @@
+import type { Prisma } from '@prisma/client';
+import * as z from 'zod';
+import { ProfileCreateManyInputObjectSchema as ProfileCreateManyInputObjectSchema } from './objects/ProfileCreateManyInput.schema';
+
+export const ProfileCreateManySchema: z.ZodType<Prisma.ProfileCreateManyArgs> = z.object({ data: z.union([ ProfileCreateManyInputObjectSchema, z.array(ProfileCreateManyInputObjectSchema) ]),  }).strict() as unknown as z.ZodType<Prisma.ProfileCreateManyArgs>;
+
+export const ProfileCreateManyZodSchema = z.object({ data: z.union([ ProfileCreateManyInputObjectSchema, z.array(ProfileCreateManyInputObjectSchema) ]),  }).strict();

@@ -1,0 +1,14 @@
+import type { Prisma } from '@prisma/client';
+import * as z from 'zod';
+import { CaseBlockMediaOrderByWithRelationInputObjectSchema as CaseBlockMediaOrderByWithRelationInputObjectSchema } from './objects/CaseBlockMediaOrderByWithRelationInput.schema';
+import { CaseBlockMediaWhereInputObjectSchema as CaseBlockMediaWhereInputObjectSchema } from './objects/CaseBlockMediaWhereInput.schema';
+import { CaseBlockMediaWhereUniqueInputObjectSchema as CaseBlockMediaWhereUniqueInputObjectSchema } from './objects/CaseBlockMediaWhereUniqueInput.schema';
+import { CaseBlockMediaCountAggregateInputObjectSchema as CaseBlockMediaCountAggregateInputObjectSchema } from './objects/CaseBlockMediaCountAggregateInput.schema';
+import { CaseBlockMediaMinAggregateInputObjectSchema as CaseBlockMediaMinAggregateInputObjectSchema } from './objects/CaseBlockMediaMinAggregateInput.schema';
+import { CaseBlockMediaMaxAggregateInputObjectSchema as CaseBlockMediaMaxAggregateInputObjectSchema } from './objects/CaseBlockMediaMaxAggregateInput.schema';
+import { CaseBlockMediaAvgAggregateInputObjectSchema as CaseBlockMediaAvgAggregateInputObjectSchema } from './objects/CaseBlockMediaAvgAggregateInput.schema';
+import { CaseBlockMediaSumAggregateInputObjectSchema as CaseBlockMediaSumAggregateInputObjectSchema } from './objects/CaseBlockMediaSumAggregateInput.schema';
+
+export const CaseBlockMediaAggregateSchema: z.ZodType<Prisma.CaseBlockMediaAggregateArgs> = z.object({ orderBy: z.union([CaseBlockMediaOrderByWithRelationInputObjectSchema, CaseBlockMediaOrderByWithRelationInputObjectSchema.array()]).optional(), where: CaseBlockMediaWhereInputObjectSchema.optional(), cursor: CaseBlockMediaWhereUniqueInputObjectSchema.optional(), take: z.number().optional(), skip: z.number().optional(), _count: z.union([ z.literal(true), CaseBlockMediaCountAggregateInputObjectSchema ]).optional(), _min: CaseBlockMediaMinAggregateInputObjectSchema.optional(), _max: CaseBlockMediaMaxAggregateInputObjectSchema.optional(), _avg: CaseBlockMediaAvgAggregateInputObjectSchema.optional(), _sum: CaseBlockMediaSumAggregateInputObjectSchema.optional() }).strict() as unknown as z.ZodType<Prisma.CaseBlockMediaAggregateArgs>;
+
+export const CaseBlockMediaAggregateZodSchema = z.object({ orderBy: z.union([CaseBlockMediaOrderByWithRelationInputObjectSchema, CaseBlockMediaOrderByWithRelationInputObjectSchema.array()]).optional(), where: CaseBlockMediaWhereInputObjectSchema.optional(), cursor: CaseBlockMediaWhereUniqueInputObjectSchema.optional(), take: z.number().optional(), skip: z.number().optional(), _count: z.union([ z.literal(true), CaseBlockMediaCountAggregateInputObjectSchema ]).optional(), _min: CaseBlockMediaMinAggregateInputObjectSchema.optional(), _max: CaseBlockMediaMaxAggregateInputObjectSchema.optional(), _avg: CaseBlockMediaAvgAggregateInputObjectSchema.optional(), _sum: CaseBlockMediaSumAggregateInputObjectSchema.optional() }).strict();

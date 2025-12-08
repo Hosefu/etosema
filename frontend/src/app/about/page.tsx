@@ -1,38 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getProfile, ProfileData } from '@/lib/apiClient';
 import { Heading } from '@/components/atoms/Heading/Heading';
 import { Text } from '@/components/atoms/Text/Text';
 import { Link } from '@/components/atoms/Link/Link';
 import { Loader } from '@/components/atoms/Loader/Loader';
+import { useProfile } from '@/hooks/useApi';
 import styles from './page.module.scss';
 
 export default function AboutPage() {
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchProfile() {
-      try {
-        const response = await getProfile();
-
-        if (response.error) {
-          setError(response.error.message);
-          return;
-        }
-
-        setProfile(response.data || null);
-      } catch (err) {
-        setError('Failed to load profile');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchProfile();
-  }, []);
+  const { data: profile, isLoading: loading, error } = useProfile();
 
   if (loading) {
     return (
@@ -56,7 +32,9 @@ export default function AboutPage() {
   if (error || !profile) {
     return (
       <div className={styles.page}>
-        <div className={styles.error}>Error: {error || 'Profile not found'}</div>
+        <div className={styles.error}>
+          Error: {error ? (error as Error).message : 'Profile not found'}
+        </div>
       </div>
     );
   }

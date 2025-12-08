@@ -1,0 +1,15 @@
+import type { Prisma } from '@prisma/client';
+import * as z from 'zod';
+import { DesignSystemWhereInputObjectSchema as DesignSystemWhereInputObjectSchema } from './objects/DesignSystemWhereInput.schema';
+import { DesignSystemOrderByWithAggregationInputObjectSchema as DesignSystemOrderByWithAggregationInputObjectSchema } from './objects/DesignSystemOrderByWithAggregationInput.schema';
+import { DesignSystemScalarWhereWithAggregatesInputObjectSchema as DesignSystemScalarWhereWithAggregatesInputObjectSchema } from './objects/DesignSystemScalarWhereWithAggregatesInput.schema';
+import { DesignSystemScalarFieldEnumSchema } from './enums/DesignSystemScalarFieldEnum.schema';
+import { DesignSystemCountAggregateInputObjectSchema as DesignSystemCountAggregateInputObjectSchema } from './objects/DesignSystemCountAggregateInput.schema';
+import { DesignSystemMinAggregateInputObjectSchema as DesignSystemMinAggregateInputObjectSchema } from './objects/DesignSystemMinAggregateInput.schema';
+import { DesignSystemMaxAggregateInputObjectSchema as DesignSystemMaxAggregateInputObjectSchema } from './objects/DesignSystemMaxAggregateInput.schema';
+import { DesignSystemAvgAggregateInputObjectSchema as DesignSystemAvgAggregateInputObjectSchema } from './objects/DesignSystemAvgAggregateInput.schema';
+import { DesignSystemSumAggregateInputObjectSchema as DesignSystemSumAggregateInputObjectSchema } from './objects/DesignSystemSumAggregateInput.schema';
+
+export const DesignSystemGroupBySchema: z.ZodType<Prisma.DesignSystemGroupByArgs> = z.object({ where: DesignSystemWhereInputObjectSchema.optional(), orderBy: z.union([DesignSystemOrderByWithAggregationInputObjectSchema, DesignSystemOrderByWithAggregationInputObjectSchema.array()]).optional(), having: DesignSystemScalarWhereWithAggregatesInputObjectSchema.optional(), take: z.number().optional(), skip: z.number().optional(), by: z.array(DesignSystemScalarFieldEnumSchema), _count: z.union([ z.literal(true), DesignSystemCountAggregateInputObjectSchema ]).optional(), _min: DesignSystemMinAggregateInputObjectSchema.optional(), _max: DesignSystemMaxAggregateInputObjectSchema.optional(), _avg: DesignSystemAvgAggregateInputObjectSchema.optional(), _sum: DesignSystemSumAggregateInputObjectSchema.optional() }).strict() as unknown as z.ZodType<Prisma.DesignSystemGroupByArgs>;
+
+export const DesignSystemGroupByZodSchema = z.object({ where: DesignSystemWhereInputObjectSchema.optional(), orderBy: z.union([DesignSystemOrderByWithAggregationInputObjectSchema, DesignSystemOrderByWithAggregationInputObjectSchema.array()]).optional(), having: DesignSystemScalarWhereWithAggregatesInputObjectSchema.optional(), take: z.number().optional(), skip: z.number().optional(), by: z.array(DesignSystemScalarFieldEnumSchema), _count: z.union([ z.literal(true), DesignSystemCountAggregateInputObjectSchema ]).optional(), _min: DesignSystemMinAggregateInputObjectSchema.optional(), _max: DesignSystemMaxAggregateInputObjectSchema.optional(), _avg: DesignSystemAvgAggregateInputObjectSchema.optional(), _sum: DesignSystemSumAggregateInputObjectSchema.optional() }).strict();

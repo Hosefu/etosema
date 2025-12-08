@@ -1,0 +1,13 @@
+import type { Prisma } from '@prisma/client';
+import * as z from 'zod';
+import { PinCodeCaseWhereInputObjectSchema as PinCodeCaseWhereInputObjectSchema } from './objects/PinCodeCaseWhereInput.schema';
+import { PinCodeCaseOrderByWithAggregationInputObjectSchema as PinCodeCaseOrderByWithAggregationInputObjectSchema } from './objects/PinCodeCaseOrderByWithAggregationInput.schema';
+import { PinCodeCaseScalarWhereWithAggregatesInputObjectSchema as PinCodeCaseScalarWhereWithAggregatesInputObjectSchema } from './objects/PinCodeCaseScalarWhereWithAggregatesInput.schema';
+import { PinCodeCaseScalarFieldEnumSchema } from './enums/PinCodeCaseScalarFieldEnum.schema';
+import { PinCodeCaseCountAggregateInputObjectSchema as PinCodeCaseCountAggregateInputObjectSchema } from './objects/PinCodeCaseCountAggregateInput.schema';
+import { PinCodeCaseMinAggregateInputObjectSchema as PinCodeCaseMinAggregateInputObjectSchema } from './objects/PinCodeCaseMinAggregateInput.schema';
+import { PinCodeCaseMaxAggregateInputObjectSchema as PinCodeCaseMaxAggregateInputObjectSchema } from './objects/PinCodeCaseMaxAggregateInput.schema';
+
+export const PinCodeCaseGroupBySchema: z.ZodType<Prisma.PinCodeCaseGroupByArgs> = z.object({ where: PinCodeCaseWhereInputObjectSchema.optional(), orderBy: z.union([PinCodeCaseOrderByWithAggregationInputObjectSchema, PinCodeCaseOrderByWithAggregationInputObjectSchema.array()]).optional(), having: PinCodeCaseScalarWhereWithAggregatesInputObjectSchema.optional(), take: z.number().optional(), skip: z.number().optional(), by: z.array(PinCodeCaseScalarFieldEnumSchema), _count: z.union([ z.literal(true), PinCodeCaseCountAggregateInputObjectSchema ]).optional(), _min: PinCodeCaseMinAggregateInputObjectSchema.optional(), _max: PinCodeCaseMaxAggregateInputObjectSchema.optional() }).strict() as unknown as z.ZodType<Prisma.PinCodeCaseGroupByArgs>;
+
+export const PinCodeCaseGroupByZodSchema = z.object({ where: PinCodeCaseWhereInputObjectSchema.optional(), orderBy: z.union([PinCodeCaseOrderByWithAggregationInputObjectSchema, PinCodeCaseOrderByWithAggregationInputObjectSchema.array()]).optional(), having: PinCodeCaseScalarWhereWithAggregatesInputObjectSchema.optional(), take: z.number().optional(), skip: z.number().optional(), by: z.array(PinCodeCaseScalarFieldEnumSchema), _count: z.union([ z.literal(true), PinCodeCaseCountAggregateInputObjectSchema ]).optional(), _min: PinCodeCaseMinAggregateInputObjectSchema.optional(), _max: PinCodeCaseMaxAggregateInputObjectSchema.optional() }).strict();

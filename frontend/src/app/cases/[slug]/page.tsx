@@ -6,10 +6,10 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getCaseBySlug, getProfile, CaseDetail, ProfileData } from '@/lib/apiClient';
 import { usePinAccess } from '@/lib/hooks/usePinAccess';
+import { useCaseBySlug, useProfile, useApplyPin } from '@/hooks/useApi';
 import { CaseViewer } from '@/components/organisms/CaseViewer/CaseViewer';
 import { PinInput } from '@/components/molecules/PinInput/PinInput';
 import { IconLock } from '@/components/atoms/IconLock/IconLock';
@@ -25,49 +25,17 @@ export default function CasePage() {
 
   const slug = params.slug as string;
 
-  const [caseData, setCaseData] = useState<CaseDetail | null>(null);
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [needsPin, setNeedsPin] = useState(false);
+  const { data: caseData, isLoading: caseLoading, error: caseError } = useCaseBySlug(slug);
+  const { data: profile, isLoading: profileLoading } = useProfile();
+  const applyPinMutation = useApplyPin();
+
   const [pinError, setPinError] = useState<string | undefined>();
 
-  useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      setError(null);
-      setNeedsPin(false);
+  const loading = caseLoading || profileLoading;
 
-      try {
-        // Parallel fetch
-        const [caseRes, profileRes] = await Promise.all([
-          getCaseBySlug(slug),
-          getProfile()
-        ]);
-
-        if (profileRes.data) {
-          setProfile(profileRes.data);
-        }
-
-        if (caseRes.error) {
-          if (caseRes.error.code === 'pin_required') {
-            setNeedsPin(true);
-          } else {
-            setError(caseRes.error.message);
-          }
-          return;
-        }
-
-        setCaseData(caseRes.data || null);
-      } catch (err) {
-        setError('Failed to load case');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadData();
-  }, [slug]); // Only refetch when slug changes, PIN handled by handlePinComplete
+  // Check if error indicates PIN required
+  const needsPin = caseError && (caseError as any).message?.includes('PIN');
+  const error = caseError && !needsPin ? (caseError as Error).message : null;
 
   const handlePinComplete = async (pin: string) => {
     setPinError(undefined);
@@ -77,12 +45,10 @@ export default function CasePage() {
     if (!result.success) {
       setPinError(result.error || 'Invalid PIN');
     } else {
-      // Refetch case
-      const response = await getCaseBySlug(slug);
-      if (response.data) {
-        setCaseData(response.data);
-        setNeedsPin(false);
-      }
+      // Trigger React Query mutation to invalidate and refetch
+      await applyPinMutation.mutateAsync(pin).catch(() => {
+        // Ignore errors - PIN was already applied via pinAccess
+      });
     }
   };
 

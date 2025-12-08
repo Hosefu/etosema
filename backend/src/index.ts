@@ -14,7 +14,8 @@ import cookieParser from 'cookie-parser';
 import { config } from './config/env';
 import { prisma, disconnectPrisma } from './db/prisma';
 import { attachPinContext } from './modules/pin/pin.middleware';
-import casesRouter from './modules/cases/cases.router';
+import { CasesService } from './modules/cases/cases.service';
+import { createCasesRouter } from './modules/cases/cases.router';
 import pinRouter from './modules/pin/pin.router';
 import profileRouter from './modules/profile/profile.router';
 import adminRouter from './modules/admin/admin.router';
@@ -93,6 +94,24 @@ app.get('/api/health', (req, res) => {
  * Public API routes
  * All public routes use PIN context middleware
  */
+// ============================================================================
+// DEPENDENCY INJECTION SETUP
+// ============================================================================
+
+/**
+ * Initialize services with dependencies
+ */
+const casesService = new CasesService(prisma);
+
+/**
+ * Create routers with injected services
+ */
+const casesRouter = createCasesRouter(casesService);
+
+// ============================================================================
+// APPLY ROUTES
+// ============================================================================
+
 app.use('/api/public', attachPinContext);
 app.use('/api/public/cases', casesRouter);
 app.use('/api/public/pin', pinRouter);

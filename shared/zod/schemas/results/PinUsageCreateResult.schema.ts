@@ -1,0 +1,11 @@
+import * as z from 'zod';
+export const PinUsageCreateResultSchema = z.object({
+  id: z.string(),
+  pinCodeId: z.string().optional(),
+  pinCode: z.unknown().optional(),
+  ip: z.string(),
+  userAgent: z.string().optional(),
+  success: z.boolean(),
+  path: z.string().optional(),
+  createdAt: z.date()
+});

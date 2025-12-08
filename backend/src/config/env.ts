@@ -1,71 +1,99 @@
 /**
  * Environment Configuration
  *
- * Centralizes all environment variables with validation and type safety.
+ * Centralizes all environment variables with validation and type safety using Zod.
+ * The application will fail fast at startup if any required variables are missing or invalid.
  */
 
 import dotenv from 'dotenv';
+import { z } from 'zod';
 
 // Load environment variables from .env file
 dotenv.config();
 
 /**
- * Validates that required environment variables are present
+ * Zod schema for environment variables
+ * Provides runtime validation and type inference
  */
-function validateEnv(): void {
-  const required = [
-    'DATABASE_URL',
-    'PIN_SESSION_SECRET',
-    'JWT_SECRET',
-    'SESSION_SECRET',
-    'S3_ENDPOINT',
-    'S3_BUCKET',
-    'S3_ACCESS_KEY',
-    'S3_SECRET_KEY',
-  ];
+const envSchema = z.object({
+  // Server
+  PORT: z.string().default('3001').transform(Number),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
-  const missing = required.filter(key => !process.env[key]);
+  // Database
+  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
 
-  if (missing.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}\n` +
-      'Please check your .env file.'
-    );
-  }
-}
+  // Admin Panel
+  ADMIN_EMAIL: z.string().email().default('admin@etosema.ru'),
+  ADMIN_PASSWORD: z.string().min(6).default('changeme'),
 
-// Validate on module load
-validateEnv();
+  // Security Secrets
+  PIN_SESSION_SECRET: z.string().min(32, 'PIN_SESSION_SECRET must be at least 32 characters'),
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+  SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be at least 32 characters'),
+
+  // CORS
+  FRONTEND_URL: z.string().url().default('http://localhost:3000'),
+
+  // S3 Storage
+  S3_ENDPOINT: z.string().url('S3_ENDPOINT must be a valid URL'),
+  S3_BUCKET: z.string().min(1, 'S3_BUCKET is required'),
+  S3_ACCESS_KEY: z.string().min(1, 'S3_ACCESS_KEY is required'),
+  S3_SECRET_KEY: z.string().min(1, 'S3_SECRET_KEY is required'),
+  S3_REGION: z.string().default('us-east-1'),
+  S3_PUBLIC_URL: z.string().url().optional(),
+});
 
 /**
- * Environment configuration object
- * Provides type-safe access to environment variables
+ * Parse and validate environment variables
+ * Throws an error with detailed information if validation fails
+ */
+const parseEnv = () => {
+  try {
+    return envSchema.parse(process.env);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const missingVars = error.errors.map(err => `  - ${err.path.join('.')}: ${err.message}`).join('\n');
+      throw new Error(
+        `\n❌ Invalid environment variables:\n${missingVars}\n\nPlease check your .env file.\n`
+      );
+    }
+    throw error;
+  }
+};
+
+// Parse and validate on module load (fail-fast)
+const env = parseEnv();
+
+/**
+ * Typed and validated configuration object
+ * Provides type-safe access to all environment variables
  */
 export const config = {
   // Server
-  port: parseInt(process.env.PORT || '3001', 10),
-  nodeEnv: process.env.NODE_ENV || 'development',
-  isDevelopment: process.env.NODE_ENV !== 'production',
-  isProduction: process.env.NODE_ENV === 'production',
+  port: env.PORT,
+  nodeEnv: env.NODE_ENV,
+  isDevelopment: env.NODE_ENV !== 'production',
+  isProduction: env.NODE_ENV === 'production',
 
   // Database
-  databaseUrl: process.env.DATABASE_URL as string,
+  databaseUrl: env.DATABASE_URL,
 
   // Admin Panel
   admin: {
-    email: process.env.ADMIN_EMAIL || 'admin@etosema.ru',
-    password: process.env.ADMIN_PASSWORD || 'changeme',
+    email: env.ADMIN_EMAIL,
+    password: env.ADMIN_PASSWORD,
   },
 
   // Security Secrets
   secrets: {
-    pinSession: process.env.PIN_SESSION_SECRET as string,
-    jwt: process.env.JWT_SECRET as string,
-    session: process.env.SESSION_SECRET as string,
+    pinSession: env.PIN_SESSION_SECRET,
+    jwt: env.JWT_SECRET,
+    session: env.SESSION_SECRET,
   },
 
   // CORS
-  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+  frontendUrl: env.FRONTEND_URL,
 
   // Rate Limiting for PIN attempts
   rateLimit: {
@@ -81,12 +109,12 @@ export const config = {
 
   // S3 Storage
   s3: {
-    endpoint: process.env.S3_ENDPOINT as string,
-    bucket: process.env.S3_BUCKET as string,
-    accessKey: process.env.S3_ACCESS_KEY as string,
-    secretKey: process.env.S3_SECRET_KEY as string,
-    region: process.env.S3_REGION || 'us-east-1',
-    publicUrl: process.env.S3_PUBLIC_URL || `https://${process.env.S3_BUCKET}.s3.regru.cloud`,
+    endpoint: env.S3_ENDPOINT,
+    bucket: env.S3_BUCKET,
+    accessKey: env.S3_ACCESS_KEY,
+    secretKey: env.S3_SECRET_KEY,
+    region: env.S3_REGION,
+    publicUrl: env.S3_PUBLIC_URL || `https://${env.S3_BUCKET}.s3.regru.cloud`,
   },
 } as const;
 

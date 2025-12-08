@@ -1,0 +1,12 @@
+import type { Prisma } from '@prisma/client';
+import * as z from 'zod';
+import { PinCodeCaseOrderByWithRelationInputObjectSchema as PinCodeCaseOrderByWithRelationInputObjectSchema } from './objects/PinCodeCaseOrderByWithRelationInput.schema';
+import { PinCodeCaseWhereInputObjectSchema as PinCodeCaseWhereInputObjectSchema } from './objects/PinCodeCaseWhereInput.schema';
+import { PinCodeCaseWhereUniqueInputObjectSchema as PinCodeCaseWhereUniqueInputObjectSchema } from './objects/PinCodeCaseWhereUniqueInput.schema';
+import { PinCodeCaseCountAggregateInputObjectSchema as PinCodeCaseCountAggregateInputObjectSchema } from './objects/PinCodeCaseCountAggregateInput.schema';
+import { PinCodeCaseMinAggregateInputObjectSchema as PinCodeCaseMinAggregateInputObjectSchema } from './objects/PinCodeCaseMinAggregateInput.schema';
+import { PinCodeCaseMaxAggregateInputObjectSchema as PinCodeCaseMaxAggregateInputObjectSchema } from './objects/PinCodeCaseMaxAggregateInput.schema';
+
+export const PinCodeCaseAggregateSchema: z.ZodType<Prisma.PinCodeCaseAggregateArgs> = z.object({ orderBy: z.union([PinCodeCaseOrderByWithRelationInputObjectSchema, PinCodeCaseOrderByWithRelationInputObjectSchema.array()]).optional(), where: PinCodeCaseWhereInputObjectSchema.optional(), cursor: PinCodeCaseWhereUniqueInputObjectSchema.optional(), take: z.number().optional(), skip: z.number().optional(), _count: z.union([ z.literal(true), PinCodeCaseCountAggregateInputObjectSchema ]).optional(), _min: PinCodeCaseMinAggregateInputObjectSchema.optional(), _max: PinCodeCaseMaxAggregateInputObjectSchema.optional() }).strict() as unknown as z.ZodType<Prisma.PinCodeCaseAggregateArgs>;
+
+export const PinCodeCaseAggregateZodSchema = z.object({ orderBy: z.union([PinCodeCaseOrderByWithRelationInputObjectSchema, PinCodeCaseOrderByWithRelationInputObjectSchema.array()]).optional(), where: PinCodeCaseWhereInputObjectSchema.optional(), cursor: PinCodeCaseWhereUniqueInputObjectSchema.optional(), take: z.number().optional(), skip: z.number().optional(), _count: z.union([ z.literal(true), PinCodeCaseCountAggregateInputObjectSchema ]).optional(), _min: PinCodeCaseMinAggregateInputObjectSchema.optional(), _max: PinCodeCaseMaxAggregateInputObjectSchema.optional() }).strict();

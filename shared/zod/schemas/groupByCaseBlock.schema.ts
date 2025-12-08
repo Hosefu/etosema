@@ -1,0 +1,13 @@
+import type { Prisma } from '@prisma/client';
+import * as z from 'zod';
+import { CaseBlockWhereInputObjectSchema as CaseBlockWhereInputObjectSchema } from './objects/CaseBlockWhereInput.schema';
+import { CaseBlockOrderByWithAggregationInputObjectSchema as CaseBlockOrderByWithAggregationInputObjectSchema } from './objects/CaseBlockOrderByWithAggregationInput.schema';
+import { CaseBlockScalarWhereWithAggregatesInputObjectSchema as CaseBlockScalarWhereWithAggregatesInputObjectSchema } from './objects/CaseBlockScalarWhereWithAggregatesInput.schema';
+import { CaseBlockScalarFieldEnumSchema } from './enums/CaseBlockScalarFieldEnum.schema';
+import { CaseBlockCountAggregateInputObjectSchema as CaseBlockCountAggregateInputObjectSchema } from './objects/CaseBlockCountAggregateInput.schema';
+import { CaseBlockMinAggregateInputObjectSchema as CaseBlockMinAggregateInputObjectSchema } from './objects/CaseBlockMinAggregateInput.schema';
+import { CaseBlockMaxAggregateInputObjectSchema as CaseBlockMaxAggregateInputObjectSchema } from './objects/CaseBlockMaxAggregateInput.schema';
+
+export const CaseBlockGroupBySchema: z.ZodType<Prisma.CaseBlockGroupByArgs> = z.object({ where: CaseBlockWhereInputObjectSchema.optional(), orderBy: z.union([CaseBlockOrderByWithAggregationInputObjectSchema, CaseBlockOrderByWithAggregationInputObjectSchema.array()]).optional(), having: CaseBlockScalarWhereWithAggregatesInputObjectSchema.optional(), take: z.number().optional(), skip: z.number().optional(), by: z.array(CaseBlockScalarFieldEnumSchema), _count: z.union([ z.literal(true), CaseBlockCountAggregateInputObjectSchema ]).optional(), _min: CaseBlockMinAggregateInputObjectSchema.optional(), _max: CaseBlockMaxAggregateInputObjectSchema.optional() }).strict() as unknown as z.ZodType<Prisma.CaseBlockGroupByArgs>;
+
+export const CaseBlockGroupByZodSchema = z.object({ where: CaseBlockWhereInputObjectSchema.optional(), orderBy: z.union([CaseBlockOrderByWithAggregationInputObjectSchema, CaseBlockOrderByWithAggregationInputObjectSchema.array()]).optional(), having: CaseBlockScalarWhereWithAggregatesInputObjectSchema.optional(), take: z.number().optional(), skip: z.number().optional(), by: z.array(CaseBlockScalarFieldEnumSchema), _count: z.union([ z.literal(true), CaseBlockCountAggregateInputObjectSchema ]).optional(), _min: CaseBlockMinAggregateInputObjectSchema.optional(), _max: CaseBlockMaxAggregateInputObjectSchema.optional() }).strict();
