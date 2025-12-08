@@ -1,34 +1,11 @@
-# Dependencies
-node_modules/
+# Backend-specific ignores
+# (Common ignores are in root .gitignore)
 
-# Build output
-dist/
+# Prisma database files (backend-specific)
+prisma/*.db
+prisma/*.db-journal
 
-# Environment variables
-.env
-.env.local
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-
-# OS
-.DS_Store
-Thumbs.db
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# Prisma
-prisma/migrations/
-.env.test
-
-# Uploads (keep folder structure)
+# Backend uploads (keep folder structure)
 public/uploads/*
 !public/uploads/cases/
 !public/uploads/medias/
