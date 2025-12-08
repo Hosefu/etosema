@@ -57,12 +57,31 @@ export function OptimizedImage({
     placeholderSrc || null
   );
 
+  const deriveThumbnailUrl = (src: string): string | null => {
+    try {
+      const url = new URL(src, typeof window !== 'undefined' ? window.location.href : undefined);
+      const match = url.pathname.match(/\/medias\/([^/.]+)\.[^/]+$/);
+      if (match) {
+        url.pathname = `/medias/thumbs/${match[1]}-thumb.jpg`;
+        return url.toString();
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   // Try to build a low-res URL automatically if none provided
   useEffect(() => {
     if (placeholderSrc) return;
     if (typeof props.src === 'string') {
-      const hasQuery = props.src.includes('?');
-      setDerivedPlaceholder(`${props.src}${hasQuery ? '&' : '?'}w=100&q=20`);
+      const thumb = deriveThumbnailUrl(props.src);
+      if (thumb) {
+        setDerivedPlaceholder(thumb);
+      } else {
+        const hasQuery = props.src.includes('?');
+        setDerivedPlaceholder(`${props.src}${hasQuery ? '&' : '?'}w=100&q=20`);
+      }
     }
   }, [placeholderSrc, props.src]);
 

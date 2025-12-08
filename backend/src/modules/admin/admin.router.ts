@@ -13,7 +13,7 @@ import type { Prisma } from '@prisma/client';
 import { config } from '../../config/env';
 import { prisma } from '../../db/prisma';
 import { verifyAdminToken, AdminRequest } from './admin.middleware';
-import { uploadFileToS3 } from '../storage/s3.service';
+import { uploadFileToS3, uploadImageWithThumbnail } from '../storage/s3.service';
 
 const router = Router();
 
@@ -99,8 +99,11 @@ router.post(
         });
       }
 
-      // Upload to S3
-      const fileUrl = await uploadFileToS3(
+      const uploadFn = req.file.mimetype.startsWith('image/')
+        ? uploadImageWithThumbnail
+        : uploadFileToS3;
+
+      const uploadResult = await uploadFn(
         {
           buffer: req.file.buffer,
           originalname: req.file.originalname,
@@ -112,7 +115,11 @@ router.post(
       res.json({
         success: true,
         data: {
-          url: fileUrl,
+          url: typeof uploadResult === 'string' ? uploadResult : uploadResult.url,
+          thumbnailUrl:
+            typeof uploadResult === 'string'
+              ? undefined
+              : uploadResult.thumbnailUrl,
           originalname: req.file.originalname,
           size: req.file.size,
         },

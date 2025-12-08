@@ -11,6 +11,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { config } from '../../config/env';
 import path from 'path';
+import sharp from 'sharp';
 
 /**
  * S3 Client instance
@@ -61,6 +62,72 @@ export async function uploadFileToS3(
   // Return public URL
   const publicUrl = `${config.s3.publicUrl}/${key}`;
   return publicUrl;
+}
+
+/**
+ * Upload image with an additional thumbnail (~200px wide, JPEG)
+ */
+export async function uploadImageWithThumbnail(
+  file: {
+    buffer: Buffer;
+    originalname: string;
+    mimetype: string;
+  },
+  folder: string = 'medias'
+): Promise<{ url: string; thumbnailUrl?: string }> {
+  const isRasterImage =
+    file.mimetype.startsWith('image/') && !file.mimetype.includes('svg');
+
+  // Fallback to regular upload for non-images
+  if (!isRasterImage) {
+    const url = await uploadFileToS3(file, folder);
+    return { url };
+  }
+
+  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+  const ext = path.extname(file.originalname) || '.jpg';
+  const baseName = `${uniqueSuffix}`;
+
+  const originalKey = `${folder}/${baseName}${ext}`;
+  const thumbKey = `${folder}/thumbs/${baseName}-thumb.jpg`;
+
+  // Upload original
+  await s3Client.send(
+    new PutObjectCommand({
+      Bucket: config.s3.bucket,
+      Key: originalKey,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+      ACL: 'public-read',
+    })
+  );
+
+  // Generate thumbnail
+  try {
+    const thumbnailBuffer = await sharp(file.buffer)
+      .resize({ width: 200, withoutEnlargement: true })
+      .jpeg({ quality: 60 })
+      .toBuffer();
+
+    await s3Client.send(
+      new PutObjectCommand({
+        Bucket: config.s3.bucket,
+        Key: thumbKey,
+        Body: thumbnailBuffer,
+        ContentType: 'image/jpeg',
+        ACL: 'public-read',
+      })
+    );
+  } catch (error) {
+    // If thumbnail generation fails, skip silently to avoid blocking upload
+    console.error('Failed to generate thumbnail:', error);
+    return { url: getPublicUrl(originalKey) };
+  }
+
+  return {
+    url: getPublicUrl(originalKey),
+    thumbnailUrl: getPublicUrl(thumbKey),
+  };
 }
 
 /**
