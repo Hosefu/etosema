@@ -8,7 +8,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CasePreview } from '@/lib/apiClient';
@@ -16,6 +15,8 @@ import { IconLock } from '@/components/atoms/IconLock/IconLock';
 import { Text } from '@/components/atoms/Text/Text';
 import { PinInput } from '@/components/molecules/PinInput/PinInput';
 import { Loader } from '@/components/atoms/Loader/Loader';
+import { OptimizedImage } from '@/components/atoms/OptimizedImage/OptimizedImage';
+import { OptimizedVideo } from '@/components/atoms/OptimizedVideo/OptimizedVideo';
 import { parseMarkdownLinks } from '@/lib/utils/markdown';
 import styles from './CaseCard.module.scss';
 
@@ -163,23 +164,24 @@ export function CaseCard({ case: caseData, onPinSubmit, lockedCaseMessage }: Cas
               }}
             >
               {item.type === 'VIDEO' ? (
-                <video
+                <OptimizedVideo
                   src={item.url}
                   autoPlay
                   loop
                   muted
                   playsInline
-                  className={styles.image} // Reusing image class for object-fit: cover
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  lazy={index > 0}
+                  className={styles.image}
                 />
               ) : (
-                <Image
+                <OptimizedImage
                   src={item.url}
                   alt={`${caseData.title} - ${index + 1}`}
                   fill
                   priority={index === 0}
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className={styles.image}
+                  quality={85}
                 />
               )}
             </div>

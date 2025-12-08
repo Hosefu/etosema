@@ -7,10 +7,11 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
-import Image from 'next/image';
 import { CaseDetail, CaseBlock } from '@/lib/apiClient';
 import { Heading } from '@/components/atoms/Heading/Heading';
 import { Text } from '@/components/atoms/Text/Text';
+import { OptimizedImage } from '@/components/atoms/OptimizedImage/OptimizedImage';
+import { OptimizedVideo } from '@/components/atoms/OptimizedVideo/OptimizedVideo';
 import styles from './CaseViewer.module.scss';
 
 export interface CaseViewerProps {
@@ -225,12 +226,13 @@ function MediaItem({
 }) {
   if (type === 'VIDEO') {
     return (
-      <video
+      <OptimizedVideo
         src={url}
         autoPlay
         loop
         muted
         playsInline
+        lazy={!priority}
         className={styles.media}
       />
     );
@@ -240,20 +242,21 @@ function MediaItem({
   const safeAspectRatio = aspectRatio?.replace(':', '/') || '16/9';
 
   return (
-    <div 
-      className={styles.imageContainer} 
+    <div
+      className={styles.imageContainer}
       id={imageId}
       style={{
         aspectRatio: safeAspectRatio
       }}
     >
-      <Image
+      <OptimizedImage
         src={url}
         alt={alt || ''}
         fill
         priority={priority}
         sizes="(max-width: 768px) 100vw, (max-width: 1280px) 80vw, 1200px"
         className={styles.media}
+        quality={90}
       />
     </div>
   );
