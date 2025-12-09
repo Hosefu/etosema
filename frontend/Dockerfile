@@ -19,8 +19,7 @@ COPY shared ./shared
 
 # Build Next.js (run inside workspace so npm sees package.json without workspaces)
 WORKDIR /app/frontend
-ENV NPM_CONFIG_WORKSPACES=false
-RUN npm config set workspaces false && npx next build
+RUN node node_modules/.bin/next build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
