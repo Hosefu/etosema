@@ -24,6 +24,7 @@ ENV NODE_ENV=production
 
 # Copy built artefacts and node_modules for backend
 COPY --from=base /app/backend/dist ./backend/dist
+COPY --from=base /app/node_modules ./node_modules
 COPY --from=base /app/backend/node_modules ./backend/node_modules
 COPY --from=base /app/backend/package*.json ./backend/
 COPY --from=base /app/shared ./shared
