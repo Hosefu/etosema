@@ -19,7 +19,7 @@ COPY shared ./shared
 
 # Build Next.js (run inside workspace so npm sees package.json without workspaces)
 WORKDIR /app/frontend
-RUN npm run build
+RUN npx next build
 
 FROM node:20-alpine AS runner
 WORKDIR /app

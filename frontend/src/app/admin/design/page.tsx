@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import type { CSSProperties } from 'react';
 import {
   Layout,
   Card,
