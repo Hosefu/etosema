@@ -5,9 +5,14 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { hashPin } from '../src/modules/pin/pin.service';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
+
+// Hash PIN code
+async function hashPin(pin: string): Promise<string> {
+  return bcrypt.hash(pin, 10);
+}
 
 async function main() {
   console.log('🌱 Seeding database...\n');
@@ -57,6 +62,53 @@ async function main() {
   console.log('✓ Profile created\n');
 
   // ==========================================================================
+  // DESIGN SYSTEM
+  // ==========================================================================
+
+  console.log('Creating design system...');
+
+  await prisma.designSystem.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      typography: JSON.stringify({
+        body: {
+          family: 'system-ui, sans-serif',
+          size: 16,
+          lineHeight: 1.5,
+          letterSpacing: 0,
+          color: '#000000',
+        },
+        headingSmall: {
+          family: 'system-ui, sans-serif',
+          size: 24,
+          lineHeight: 1.2,
+          letterSpacing: -0.02,
+          color: '#000000',
+        },
+        headingLarge: {
+          family: 'system-ui, sans-serif',
+          size: 48,
+          lineHeight: 1.1,
+          letterSpacing: -0.03,
+          color: '#000000',
+        },
+      }),
+      colors: JSON.stringify({
+        background: '#ffffff',
+        card: '#f5f5f5',
+      }),
+      links: JSON.stringify({
+        offset: 2,
+        color: '#0000ff',
+      }),
+    },
+  });
+
+  console.log('✓ Design system created\n');
+
+  // ==========================================================================
   // CASES
   // ==========================================================================
 
@@ -74,8 +126,6 @@ async function main() {
       summary:
         'Айда — первый фестиваль креатива и дизайна с использованием нейросетей. Разработка визуального языка и коммуникационной стратегии.',
       isNda: false,
-      coverUrl:
-        'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=800',
       orderRank: 'a0',
     },
   });
@@ -138,8 +188,6 @@ async function main() {
       summary:
         'Крупный проект по ребрендингу для международной компании. Детали доступны по запросу.',
       isNda: true,
-      coverUrl:
-        'https://images.unsplash.com/photo-1618556450994-a6a128ef0d9d?w=800',
       orderRank: 'a2',
     },
   });
