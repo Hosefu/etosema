@@ -10,7 +10,8 @@ COPY package*.json ./
 COPY frontend/package*.json frontend/
 COPY shared/package*.json shared/
 # Skip workspace postinstall scripts (shared runs prisma generate pointing to backend)
-RUN npm ci --workspace frontend --workspace shared --ignore-scripts
+RUN npm set ignore-scripts true \
+  && npm ci --workspace frontend --workspace shared --ignore-scripts
 
 # Copy source
 COPY frontend ./frontend
