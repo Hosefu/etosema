@@ -3,18 +3,20 @@
 
 FROM node:20-alpine AS base
 WORKDIR /app
+ENV npm_config_ignore_scripts=true
 
-# Install dependencies only for backend workspace
+# Install dependencies for backend (and shared if needed) without running scripts (husky)
 COPY package*.json ./
 COPY backend/package*.json backend/
 COPY shared/package*.json shared/
-RUN npm ci --omit=dev --workspace backend
+RUN npm set ignore-scripts true \
+  && npm ci --workspace backend --workspace shared --ignore-scripts
 
 # Copy source
 COPY backend ./backend
 COPY shared ./shared
 
-# Generate Prisma client and build
+# Generate Prisma client and build (requires dev deps, already installed)
 RUN npm run prisma:generate -w backend
 RUN npm run build -w backend
 
