@@ -1,4 +1,4 @@
-// Prisma schema for Etosema Portfolio Backend (SQLite for local dev)
+// Prisma schema for Etosema Portfolio Backend (PostgreSQL)
 // Documentation: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -16,8 +16,8 @@ generator zod {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ============================================================================
