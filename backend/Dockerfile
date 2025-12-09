@@ -4,11 +4,11 @@
 FROM node:20-alpine AS base
 WORKDIR /app
 
-# Install dependencies for backend (and shared if needed)
+# Install dependencies for backend (and shared if needed) without running scripts
 COPY package*.json ./
 COPY backend/package*.json backend/
 COPY shared/package*.json shared/
-RUN npm ci --workspace backend --workspace shared
+RUN npm ci --ignore-scripts --workspace backend --workspace shared
 
 # Copy source
 COPY backend ./backend
