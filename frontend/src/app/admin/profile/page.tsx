@@ -18,6 +18,7 @@ import {
   PlusOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
+import type { DividerProps } from 'antd';
 import {
   adminGetProfile,
   adminUpdateProfile,
@@ -263,7 +264,9 @@ export default function AdminProfilePage() {
                 <Input.TextArea rows={3} />
               </Form.Item>
 
-              <Divider orientation="left">Логотип</Divider>
+              <Divider orientation={'left' as DividerProps['orientation']}>
+                Логотип
+              </Divider>
               <Form.Item label="URL Логотипа (S3)" name="logoUrl">
                 <Input
                   addonAfter={
