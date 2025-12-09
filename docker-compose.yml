@@ -12,11 +12,10 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=https://etosema.ru
     env_file:
       - frontend/.env
-    environment:
-      # Override to hit backend service inside compose network
-      - NEXT_PUBLIC_API_URL=http://backend:3001
     depends_on:
       - backend
     ports:

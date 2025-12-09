@@ -19,6 +19,9 @@ COPY shared ./shared
 
 # Build Next.js (run inside workspace so npm sees package.json without workspaces)
 WORKDIR /app/frontend
+# Accept build arg for API URL
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 RUN node node_modules/.bin/next build
 
 FROM node:20-alpine AS runner
