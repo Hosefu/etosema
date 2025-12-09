@@ -27,6 +27,7 @@ COPY --from=base /app/backend/dist ./backend/dist
 COPY --from=base /app/node_modules ./node_modules
 COPY --from=base /app/backend/node_modules ./backend/node_modules
 COPY --from=base /app/backend/package*.json ./backend/
+COPY --from=base /app/backend/prisma ./backend/prisma
 COPY --from=base /app/shared ./shared
 
 EXPOSE 3001
