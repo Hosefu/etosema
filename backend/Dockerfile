@@ -1,11 +1,8 @@
 # Backend Dockerfile
 # Builds the API with npm workspaces support and Prisma client generation.
 
-FROM node:20-alpine AS base
+FROM node:20-bullseye-slim AS base
 WORKDIR /app
-
-# OpenSSL 1.1 compat for Prisma engines on Alpine (musl)
-RUN apk add --no-cache openssl1.1-compat
 
 # Install dependencies for backend (and shared if needed) without running scripts
 COPY package*.json ./
@@ -21,12 +18,9 @@ COPY shared ./shared
 RUN npm run prisma:generate -w backend
 RUN npm run build -w backend
 
-FROM node:20-alpine AS runtime
+FROM node:20-bullseye-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
-
-# OpenSSL 1.1 compat for Prisma engines on Alpine (musl)
-RUN apk add --no-cache openssl1.1-compat
 
 # Copy built artefacts and node_modules for backend
 COPY --from=base /app/backend/dist ./backend/dist
