@@ -3,14 +3,12 @@
 
 FROM node:20-alpine AS base
 WORKDIR /app
-ENV npm_config_ignore_scripts=true
 
-# Install dependencies for backend (and shared if needed) without running scripts (husky)
+# Install dependencies for backend (and shared if needed)
 COPY package*.json ./
 COPY backend/package*.json backend/
 COPY shared/package*.json shared/
-RUN npm set ignore-scripts true \
-  && npm ci --workspace backend --workspace shared --ignore-scripts
+RUN npm ci --workspace backend --workspace shared
 
 # Copy source
 COPY backend ./backend
