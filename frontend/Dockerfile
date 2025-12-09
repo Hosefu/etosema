@@ -32,6 +32,7 @@ ENV NODE_ENV=production
 COPY --from=deps /app/package*.json ./
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/frontend/package*.json ./frontend/
+COPY --from=deps /app/frontend/next.config.js ./frontend/
 COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
 COPY --from=deps /app/frontend/.next ./frontend/.next
 COPY --from=deps /app/frontend/public ./frontend/public
