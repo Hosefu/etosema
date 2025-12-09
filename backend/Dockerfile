@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY backend/package*.json backend/
 COPY shared/package*.json shared/
-RUN npm ci --ignore-scripts --workspace backend --workspace shared
+RUN npm ci --ignore-scripts --workspace backend --workspace shared --install-strategy nested
 
 # Copy source
 COPY backend ./backend
