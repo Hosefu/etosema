@@ -4,6 +4,9 @@
 FROM node:20-alpine AS base
 WORKDIR /app
 
+# OpenSSL 1.1 compat for Prisma engines on Alpine (musl)
+RUN apk add --no-cache openssl1.1-compat
+
 # Install dependencies for backend (and shared if needed) without running scripts
 COPY package*.json ./
 COPY backend/package*.json backend/
@@ -21,6 +24,9 @@ RUN npm run build -w backend
 FROM node:20-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+
+# OpenSSL 1.1 compat for Prisma engines on Alpine (musl)
+RUN apk add --no-cache openssl1.1-compat
 
 # Copy built artefacts and node_modules for backend
 COPY --from=base /app/backend/dist ./backend/dist
