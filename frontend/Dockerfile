@@ -17,8 +17,9 @@ RUN npm set ignore-scripts true \
 COPY frontend ./frontend
 COPY shared ./shared
 
-# Build Next.js
-RUN npm run build -w frontend
+# Build Next.js (run inside workspace so npm sees package.json without workspaces)
+WORKDIR /app/frontend
+RUN npm run build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
