@@ -1,0 +1,12 @@
+.git
+.gitignore
+node_modules
+**/node_modules
+npm-debug.log
+dist
+**/dist
+.next
+**/.next
+backend/prisma/dev.db
+.env
+.env.*
