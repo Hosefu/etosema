@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     env_file:
-      - backend/.env.local
+      - backend/.env
     ports:
       - "3001:3001"
 
@@ -13,7 +13,7 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
     env_file:
-      - frontend/.env.local
+      - frontend/.env
     environment:
       # Override to hit backend service inside compose network
       - NEXT_PUBLIC_API_URL=http://backend:3001
