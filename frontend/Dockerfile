@@ -3,7 +3,6 @@
 
 FROM node:20-alpine AS deps
 WORKDIR /app
-ENV npm_config_ignore_scripts=true
 
 # Install dependencies for frontend + shared
 COPY package*.json ./
@@ -11,7 +10,8 @@ COPY frontend/package*.json frontend/
 COPY shared/package*.json shared/
 # Skip workspace postinstall scripts (shared runs prisma generate pointing to backend)
 RUN npm set ignore-scripts true \
-  && npm ci --workspace frontend --workspace shared --ignore-scripts
+  && npm ci --workspace frontend --workspace shared --ignore-scripts \
+  && npm set ignore-scripts false
 
 # Copy source
 COPY frontend ./frontend
