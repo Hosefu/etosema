@@ -22,7 +22,12 @@ FROM node:20-bullseye-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Copy built artefacts and node_modules for backend
+# Install PostgreSQL client for health checks (optional, but useful)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy built artefacts and node_modules for backend (including dev deps for tsx and Prisma CLI)
 COPY --from=base /app/backend/dist ./backend/dist
 COPY --from=base /app/node_modules ./node_modules
 COPY --from=base /app/backend/node_modules ./backend/node_modules
@@ -30,5 +35,18 @@ COPY --from=base /app/backend/package*.json ./backend/
 COPY --from=base /app/backend/prisma ./backend/prisma
 COPY --from=base /app/shared ./shared
 
+# Copy entrypoint script and wait-for-db script
+COPY backend/docker-entrypoint.sh ./backend/docker-entrypoint.sh
+COPY backend/wait-for-db.js ./backend/wait-for-db.js
+
+# Make entrypoint executable
+RUN chmod +x ./backend/docker-entrypoint.sh
+
+# Set working directory to backend for commands
+WORKDIR /app/backend
+
+# Copy Prisma schema location is set via DATABASE_URL environment variable
+# Prisma will look for schema.prisma in the prisma/ directory
+
 EXPOSE 3001
-CMD ["node", "backend/dist/index.js"]
+ENTRYPOINT ["./docker-entrypoint.sh"]

@@ -12,6 +12,7 @@
     "test:coverage": "vitest --coverage",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "prisma:seed": "tsx prisma/seed.ts",
     "migrate:s3": "tsx scripts/migrate-to-s3.ts"

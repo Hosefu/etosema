@@ -1,22 +1,69 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: etosema
+      POSTGRES_PASSWORD: etosema_password
+      POSTGRES_DB: etosema_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U etosema -d etosema_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    env_file:
-      - backend/.env
+    environment:
+      # Database
+      DATABASE_URL: postgresql://etosema:etosema_password@postgres:5432/etosema_db?schema=public
+      
+      # Server
+      PORT: 3001
+      NODE_ENV: production
+      FRONTEND_URL: http://localhost:3000
+      
+      # Admin Panel (defaults)
+      ADMIN_EMAIL: admin@etosema.ru
+      ADMIN_PASSWORD: changeme
+      
+      # Security Secrets (⚠️ CHANGE THESE IN PRODUCTION!)
+      PIN_SESSION_SECRET: ${PIN_SESSION_SECRET:-changeme_pin_session_secret_key_min_32_chars}
+      JWT_SECRET: ${JWT_SECRET:-changeme_jwt_secret_key_minimum_32_characters}
+      SESSION_SECRET: ${SESSION_SECRET:-changeme_session_secret_key_minimum_32_char}
+      
+      # S3 Storage (RegRu)
+      S3_ENDPOINT: https://s3.regru.cloud
+      S3_BUCKET: etosema
+      S3_ACCESS_KEY: 9CLHOKRTGS2H34LWR3KH
+      S3_SECRET_KEY: Aytx0TweAKCmKGdWUFlnq4BQNEjYDWsINKKQgffq
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_PUBLIC_URL: https://etosema.s3.regru.cloud
     ports:
       - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/prisma:/app/backend/prisma
 
   frontend:
     build:
       context: .
       dockerfile: frontend/Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=https://etosema.ru
-    env_file:
-      - frontend/.env
+        - NEXT_PUBLIC_API_URL=http://localhost:3001
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
     depends_on:
       - backend
     ports:
       - "3000:3000"
+
+volumes:
+  postgres_data:

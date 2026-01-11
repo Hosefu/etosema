@@ -299,8 +299,13 @@ export default function AdminCasesPage() {
         title="Создать новый кейс"
         open={isCreateModalOpen}
         onOk={handleCreate}
-        onCancel={() => setIsCreateModalOpen(false)}
+        onCancel={() => {
+          setIsCreateModalOpen(false);
+          createForm.resetFields();
+        }}
         confirmLoading={creating}
+        destroyOnClose
+        getContainer={false}
       >
         <Form form={createForm} layout="vertical">
           <Form.Item
@@ -308,22 +313,31 @@ export default function AdminCasesPage() {
             name="title"
             rules={[{ required: true, message: 'Введите название' }]}
           >
-            <Input />
+            <Input placeholder="Например: Нейрофестиваль Аида" />
           </Form.Item>
           <Form.Item
             label="Slug (URL)"
             name="slug"
             rules={[{ required: true, message: 'Введите slug' }]}
           >
-            <Input />
+            <Input placeholder="Например: neirofestival-aida" />
           </Form.Item>
           <Form.Item
             label="Год"
             name="year"
-            rules={[{ required: true, message: 'Введите год' }]}
+            rules={[
+              { required: true, message: 'Введите год' },
+              { type: 'number', min: 2000, max: 2100, message: 'Год должен быть от 2000 до 2100' }
+            ]}
             initialValue={new Date().getFullYear()}
           >
-            <InputNumber style={{ width: '100%' }} />
+            <InputNumber
+              style={{ width: '100%' }}
+              min={2000}
+              max={2100}
+              keyboard={false}
+              controls={true}
+            />
           </Form.Item>
         </Form>
       </Modal>
