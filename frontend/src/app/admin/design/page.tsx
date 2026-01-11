@@ -125,6 +125,15 @@ const defaultSettings: DesignSettings = {
     baseGap: 12,
   },
   faviconUrl: null,
+  seo: {
+    siteName: 'Etosema',
+    homeTitle: 'Etosema — Коммуникационный дизайнер',
+    homeDescription: 'Портфолио коммуникационной дизайнерки Сёмы',
+    aboutTitle: 'Обо мне — Etosema',
+    aboutDescription: 'Контакты и информация обо мне',
+    caseTitleTemplate: '{title} — Etosema',
+    caseDescriptionFallback: '',
+  },
 };
 
 // Typography Editor Component
@@ -270,6 +279,10 @@ export default function DesignPage() {
             },
           },
           colors: { ...defaultSettings.colors, ...res.data.settings.colors },
+          seo: {
+            ...defaultSettings.seo,
+            ...(res.data.settings.seo || {}),
+          },
         });
         setFonts(res.data.fonts);
       }
@@ -848,6 +861,110 @@ export default function DesignPage() {
                           </List.Item>
                         )}
                       />
+                    </div>
+                  ),
+                },
+                {
+                  key: 'seo',
+                  label: 'SEO',
+                  children: (
+                    <div style={{ padding: 16 }}>
+                      <Form.Item label="Название сайта (siteName)">
+                        <Input
+                          value={settings.seo?.siteName}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              seo: { ...(settings.seo || {}), siteName: e.target.value },
+                            })
+                          }
+                          placeholder="Etosema"
+                        />
+                      </Form.Item>
+
+                      <Divider />
+
+                      <Form.Item label="Главная: title">
+                        <Input
+                          value={settings.seo?.homeTitle}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              seo: { ...(settings.seo || {}), homeTitle: e.target.value },
+                            })
+                          }
+                          placeholder="Etosema — Коммуникационный дизайнер"
+                        />
+                      </Form.Item>
+                      <Form.Item label="Главная: description">
+                        <Input.TextArea
+                          value={settings.seo?.homeDescription}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              seo: { ...(settings.seo || {}), homeDescription: e.target.value },
+                            })
+                          }
+                          autoSize={{ minRows: 2, maxRows: 6 }}
+                        />
+                      </Form.Item>
+
+                      <Divider />
+
+                      <Form.Item label="Обо мне: title">
+                        <Input
+                          value={settings.seo?.aboutTitle}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              seo: { ...(settings.seo || {}), aboutTitle: e.target.value },
+                            })
+                          }
+                          placeholder="Обо мне — Etosema"
+                        />
+                      </Form.Item>
+                      <Form.Item label="Обо мне: description">
+                        <Input.TextArea
+                          value={settings.seo?.aboutDescription}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              seo: { ...(settings.seo || {}), aboutDescription: e.target.value },
+                            })
+                          }
+                          autoSize={{ minRows: 2, maxRows: 6 }}
+                        />
+                      </Form.Item>
+
+                      <Divider />
+
+                      <Form.Item label="Кейс: шаблон title (используй {title})">
+                        <Input
+                          value={settings.seo?.caseTitleTemplate}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              seo: { ...(settings.seo || {}), caseTitleTemplate: e.target.value },
+                            })
+                          }
+                          placeholder="{title} — Etosema"
+                        />
+                      </Form.Item>
+                      <Form.Item label="Кейс: fallback description (если нет summary и SEO у кейса)">
+                        <Input.TextArea
+                          value={settings.seo?.caseDescriptionFallback}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              seo: {
+                                ...(settings.seo || {}),
+                                caseDescriptionFallback: e.target.value,
+                              },
+                            })
+                          }
+                          autoSize={{ minRows: 2, maxRows: 6 }}
+                        />
+                      </Form.Item>
                     </div>
                   ),
                 },

@@ -65,6 +65,8 @@ export interface CasePreview {
   coverUrl: string;
   isNda: boolean;
   isLocked: boolean; // Computed based on user's PIN access
+  seoTitle?: string;
+  seoDescription?: string;
   blocks: CaseBlockData[]; // Full blocks for preview scrolling
 }
 
@@ -101,6 +103,8 @@ export interface CaseDetail {
   year: number;
   summary?: string;
   isNda: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
   // New design fields
   backgroundColor?: string | null;
   textColor?: string | null;

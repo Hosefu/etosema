@@ -90,6 +90,16 @@ router.get('/', async (req: AdminRequest, res) => {
       orderBy: { createdAt: 'desc' },
     });
 
+    const defaultSeo = {
+      siteName: 'Etosema',
+      homeTitle: 'Etosema — Коммуникационный дизайнер',
+      homeDescription: 'Портфолио коммуникационной дизайнерки Сёмы',
+      aboutTitle: 'Обо мне — Etosema',
+      aboutDescription: 'Контакты и информация обо мне',
+      caseTitleTemplate: '{title} — Etosema',
+      caseDescriptionFallback: '',
+    };
+
     const parsedSettings = {
       ...design,
       typography: JSON.parse(design.typography),
@@ -116,6 +126,10 @@ router.get('/', async (req: AdminRequest, res) => {
         ...(design.grid ? JSON.parse(design.grid) : {}),
       },
       spacing: design.spacing ? JSON.parse(design.spacing) : { baseGap: 12 },
+      seo: {
+        ...defaultSeo,
+        ...(design.seo ? JSON.parse(design.seo) : {}),
+      },
     };
 
     res.json({ success: true, data: { settings: parsedSettings, fonts } });
@@ -144,6 +158,7 @@ router.put('/', async (req: AdminRequest, res) => {
         grid?: unknown;
         spacing?: unknown;
         faviconUrl?: string | null;
+        seo?: unknown;
       };
 
     // Allow partial updates: only provided fields are overwritten.
@@ -172,6 +187,10 @@ router.put('/', async (req: AdminRequest, res) => {
     }
     if (faviconUrl !== undefined) {
       data.faviconUrl = faviconUrl;
+    }
+    if (req.body?.seo !== undefined) {
+      const seo = (req.body as { seo?: unknown }).seo;
+      data.seo = typeof seo === 'string' ? seo : JSON.stringify(seo);
     }
 
     const design = await prisma.designSystem.update({

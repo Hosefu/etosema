@@ -26,6 +26,8 @@ export interface Case {
   year: number;
   summary: string | null;
   isNda: boolean;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
   coverUrl: string;
   orderRank: string;
   useCustomDesign: boolean;
@@ -566,6 +568,17 @@ export interface TypographyConfig {
   color: string;
 }
 
+export interface SeoSettings {
+  siteName?: string;
+  homeTitle?: string;
+  homeDescription?: string;
+  aboutTitle?: string;
+  aboutDescription?: string;
+  // Use {title} placeholder
+  caseTitleTemplate?: string;
+  caseDescriptionFallback?: string;
+}
+
 export interface DesignSettings {
   id: number;
   typography: {
@@ -602,6 +615,7 @@ export interface DesignSettings {
     baseGap: number;
   };
   faviconUrl?: string | null;
+  seo?: SeoSettings;
 }
 
 export interface Font {

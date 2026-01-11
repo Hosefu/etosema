@@ -11,6 +11,7 @@ import { MainLayout } from '@/components/layout/MainLayout/MainLayout';
 import { DesignSystemProvider } from '@/components/DesignSystemProvider';
 import { FaviconLoader } from '@/components/FaviconLoader';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import { getPublicSeo } from '@/lib/seo/server';
 import '@/styles/globals.scss';
 
 const inter = Inter({
@@ -21,10 +22,23 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Etosema — Коммуникационный дизайнер',
-  description: 'Портфолио коммуникационной дизайнерки Сёмы',
   viewport: 'width=device-width, initial-scale=1',
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo, faviconUrl, baseUrl } = await getPublicSeo();
+  const iconHref = faviconUrl || '/favicon.svg';
+
+  return {
+    metadataBase: new URL(baseUrl),
+    title: seo.homeTitle,
+    description: seo.homeDescription,
+    icons: {
+      icon: [{ url: iconHref }],
+      apple: [{ url: iconHref }],
+    },
+  };
+}
 
 export default function RootLayout({
   children,

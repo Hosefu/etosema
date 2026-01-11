@@ -13,6 +13,17 @@ router.get('/', async (req: Request, res: Response) => {
     const design = await prisma.designSystem.findUnique({ where: { id: 1 } });
     const fonts = await prisma.font.findMany();
 
+    const defaultSeo = {
+      siteName: 'Etosema',
+      homeTitle: 'Etosema — Коммуникационный дизайнер',
+      homeDescription: 'Портфолио коммуникационной дизайнерки Сёмы',
+      aboutTitle: 'Обо мне — Etosema',
+      aboutDescription: 'Контакты и информация обо мне',
+      // Use {title} placeholder
+      caseTitleTemplate: '{title} — Etosema',
+      caseDescriptionFallback: '',
+    };
+
     const data = {
       settings: design
         ? {
@@ -44,6 +55,10 @@ router.get('/', async (req: Request, res: Response) => {
               ? JSON.parse(design.spacing)
               : { baseGap: 12 },
             faviconUrl: design.faviconUrl,
+            seo: {
+              ...defaultSeo,
+              ...(design.seo ? JSON.parse(design.seo) : {}),
+            },
           }
         : null,
       fonts,

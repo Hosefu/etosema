@@ -35,6 +35,10 @@ model Case {
   isNda      Boolean  @default(false) // Whether this case requires NDA access
   orderRank  String   // LexoRank string for custom sorting
 
+  // SEO (optional overrides)
+  seoTitle       String?
+  seoDescription String?
+
   // Case-specific overrides
   useCustomDesign Boolean @default(false)
   backgroundColor String?
@@ -194,6 +198,10 @@ model DesignSystem {
 
   // Favicon URL
   faviconUrl String?
+
+  // SEO settings (JSON string)
+  // { siteName, homeTitle, homeDescription, aboutTitle, aboutDescription, caseTitleTemplate, caseDescriptionFallback }
+  seo String?
 
   updatedAt DateTime @updatedAt
 

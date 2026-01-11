@@ -99,6 +99,8 @@ export default function AdminCaseEditPage() {
           year: response.data.year,
           summary: response.data.summary,
           isNda: response.data.isNda,
+          seoTitle: (response.data as any).seoTitle,
+          seoDescription: (response.data as any).seoDescription,
           backgroundColor: response.data.backgroundColor,
           textColor: response.data.textColor,
           fontFamily: response.data.fontFamily,
@@ -622,6 +624,26 @@ export default function AdminCaseEditPage() {
                   </Card>
                 ))}
               </>
+            ),
+          },
+          {
+            key: 'seo',
+            label: 'SEO',
+            children: (
+              <Card title="SEO" style={{ marginBottom: 24 }}>
+                <Form.Item
+                  label="SEO Title (если пусто — возьмём название кейса)"
+                  name="seoTitle"
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label="SEO Description (если пусто — возьмём summary)"
+                  name="seoDescription"
+                >
+                  <TextArea rows={4} />
+                </Form.Item>
+              </Card>
             ),
           },
           {

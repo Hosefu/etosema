@@ -97,6 +97,8 @@ export class CasesService {
         coverUrl,
         isNda: caseItem.isNda,
         isLocked,
+        seoTitle: caseItem.seoTitle || undefined,
+        seoDescription: caseItem.seoDescription || undefined,
         blocks,
       };
     });
@@ -170,6 +172,8 @@ export class CasesService {
       year: caseItem.year,
       summary: caseItem.summary || undefined,
       isNda: caseItem.isNda,
+      seoTitle: caseItem.seoTitle || undefined,
+      seoDescription: caseItem.seoDescription || undefined,
       backgroundColor: caseItem.backgroundColor,
       textColor: caseItem.textColor,
       fontFamily: caseItem.fontFamily,
