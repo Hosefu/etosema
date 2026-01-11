@@ -13,7 +13,12 @@
   padding: gap(4) $grid-margin;
 
   @include mobile {
-    padding: gap(2) $grid-margin;
+    // Cap horizontal padding on mobile (design settings may set huge grid margin)
+    padding: gap(2) clamp(12px, $grid-margin, 24px);
+    // On small screens move menu away from logo
+    flex-direction: column;
+    align-items: flex-start;
+    gap: gap(2);
   }
 }
 
@@ -23,6 +28,11 @@
   gap: gap(1);
   text-decoration: none;
   color: $color-text-primary;
+
+  @include mobile {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 .logoText {
@@ -38,6 +48,8 @@
 
   @include mobile {
     gap: gap(2); // was s(24)
+    width: 100%;
+    justify-content: flex-start;
   }
 }
 

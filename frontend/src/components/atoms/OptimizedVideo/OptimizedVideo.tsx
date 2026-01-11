@@ -8,6 +8,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import styles from './OptimizedVideo.module.scss';
+import type React from 'react';
 
 export interface OptimizedVideoProps {
   src: string;
@@ -19,6 +20,16 @@ export interface OptimizedVideoProps {
   playsInline?: boolean;
   controls?: boolean;
   className?: string;
+  /**
+   * If true, the container fills its parent (no intrinsic padding-bottom).
+   * Use when parent already defines box size (e.g. wrappers with aspect-ratio).
+   */
+  fill?: boolean;
+
+  /**
+   * Optional aspect ratio like "16:9" or "4:3" used when fill=false.
+   */
+  aspectRatio?: string;
 
   /**
    * Lazy load video (load when in viewport)
@@ -43,6 +54,8 @@ export function OptimizedVideo({
   playsInline = true,
   controls = false,
   className,
+  fill = false,
+  aspectRatio,
   lazy = true,
   preload,
 }: OptimizedVideoProps) {
@@ -82,16 +95,24 @@ export function OptimizedVideo({
 
   const finalPreload = preload || (lazy ? 'metadata' : 'auto');
 
-  // Fallback for SSR: set an aspect-ratio pad to avoid 0 height
-  const padStyle = {
-    ['--image-pad' as string]: '56.25%',
-  };
+  const ratio = aspectRatio || '16:9';
+  const safeAspectRatio = ratio.replace(':', '/');
+  const [w, h] = ratio.split(':').map(Number);
+  const pad = w && h ? `${Math.max((h / w) * 100, 1)}%` : '56.25%';
+
+  // Only apply intrinsic sizing when not filling parent.
+  const containerStyle = fill
+    ? undefined
+    : ({
+        aspectRatio: safeAspectRatio,
+        ['--image-pad' as string]: pad,
+      } as React.CSSProperties);
 
   return (
     <div
       ref={containerRef}
-      className={`${styles.container} ${className || ''}`}
-      style={padStyle}
+      className={`${styles.container} ${fill ? styles.fillContainer : ''} ${className || ''}`}
+      style={containerStyle}
     >
       {shouldLoad ? (
         <video

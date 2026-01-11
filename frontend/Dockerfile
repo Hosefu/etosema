@@ -1,42 +1,31 @@
 # Frontend Dockerfile (Next.js)
-# Builds only the frontend workspace and shared package.
+# Builds the frontend app without relying on workspace commands inside Docker.
 
-FROM node:20-alpine AS deps
-WORKDIR /app
+FROM node:20-alpine AS build
+WORKDIR /app/frontend
 
-# Install dependencies for frontend + shared
-COPY package*.json ./
-COPY frontend/package*.json frontend/
-COPY shared/package*.json shared/
-# Skip workspace postinstall scripts (shared runs prisma generate pointing to backend)
-RUN npm set ignore-scripts true \
-  && npm ci --workspace frontend --workspace shared --ignore-scripts \
-  && npm set ignore-scripts false
+# Install frontend deps (no workspaces inside Docker build)
+COPY frontend/package*.json ./
+RUN npm ci --ignore-scripts
 
 # Copy source
-COPY frontend ./frontend
-COPY shared ./shared
+COPY frontend ./
 
-# Build Next.js (run inside workspace so npm sees package.json without workspaces)
-WORKDIR /app/frontend
 # Accept build arg for API URL
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-RUN node node_modules/.bin/next build
+
+RUN npm run build
 
 FROM node:20-alpine AS runner
-WORKDIR /app
+WORKDIR /app/frontend
 ENV NODE_ENV=production
 
-# Copy built artifacts and runtime deps
-COPY --from=deps /app/package*.json ./
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/frontend/package*.json ./frontend/
-COPY --from=deps /app/frontend/next.config.js ./frontend/
-COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
-COPY --from=deps /app/frontend/.next ./frontend/.next
-COPY --from=deps /app/frontend/public ./frontend/public
-COPY --from=deps /app/shared ./shared
+COPY --from=build /app/frontend/package*.json ./
+COPY --from=build /app/frontend/node_modules ./node_modules
+COPY --from=build /app/frontend/next.config.js ./next.config.js
+COPY --from=build /app/frontend/.next ./.next
+COPY --from=build /app/frontend/public ./public
 
 EXPOSE 3000
-CMD ["npm", "run", "start", "-w", "frontend"]
+CMD ["npm", "run", "start"]

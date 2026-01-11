@@ -138,6 +138,17 @@ $grid-margin: calc(var(--grid-margin) * var(--scale)); // Responsive margin
   grid-template-columns: repeat($grid-columns, minmax(0, 1fr));
   column-gap: $grid-gutter;
   padding-inline: $grid-margin;
+
+  // Design settings can make margins huge; cap them for smaller screens
+  @include mobile {
+    column-gap: clamp(12px, $grid-gutter, 24px);
+    padding-inline: clamp(12px, $grid-margin, 24px);
+  }
+
+  @include tablet {
+    column-gap: clamp(16px, $grid-gutter, 32px);
+    padding-inline: clamp(16px, $grid-margin, 40px);
+  }
 }
 
 /**

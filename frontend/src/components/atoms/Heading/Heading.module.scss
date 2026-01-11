@@ -3,10 +3,21 @@
 .heading {
   color: $color-text-primary;
   margin: 0;
+  // Prevent long titles from creating horizontal scroll (tablet/mobile)
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .large {
   @include text-heading-large;
+
+  // On mobile the large heading is visually too big.
+  // Reduce it ~2x to keep layouts readable (About + Case pages).
+  @include mobile {
+    font-size: clamp(44px, calc(var(--scale) * var(--heading-large-size) * 0.2), 72px);
+    line-height: 0.95;
+  }
 }
 
 .small {

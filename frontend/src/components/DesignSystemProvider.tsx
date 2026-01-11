@@ -75,7 +75,18 @@ export function DesignSystemProvider() {
     }
   `;
 
-  const fontFaces = fonts
+  const googleFonts = fonts.filter(
+    (f) =>
+      f.format === 'google' ||
+      (typeof f.url === 'string' && f.url.includes('fonts.googleapis.com'))
+  );
+
+  const googleImports = Array.from(new Set(googleFonts.map((f) => f.url)))
+    .map((url) => `@import url('${url}');`)
+    .join('\n');
+
+  const uploadedFonts = fonts.filter((f) => !googleFonts.includes(f));
+  const fontFaces = uploadedFonts
     .map(
       (f) => `
     @font-face {
@@ -90,6 +101,8 @@ export function DesignSystemProvider() {
     .join('\n');
 
   return (
-    <style dangerouslySetInnerHTML={{ __html: fontFaces + cssVariables }} />
+    <style
+      dangerouslySetInnerHTML={{ __html: googleImports + '\n' + fontFaces + cssVariables }}
+    />
   );
 }

@@ -282,16 +282,30 @@ function MediaItem({
   priority?: boolean;
 }) {
   if (type === 'VIDEO') {
+    // Use the same container logic as images so aspect ratio and rounded corners match.
+    const ratio = aspectRatio || '16:9';
+    const safeAspectRatio = ratio.replace(':', '/');
+    const [w, h] = ratio.split(':').map(Number);
+    const pad = w && h ? `${Math.max((h / w) * 100, 1)}%` : undefined;
     return (
-      <OptimizedVideo
-        src={url}
-        autoPlay
-        loop
-        muted
-        playsInline
-        lazy={!priority}
-        className={styles.media}
-      />
+      <div
+        className={styles.imageContainer}
+        style={{
+          aspectRatio: safeAspectRatio,
+          ...(pad ? { ['--image-pad' as string]: pad } : {}),
+        }}
+      >
+        <OptimizedVideo
+          src={url}
+          autoPlay
+          loop
+          muted
+          playsInline
+          lazy={!priority}
+          fill
+          className={styles.media}
+        />
+      </div>
     );
   }
 

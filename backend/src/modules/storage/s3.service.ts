@@ -55,6 +55,8 @@ export async function uploadFileToS3(
     ContentType: file.mimetype,
     // Make file publicly readable
     ACL: 'public-read',
+    // Cache static assets aggressively (we use unique filenames)
+    CacheControl: 'public, max-age=31536000, immutable',
   });
 
   await s3Client.send(command);
@@ -85,28 +87,39 @@ export async function uploadImageWithThumbnail(
   }
 
   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-  const ext = path.extname(file.originalname) || '.jpg';
   const baseName = `${uniqueSuffix}`;
 
-  const originalKey = `${folder}/${baseName}${ext}`;
+  // Store optimized progressive JPEG as the main asset to avoid heavy originals
+  // and to improve perceived loading speed (progressive scan).
+  const optimizedKey = `${folder}/${baseName}.jpg`;
   const thumbKey = `${folder}/thumbs/${baseName}-thumb.jpg`;
 
-  // Upload original
+  // Generate optimized progressive JPEG (also caps dimensions to keep size sane)
+  // rotate(): respects EXIF orientation
+  const optimizedBuffer = await sharp(file.buffer)
+    .rotate()
+    .resize({ width: 2400, withoutEnlargement: true })
+    .jpeg({ quality: 82, progressive: true, mozjpeg: true })
+    .toBuffer();
+
+  // Upload optimized main image
   await s3Client.send(
     new PutObjectCommand({
       Bucket: config.s3.bucket,
-      Key: originalKey,
-      Body: file.buffer,
-      ContentType: file.mimetype,
+      Key: optimizedKey,
+      Body: optimizedBuffer,
+      ContentType: 'image/jpeg',
       ACL: 'public-read',
+      CacheControl: 'public, max-age=31536000, immutable',
     })
   );
 
   // Generate thumbnail
   try {
     const thumbnailBuffer = await sharp(file.buffer)
+      .rotate()
       .resize({ width: 200, withoutEnlargement: true })
-      .jpeg({ quality: 60 })
+      .jpeg({ quality: 55, progressive: true, mozjpeg: true })
       .toBuffer();
 
     await s3Client.send(
@@ -116,16 +129,17 @@ export async function uploadImageWithThumbnail(
         Body: thumbnailBuffer,
         ContentType: 'image/jpeg',
         ACL: 'public-read',
+        CacheControl: 'public, max-age=31536000, immutable',
       })
     );
   } catch (error) {
     // If thumbnail generation fails, skip silently to avoid blocking upload
     console.error('Failed to generate thumbnail:', error);
-    return { url: getPublicUrl(originalKey) };
+    return { url: getPublicUrl(optimizedKey) };
   }
 
   return {
-    url: getPublicUrl(originalKey),
+    url: getPublicUrl(optimizedKey),
     thumbnailUrl: getPublicUrl(thumbKey),
   };
 }

@@ -5,6 +5,7 @@
   flex-direction: column;
   background: transparent;
   text-decoration: none;
+  min-width: 0; // important inside CSS grid on mobile
 
   &[data-locked='true'] {
     .cover {
@@ -134,6 +135,38 @@
 
 // Responsive
 @include mobile {
+  // Keep fixed-height card with internal scroll on mobile (like desktop),
+  // but make scrolling feel intentional.
+  .cover {
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: y proximity;
+    scroll-padding-block: calc(#{$card-padding} / 2);
+  }
+
+  // Make media breathe on small screens:
+  // design-system card padding can be too large for mobile, so we halve it here.
+  .imagesContainer {
+    padding: calc(#{$card-padding} / 2);
+    gap: gap(2);
+    min-height: 100%;
+    // Extra bottom space so the last image can scroll fully into view
+    padding-bottom: calc(#{$card-padding} / 2 + gap(2));
+  }
+
+  // Same idea for locked cover padding (uses $card-padding on desktop)
+  .card[data-locked='true'] {
+    .cover {
+      padding: calc(#{$card-padding} / 2);
+    }
+  }
+
+  .imageWrapper {
+    min-height: s(160);
+    scroll-snap-align: start;
+  }
+
   .info {
     // padding: s(16) s(20);
     // Use card padding scaling? Or fixed?
@@ -144,5 +177,27 @@
   .lockContent {
     padding: gap(2);
     min-height: s(250);
+  }
+}
+
+// Tablet: keep internal scroll too, but with reasonable spacing
+@include tablet {
+  .cover {
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: y proximity;
+    scroll-padding-block: calc(#{$card-padding} / 2);
+  }
+
+  .imagesContainer {
+    padding: calc(#{$card-padding} / 2);
+    gap: gap(2);
+    min-height: 100%;
+    padding-bottom: calc(#{$card-padding} / 2 + gap(2));
+  }
+
+  .imageWrapper {
+    scroll-snap-align: start;
   }
 }

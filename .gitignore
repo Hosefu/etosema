@@ -15,6 +15,15 @@ out/
 .env.*.local
 .env.test
 .env.production
+compose.env
+dev.compose.env
+prod.compose.env
+
+# SSH / server access (never commit)
+access/
+
+# Local playwright snapshots/artifacts
+.playwright-mcp/
 
 # Logs
 logs/

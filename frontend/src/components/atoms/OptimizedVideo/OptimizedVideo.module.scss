@@ -10,6 +10,17 @@
   overflow: hidden;
 }
 
+// When used inside a parent that already defines size (e.g. a card wrapper with
+// aspect-ratio / padding-bottom), this container should fill the parent and not
+// add its own padding-bottom.
+.fillContainer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding-bottom: 0;
+}
+
 .video {
   position: absolute;
   inset: 0;

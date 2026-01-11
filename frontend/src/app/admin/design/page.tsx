@@ -5,6 +5,7 @@ import {
   Layout,
   Card,
   Form,
+  Input,
   InputNumber,
   Select,
   ColorPicker,
@@ -27,7 +28,9 @@ import {
 import {
   adminGetDesign,
   adminUpdateDesign,
+  adminUploadFile,
   adminUploadFont,
+  adminAddGoogleFont,
   adminDeleteFont,
   DesignSettings,
   Font,
@@ -36,6 +39,33 @@ import {
 import type { UploadProps } from 'antd';
 
 const { Text } = Typography;
+
+const GoogleGIcon = ({ size = 14 }: { size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 48 48"
+    style={{ display: 'inline-block', verticalAlign: 'text-bottom' }}
+    aria-hidden
+  >
+    <path
+      fill="#EA4335"
+      d="M24 9.5c3.54 0 6.7 1.22 9.2 3.63l6.85-6.85C35.9 2.44 30.3 0 24 0 14.64 0 6.38 5.38 2.44 13.22l7.98 6.2C12.3 13.1 17.7 9.5 24 9.5z"
+    />
+    <path
+      fill="#4285F4"
+      d="M46.14 24.55c0-1.64-.15-3.22-.43-4.75H24v9h12.4c-.54 2.9-2.17 5.36-4.63 7.03l7.08 5.5C43.8 36.95 46.14 31.2 46.14 24.55z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M10.42 28.22a14.5 14.5 0 0 1 0-8.44l-7.98-6.2A23.94 23.94 0 0 0 0 24c0 3.93.94 7.65 2.44 10.42l7.98-6.2z"
+    />
+    <path
+      fill="#34A853"
+      d="M24 48c6.3 0 11.6-2.08 15.47-5.67l-7.08-5.5c-1.97 1.33-4.5 2.12-8.39 2.12-6.3 0-11.7-3.6-13.58-8.93l-7.98 6.2C6.38 42.62 14.64 48 24 48z"
+    />
+  </svg>
+);
 
 // Initial default state to avoid null checks
 const defaultTypography: TypographyConfig = {
@@ -204,6 +234,7 @@ const TypographyEditor = ({
 export default function DesignPage() {
   const [settings, setSettings] = useState<DesignSettings>(defaultSettings);
   const [fonts, setFonts] = useState<Font[]>([]);
+  const [googleFontUrl, setGoogleFontUrl] = useState<string>('');
   const [, setLoading] = useState(true);
   const [saving, setSave] = useState(false);
 
@@ -290,18 +321,23 @@ export default function DesignPage() {
     const { file, onSuccess, onError } = options;
     try {
       const uploadFile = file as File;
-      const formData = new FormData();
-      formData.append('file', uploadFile);
-      const res = await fetch('/api/admin/upload', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-      const data = await res.json();
-      if (data.data?.url) {
-        setSettings((prev) => ({ ...prev, faviconUrl: data.data.url }));
-        message.success('Фавикон загружен');
-        onSuccess?.(data.data as unknown as void);
+      const uploadRes = await adminUploadFile(uploadFile);
+      const url = uploadRes.data?.url;
+
+      if (uploadRes.success && url) {
+        // Persist сразу, чтобы фавикон реально "работал" после перезагрузки
+        const saveRes = await adminUpdateDesign({ faviconUrl: url });
+        if (saveRes.success) {
+          setSettings((prev) => ({ ...prev, faviconUrl: url }));
+          message.success('Фавикон загружен и сохранён');
+          onSuccess?.({ url } as unknown as void);
+          return;
+        }
+
+        // Fallback: хотя бы покажем в UI, но предупредим
+        setSettings((prev) => ({ ...prev, faviconUrl: url }));
+        message.warning('Фавикон загружен, но не удалось сохранить настройки');
+        onSuccess?.({ url } as unknown as void);
       } else {
         onError?.(new Error('Upload failed'));
       }
@@ -317,6 +353,27 @@ export default function DesignPage() {
       setFonts(fonts.filter((f) => f.id !== id));
     } catch (e) {
       message.error('Ошибка удаления');
+    }
+  };
+
+  const handleAddGoogleFont = async () => {
+    try {
+      if (!googleFontUrl.trim()) {
+        message.error('Вставь ссылку на Google Fonts');
+        return;
+      }
+
+      const res = await adminAddGoogleFont(googleFontUrl.trim());
+      if (res.success && res.data) {
+        message.success('Google Font добавлен');
+        setFonts([res.data, ...fonts]);
+        setGoogleFontUrl('');
+      } else {
+        message.error('Не удалось добавить Google Font');
+      }
+    } catch (e) {
+      console.error(e);
+      message.error('Ошибка добавления Google Font');
     }
   };
 
@@ -726,6 +783,32 @@ export default function DesignPage() {
                   label: 'Шрифты',
                   children: (
                     <div style={{ padding: 16 }}>
+                      <div style={{ marginBottom: 16 }}>
+                        <Text strong>Google Fonts (приоритетный способ)</Text>
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: 8,
+                            marginTop: 8,
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          <Input
+                            placeholder="Например: https://fonts.google.com/specimen/Roboto+Flex"
+                            value={googleFontUrl}
+                            onChange={(e) => setGoogleFontUrl(e.target.value)}
+                            style={{ flex: '1 1 520px', minWidth: 260 }}
+                          />
+                          <Button type="primary" onClick={handleAddGoogleFont}>
+                            Добавить
+                          </Button>
+                        </div>
+                        <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
+                          Можно вставить ссылку на specimen или прямую CSS-ссылку.
+                        </Text>
+                        <Divider style={{ margin: '16px 0' }} />
+                      </div>
+
                       <Upload
                         customRequest={handleFontUpload}
                         showUploadList={false}
@@ -738,6 +821,7 @@ export default function DesignPage() {
                         style={{ marginTop: 16 }}
                         dataSource={fonts}
                         renderItem={(item) => (
+                          // format === 'google' (or url includes fonts.googleapis.com) => show Google icon
                           <List.Item
                             actions={[
                               <Button
@@ -750,7 +834,15 @@ export default function DesignPage() {
                             ]}
                           >
                             <List.Item.Meta
-                              title={item.name}
+                              title={
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                                  {(item.format === 'google' ||
+                                    (item.url || '').includes('fonts.googleapis.com')) && (
+                                    <GoogleGIcon />
+                                  )}
+                                  <span>{item.name}</span>
+                                </span>
+                              }
                               description={`Family: ${item.family} | Format: ${item.format}`}
                             />
                           </List.Item>

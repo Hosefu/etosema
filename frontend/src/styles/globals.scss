@@ -12,7 +12,10 @@
 
 :root {
   // Scale
-  --scale: calc(100vw / 375); // Mobile default
+  // Scale is a *length* that acts like "1 design unit == 1px" at baseline widths.
+  // Without a cap, tablet widths make everything huge (because scale grows with viewport).
+  // So we clamp it for mobile/tablet, and allow it to grow again on large desktops.
+  --scale: clamp(0.85px, calc(100vw / 375), 1.1px); // Mobile/tablet
 
   // Typography Defaults
   --font-family-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -67,7 +70,8 @@
 
 @media (min-width: 1280px) {
   :root {
-    --scale: calc(100vw / 1440); // Desktop
+    // Desktop: allow a bit of scaling, but keep it bounded
+    --scale: clamp(0.9px, calc(100vw / 1440), 1.25px);
   }
 }
 

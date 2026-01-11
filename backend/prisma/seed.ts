@@ -6,12 +6,94 @@
 
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import sharp from 'sharp';
 
 const prisma = new PrismaClient();
 
 // Hash PIN code
 async function hashPin(pin: string): Promise<string> {
   return bcrypt.hash(pin, 10);
+}
+
+async function getUploadImageWithThumbnail() {
+  // In local dev we have `src/`, but in the production Docker image we only ship `dist/`.
+  try {
+    const mod = await import('../src/modules/storage/s3.service');
+    return mod.uploadImageWithThumbnail as typeof import('../src/modules/storage/s3.service').uploadImageWithThumbnail;
+  } catch {
+    const mod = await import('../dist/modules/storage/s3.service');
+    return mod.uploadImageWithThumbnail as typeof import('../dist/modules/storage/s3.service').uploadImageWithThumbnail;
+  }
+}
+
+async function createAndUploadSeedImage(params: {
+  label: string;
+  width: number;
+  height: number;
+  folder?: string;
+}): Promise<string> {
+  const { label, width, height, folder = 'medias' } = params;
+
+  // Simple neutral background with label (no external dependencies like Unsplash)
+  const svg = Buffer.from(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+      <rect width="100%" height="100%" fill="#e9e9ee"/>
+      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+        font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial"
+        font-size="${Math.max(18, Math.round(width * 0.05))}"
+        fill="#6b6b78">${label}</text>
+    </svg>
+  `);
+
+  const buffer = await sharp({
+    create: {
+      width,
+      height,
+      channels: 3,
+      background: '#e9e9ee',
+    },
+  })
+    .composite([{ input: svg }])
+    .jpeg({ quality: 82 })
+    .toBuffer();
+
+  const uploadImageWithThumbnail = await getUploadImageWithThumbnail();
+  const uploaded = await uploadImageWithThumbnail(
+    {
+      buffer,
+      originalname: `${label.replace(/\s+/g, '-').toLowerCase()}.jpg`,
+      mimetype: 'image/jpeg',
+    },
+    folder
+  );
+
+  return uploaded.url;
+}
+
+async function ensureGoogleFont(params: {
+  name: string;
+  family: string;
+  cssUrl: string;
+}) {
+  const existing = await prisma.font.findFirst({
+    where: {
+      format: 'google',
+      url: params.cssUrl,
+    },
+  });
+
+  if (existing) return existing;
+
+  return prisma.font.create({
+    data: {
+      name: params.name,
+      family: params.family,
+      url: params.cssUrl,
+      format: 'google',
+      weight: '400',
+      style: 'normal',
+    },
+  });
 }
 
 async function main() {
@@ -67,71 +149,122 @@ async function main() {
 
   console.log('Creating design system...');
 
+  const seededDesignSystem = {
+    typography: JSON.stringify({
+      body: {
+        family: 'system-ui, sans-serif',
+        size: 20,
+        lineHeight: 135,
+        letterSpacing: 0,
+        color: 'rgb(71,69,84)',
+      },
+      headingSmall: {
+        family: 'system-ui, sans-serif',
+        size: 32,
+        lineHeight: 100,
+        letterSpacing: -2,
+        color: 'rgb(71,69,84)',
+      },
+      headingLarge: {
+        family: 'system-ui, sans-serif',
+        size: 90,
+        lineHeight: 100,
+        letterSpacing: -2,
+        color: 'rgb(71,69,84)',
+      },
+    }),
+    colors: JSON.stringify({
+      background: 'rgb(243,243,244)',
+      card: 'rgb(249,249,250)',
+      textPrimary: '#1a1a1a',
+      textSecondary: '#666666',
+    }),
+    links: JSON.stringify({
+      offset: 2,
+      color: 'rgb(191,191,196)',
+      thickness: 1,
+    }),
+    cards: JSON.stringify({
+      borderRadius: 25,
+      padding: 75,
+      paddingBottom: 0,
+      height: 500,
+    }),
+    grid: JSON.stringify({
+      margin: 80,
+      gutter: 40,
+      textColumns: 8,
+      textAlign: 'left',
+      blockAlign: 'left',
+    }),
+    spacing: JSON.stringify({
+      baseGap: 12,
+    }),
+    faviconUrl: null,
+  } as const;
+
   await prisma.designSystem.upsert({
     where: { id: 1 },
-    update: {},
+    // IMPORTANT: overwrite defaults if record already exists
+    update: { ...seededDesignSystem },
     create: {
       id: 1,
-      typography: JSON.stringify({
-        body: {
-          family: 'system-ui, sans-serif',
-          size: 20,
-          lineHeight: 135,
-          letterSpacing: 0,
-          color: 'rgb(71,69,84)',
-        },
-        headingSmall: {
-          family: 'system-ui, sans-serif',
-          size: 32,
-          lineHeight: 100,
-          letterSpacing: -2,
-          color: 'rgb(71,69,84)',
-        },
-        headingLarge: {
-          family: 'system-ui, sans-serif',
-          size: 90,
-          lineHeight: 100,
-          letterSpacing: -2,
-          color: 'rgb(71,69,84)',
-        },
-      }),
-      colors: JSON.stringify({
-        background: 'rgb(243,243,244)',
-        card: 'rgb(249,249,250)',
-        textPrimary: '#1a1a1a',
-        textSecondary: '#666666',
-      }),
-      links: JSON.stringify({
-        offset: 2,
-        color: 'rgb(191,191,196)',
-        thickness: 1,
-      }),
-      cards: JSON.stringify({
-        borderRadius: 25,
-        padding: 75,
-        paddingBottom: 0,
-        height: 500,
-      }),
-      grid: JSON.stringify({
-        margin: 80,
-        gutter: 40,
-        textColumns: 8,
-        textAlign: 'left',
-        blockAlign: 'left',
-      }),
-      spacing: JSON.stringify({
-        baseGap: 12,
-      }),
+      ...seededDesignSystem,
     },
   });
 
   console.log('✓ Design system created\n');
 
   // ==========================================================================
+  // DEFAULT FONTS (GOOGLE FONTS)
+  // ==========================================================================
+
+  console.log('Creating default fonts (Google Fonts)...');
+
+  await ensureGoogleFont({
+    name: 'Roboto Flex',
+    family: 'Roboto Flex',
+    cssUrl:
+      'https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&display=swap',
+  });
+
+  await ensureGoogleFont({
+    name: 'IBM Plex Mono',
+    family: 'IBM Plex Mono',
+    cssUrl:
+      'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap',
+  });
+
+  console.log('✓ Default fonts created\n');
+
+  // ==========================================================================
   // CASES
   // ==========================================================================
 
   console.log('Creating cases...');
+
+  console.log('Uploading seed images to S3...');
+  const aidaHeroUrl = await createAndUploadSeedImage({
+    label: 'Aida · hero',
+    width: 1600,
+    height: 900,
+  });
+  const aidaPoster1Url = await createAndUploadSeedImage({
+    label: 'Aida · poster 1',
+    width: 1200,
+    height: 900,
+  });
+  const aidaPoster2Url = await createAndUploadSeedImage({
+    label: 'Aida · poster 2',
+    width: 1200,
+    height: 900,
+  });
+  const ndaPreviewUrl = await createAndUploadSeedImage({
+    label: 'NDA · preview',
+    width: 1200,
+    height: 900,
+  });
+  console.log('✓ Seed images uploaded\n');
 
   // Case 1: Public case (Neirofestival Aida)
   const case1 = await prisma.case.upsert({
@@ -160,7 +293,7 @@ async function main() {
           {
             position: 0,
             type: 'IMAGE',
-            url: 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=1200',
+            url: aidaHeroUrl,
             alt: 'Main festival visual',
             aspectRatio: '16:9',
           },
@@ -179,14 +312,14 @@ async function main() {
           {
             position: 0,
             type: 'IMAGE',
-            url: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600',
+            url: aidaPoster1Url,
             alt: 'Festival poster 1',
             aspectRatio: '4:3',
           },
           {
             position: 1,
             type: 'IMAGE',
-            url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600',
+            url: aidaPoster2Url,
             alt: 'Festival poster 2',
             aspectRatio: '4:3', // Одинаковое с первой картинкой
           },
@@ -222,7 +355,7 @@ async function main() {
           {
             position: 0,
             type: 'IMAGE',
-            url: 'https://images.unsplash.com/photo-1618556450994-a6a128ef0d9d?w=1200',
+            url: ndaPreviewUrl,
             alt: 'NDA project preview',
             aspectRatio: '4:3',
           },

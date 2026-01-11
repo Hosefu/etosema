@@ -49,6 +49,7 @@ export function OptimizedImage({
   className = '',
   placeholderSrc,
   placeholderBlur = 15,
+  unoptimized,
   onLoad,
   ...props
 }: OptimizedImageProps) {
@@ -90,8 +91,20 @@ export function OptimizedImage({
     onLoad?.(event);
   };
 
+  const wrapperClassName = props.fill
+    ? `${styles.wrapper} ${styles.fillWrapper} ${className}`
+    : `${styles.wrapper} ${className}`;
+
+  // Important performance note:
+  // Next.js <Image> optimization for remote URLs can become a bottleneck (server-side queue),
+  // especially with large originals. We default to unoptimized for absolute http(s) URLs
+  // to let the browser load from S3/CDN directly.
+  const resolvedUnoptimized =
+    unoptimized ??
+    (typeof props.src === 'string' && /^https?:\/\//.test(props.src));
+
   return (
-    <div className={`${styles.wrapper} ${className}`}>
+    <div className={wrapperClassName}>
       {showPlaceholder && derivedPlaceholder && isLoading && (
         <img
           src={derivedPlaceholder}
@@ -104,6 +117,7 @@ export function OptimizedImage({
       <Image
         {...props}
         quality={quality}
+        unoptimized={resolvedUnoptimized}
         placeholder={showPlaceholder && blurDataURL ? 'blur' : 'empty'}
         blurDataURL={blurDataURL}
         className={`${styles.image} ${isLoading ? styles.loading : styles.loaded}`}

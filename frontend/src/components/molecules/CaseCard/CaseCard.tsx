@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CasePreview } from '@/lib/apiClient';
@@ -41,6 +41,33 @@ export function CaseCard({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isPinActive, setIsPinActive] = useState(false);
+  const [isNoHoverDevice, setIsNoHoverDevice] = useState(false);
+
+  // On touch devices there's no hover, so NDA cards must show the PIN form by default.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mql = window.matchMedia?.('(hover: none), (pointer: coarse)');
+    if (!mql) return;
+
+    const apply = () => {
+      const touchPoints =
+        typeof navigator !== 'undefined' ? navigator.maxTouchPoints || 0 : 0;
+      setIsNoHoverDevice(!!mql.matches || touchPoints > 0);
+    };
+    apply();
+
+    // Safari <14 uses addListener/removeListener
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anyMql: any = mql;
+    if (typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', apply);
+      return () => mql.removeEventListener('change', apply);
+    }
+    if (typeof anyMql.addListener === 'function') {
+      anyMql.addListener(apply);
+      return () => anyMql.removeListener(apply);
+    }
+  }, []);
 
   const handlePinComplete = async (pin: string) => {
     if (!onPinSubmit) return;
@@ -81,7 +108,7 @@ export function CaseCard({
         <div className={styles.cover}>
           <div className={styles.lockContent}>
             {isSubmitting ? <Loader size={70} /> : <IconLock size={70} />}
-            {(isHovered || isPinActive) && (
+            {(isNoHoverDevice || isHovered || isPinActive) && (
               <>
                 <div
                   className={styles.pinInputContainer}
@@ -184,12 +211,14 @@ export function CaseCard({
               {item.type === 'VIDEO' ? (
                 <OptimizedVideo
                   src={item.url}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    lazy={index > 0}
-                    className={styles.image}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  lazy={index > 0}
+                  // Wrapper already defines aspect ratio, so fill it.
+                  fill
+                  className={styles.image}
                   />
                 ) : (
                   <OptimizedImage

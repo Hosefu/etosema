@@ -1,12 +1,14 @@
 services:
   postgres:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_USER: etosema
       POSTGRES_PASSWORD: etosema_password
       POSTGRES_DB: etosema_db
     ports:
-      - "5432:5432"
+      # Best practice: don't expose DB publicly. Override if needed.
+      - "${POSTGRES_BIND_ADDR:-127.0.0.1}:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -19,33 +21,12 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    environment:
-      # Database
-      DATABASE_URL: postgresql://etosema:etosema_password@postgres:5432/etosema_db?schema=public
-      
-      # Server
-      PORT: 3001
-      NODE_ENV: production
-      FRONTEND_URL: http://localhost:3000
-      
-      # Admin Panel (defaults)
-      ADMIN_EMAIL: admin@etosema.ru
-      ADMIN_PASSWORD: changeme
-      
-      # Security Secrets (⚠️ CHANGE THESE IN PRODUCTION!)
-      PIN_SESSION_SECRET: ${PIN_SESSION_SECRET:-changeme_pin_session_secret_key_min_32_chars}
-      JWT_SECRET: ${JWT_SECRET:-changeme_jwt_secret_key_minimum_32_characters}
-      SESSION_SECRET: ${SESSION_SECRET:-changeme_session_secret_key_minimum_32_char}
-      
-      # S3 Storage (RegRu)
-      S3_ENDPOINT: https://s3.regru.cloud
-      S3_BUCKET: etosema
-      S3_ACCESS_KEY: 9CLHOKRTGS2H34LWR3KH
-      S3_SECRET_KEY: Aytx0TweAKCmKGdWUFlnq4BQNEjYDWsINKKQgffq
-      S3_REGION: ${S3_REGION:-us-east-1}
-      S3_PUBLIC_URL: https://etosema.s3.regru.cloud
+    restart: unless-stopped
+    env_file:
+      - ./compose.env
     ports:
-      - "3001:3001"
+      # Nginx on the host proxies to localhost:3001
+      - "${APP_BIND_ADDR:-127.0.0.1}:3001:3001"
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,13 +38,19 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=http://localhost:3001
+        # Build-time public API URL (Next.js inlines NEXT_PUBLIC_* at build)
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+    restart: unless-stopped
+    env_file:
+      - ./compose.env
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3001
+      # Don't leak backend PORT into Next.js runtime (Next uses PORT to bind).
+      - PORT=3000
     depends_on:
       - backend
     ports:
-      - "3000:3000"
+      # Nginx on the host proxies to localhost:3000
+      - "${APP_BIND_ADDR:-127.0.0.1}:3000:3000"
 
 volumes:
   postgres_data:

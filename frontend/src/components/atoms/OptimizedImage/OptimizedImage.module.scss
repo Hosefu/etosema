@@ -2,12 +2,29 @@
  * OptimizedImage Styles
  */
 
+@import '@/styles/tokens.scss';
+
 .wrapper {
   position: relative;
   display: block;
   width: 100%;
   height: auto;
   padding-bottom: var(--image-pad, 56.25%); // default 16:9
+  // Placeholder/loading image uses transform: scale(...),
+  // which can create horizontal overflow on mobile (case page).
+  // Clip it to the wrapper bounds.
+  overflow: hidden;
+}
+
+// When Next/Image uses `fill`, the parent container already defines the box size
+// (usually via aspect-ratio or padding-bottom). In that case this wrapper must
+// not add its own padding-bottom; it should fill the parent instead.
+.fillWrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding-bottom: 0;
 }
 
 .image {
@@ -42,4 +59,13 @@
   filter: blur(0);
   transform: scale(1);
   transition: filter 0.3s ease-out, transform 0.3s ease-out;
+}
+
+// Transforms on images can create horizontal overflow on mobile browsers.
+// Disable the scale effect for mobile screens.
+@include mobile {
+  .placeholder,
+  .loading {
+    transform: none;
+  }
 }

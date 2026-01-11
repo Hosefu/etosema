@@ -682,6 +682,31 @@ export async function adminUploadFont(
 }
 
 /**
+ * Add Google Font (priority method)
+ * Accepts either:
+ * - `https://fonts.google.com/specimen/Roboto+Flex`
+ * - `https://fonts.googleapis.com/css2?family=Roboto+Flex&display=swap`
+ */
+export async function adminAddGoogleFont(inputUrl: string): Promise<{
+  success: boolean;
+  data?: Font;
+}> {
+  const token = getAdminToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const response = await fetch(`${API_BASE_URL}/api/admin/design/fonts/google`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ url: inputUrl }),
+  });
+
+  return response.json();
+}
+
+/**
  * Delete font
  */
 export async function adminDeleteFont(

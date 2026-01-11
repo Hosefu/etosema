@@ -6,8 +6,15 @@
   gap: $grid-gutter;
   padding-inline: $grid-margin;
 
+  // Allow grid items to shrink (prevents horizontal overflow on mobile)
+  > * {
+    min-width: 0;
+  }
+
   @include mobile {
     grid-template-columns: 1fr;
-    // Gutter and margin scale automatically with --scale
+    // Even if design settings set a large grid margin, cap it on mobile
+    // so cards always fit the viewport.
+    padding-inline: clamp(12px, $grid-margin, 24px);
   }
 }
