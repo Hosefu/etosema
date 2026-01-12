@@ -688,6 +688,60 @@ export default function DesignPage() {
             </Row>
           </Card>
 
+          <Card title="Логотип и брендинг" style={{ marginBottom: 16 }}>
+            <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+              SVG логотип автоматически окрашивается цветом заголовка в кейсах. PNG логотипы устарели.
+            </Text>
+
+            <Form.Item label="SVG логотип (с собственными цветами)">
+              <Input
+                value={settings.logoSvgUrl || ''}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    logoSvgUrl: e.target.value,
+                  })
+                }
+                placeholder="https://example.com/logo.svg"
+              />
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Приоритет #1. SVG с цветами (не окрашивается автоматически)
+              </Text>
+            </Form.Item>
+
+            <Form.Item label="SVG-mask логотип (для окрашивания)">
+              <Input
+                value={settings.logoSvgMaskUrl || ''}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    logoSvgMaskUrl: e.target.value,
+                  })
+                }
+                placeholder="https://example.com/logo-mask.svg"
+              />
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Приоритет #2. Одноцветный SVG-mask, окрашивается цветом заголовка
+              </Text>
+            </Form.Item>
+
+            <Form.Item label="Текстовый логотип (fallback)">
+              <Input
+                value={settings.logoText || ''}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    logoText: e.target.value,
+                  })
+                }
+                placeholder="сёма"
+              />
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Приоритет #3. Используется если нет SVG
+              </Text>
+            </Form.Item>
+          </Card>
+
           <Card title="Макет" style={{ marginBottom: 16 }}>
             <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
               Геометрия: скругления и отступы карточек, сетка, ширина текста в кейсах.

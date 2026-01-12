@@ -19,6 +19,7 @@ export interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [design, setDesign] = useState<any>(null);
   const [logoColor, setLogoColor] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -29,6 +30,17 @@ export function MainLayout({ children }: MainLayoutProps) {
         }
       })
       .catch(console.error);
+      
+    // Load design settings for logo
+    import('@/lib/apiClient').then(({ getDesignSettings }) => {
+      getDesignSettings()
+        .then((res) => {
+          if (res.data) {
+            setDesign(res.data.settings);
+          }
+        })
+        .catch(console.error);
+    });
   }, []);
 
   // Get logo color from CSS custom property (set by case or design system)
@@ -66,21 +78,21 @@ export function MainLayout({ children }: MainLayoutProps) {
     <div className={styles.layout}>
       <header className={styles.header}>
         <Link href="/" className={styles.logo}>
-          {(profile as any)?.logoSvgUrl ? (
+          {design?.logoSvgUrl ? (
             // SVG logo with own colors
             <img
-              src={(profile as any).logoSvgUrl}
+              src={design.logoSvgUrl}
               alt="Logo"
               className={styles.logoImage}
               style={{ maxHeight: 40, width: 'auto' }}
             />
-          ) : (profile as any)?.logoSvgMaskUrl ? (
+          ) : design?.logoSvgMaskUrl ? (
             // SVG mask logo - can be colored
             <div
               className={styles.logoMask}
               style={{
-                maskImage: `url(${(profile as any).logoSvgMaskUrl})`,
-                WebkitMaskImage: `url(${(profile as any).logoSvgMaskUrl})`,
+                maskImage: `url(${design.logoSvgMaskUrl})`,
+                WebkitMaskImage: `url(${design.logoSvgMaskUrl})`,
                 maskSize: 'contain',
                 WebkitMaskSize: 'contain',
                 maskRepeat: 'no-repeat',
@@ -103,7 +115,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             />
           ) : (
             <span className={styles.logoText} style={{ color: logoColor || 'inherit' }}>
-              {profile?.logoText || 'сёма'}
+              {design?.logoText || profile?.logoText || 'сёма'}
             </span>
           )}
         </Link>

@@ -711,6 +711,9 @@ export interface DesignSettings {
     cardInner?: number;
     media?: number;
   };
+  logoSvgUrl?: string | null;
+  logoSvgMaskUrl?: string | null;
+  logoText?: string | null;
   faviconUrl?: string | null;
   favicons?: FaviconsSet | null;
   seo?: SeoSettings;
