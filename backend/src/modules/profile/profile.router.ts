@@ -83,8 +83,7 @@ router.get('/', async (req: Request, res: Response) => {
       contacts: parseLinkBlock(profile.contactsJson),
       projects: parseLinkBlock(profile.projectsJson),
       socials: parseLinkBlock(profile.socialsJson),
-      logoUrl: profile.logoUrl,
-      logoText: profile.logoText,
+      logoUrl: profile.logoUrl, // Deprecated, kept for backward compatibility
       lockedCaseMessage: profile.lockedCaseMessage,
     };
 
