@@ -7,14 +7,13 @@ import {
   Button,
   message,
   Card,
-  Upload,
   Divider,
   Row,
   Col,
+  Text,
 } from 'antd';
 import {
   SaveOutlined,
-  UploadOutlined,
   PlusOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
@@ -22,7 +21,6 @@ import type { DividerProps } from 'antd';
 import {
   adminGetProfile,
   adminUpdateProfile,
-  adminUploadFile,
   LinkBlock,
   LinkItem,
 } from '@/lib/adminClient';
