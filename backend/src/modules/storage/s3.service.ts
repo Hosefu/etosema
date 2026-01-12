@@ -67,6 +67,29 @@ export async function uploadFileToS3(
 }
 
 /**
+ * Upload an arbitrary buffer to S3 (public, immutable cache).
+ * Useful for generated assets (favicons, manifests, etc).
+ */
+export async function uploadPublicBufferToS3(params: {
+  key: string;
+  buffer: Buffer;
+  contentType: string;
+}): Promise<string> {
+  await s3Client.send(
+    new PutObjectCommand({
+      Bucket: config.s3.bucket,
+      Key: params.key,
+      Body: params.buffer,
+      ContentType: params.contentType,
+      ACL: 'public-read',
+      CacheControl: 'public, max-age=31536000, immutable',
+    })
+  );
+
+  return getPublicUrl(params.key);
+}
+
+/**
  * Upload image with an additional thumbnail (~200px wide, JPEG)
  */
 export async function uploadImageWithThumbnail(

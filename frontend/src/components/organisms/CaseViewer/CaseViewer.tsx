@@ -20,6 +20,21 @@ export interface CaseViewerProps {
 
 export function CaseViewer({ case: caseData }: CaseViewerProps) {
   useEffect(() => {
+    const blocks = caseData.blocks || [];
+    const mediaBlocks = blocks.filter((b) => b.type !== 'TEXT');
+    const fullNoMedia = mediaBlocks.filter(
+      (b) => b.layout === 'FULL' && (!b.medias || b.medias.length === 0)
+    ).length;
+    const halfNoMedia = mediaBlocks.filter(
+      (b) => b.layout === 'HALF' && (!b.medias || b.medias.length === 0)
+    ).length;
+
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/de5edca8-2fa9-45e0-8bd8-1886d64c2d71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'bg120126-2-pre',hypothesisId:'H2',location:'components/organisms/CaseViewer/CaseViewer.tsx:CaseViewer',message:'Render case viewer',data:{slug:caseData.slug,blockCount:blocks.length,blockIds:blocks.map((b)=>b.id),mediaBlocks:mediaBlocks.length,fullNoMedia,halfNoMedia},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+  }, [caseData.slug, caseData.blocks]);
+
+  useEffect(() => {
     // Check if there's a hash in URL (e.g., #image-2)
     const hash = window.location.hash;
     if (hash.startsWith('#image-')) {

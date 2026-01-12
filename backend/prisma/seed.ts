@@ -205,8 +205,8 @@ async function main() {
 
   await prisma.designSystem.upsert({
     where: { id: 1 },
-    // IMPORTANT: overwrite defaults if record already exists
-    update: { ...seededDesignSystem },
+    // IMPORTANT: do NOT overwrite an existing site's settings
+    update: {},
     create: {
       id: 1,
       ...seededDesignSystem,
@@ -243,126 +243,142 @@ async function main() {
 
   console.log('Creating cases...');
 
-  console.log('Uploading seed images to S3...');
-  const aidaHeroUrl = await createAndUploadSeedImage({
-    label: 'Aida · hero',
-    width: 1600,
-    height: 900,
-  });
-  const aidaPoster1Url = await createAndUploadSeedImage({
-    label: 'Aida · poster 1',
-    width: 1200,
-    height: 900,
-  });
-  const aidaPoster2Url = await createAndUploadSeedImage({
-    label: 'Aida · poster 2',
-    width: 1200,
-    height: 900,
-  });
-  const ndaPreviewUrl = await createAndUploadSeedImage({
-    label: 'NDA · preview',
-    width: 1200,
-    height: 900,
-  });
-  console.log('✓ Seed images uploaded\n');
-
   // Case 1: Public case (Neirofestival Aida)
-  const case1 = await prisma.case.upsert({
+  const existingCase1 = await prisma.case.findUnique({
     where: { slug: 'neirofestival-aida' },
-    update: {},
-    create: {
-      slug: 'neirofestival-aida',
-      title: 'Нейрофестиваль Аида',
-      shortTitle: 'Аида',
-      year: 2024,
-      summary:
-        'Айда — первый фестиваль креатива и дизайна с использованием нейросетей. Разработка визуального языка и коммуникационной стратегии.',
-      isNda: false,
-      orderRank: 'a0',
-    },
+    include: { blocks: { select: { id: true } } },
   });
 
-  // Add blocks to case1
-  await prisma.caseBlock.create({
-    data: {
-      caseId: case1.id,
-      layout: 'FULL',
-      orderRank: 'a0',
-      medias: {
-        create: [
-          {
-            position: 0,
-            type: 'IMAGE',
-            url: aidaHeroUrl,
-            alt: 'Main festival visual',
-            aspectRatio: '16:9',
-          },
-        ],
+  const case1 =
+    existingCase1 ||
+    (await prisma.case.create({
+      data: {
+        slug: 'neirofestival-aida',
+        title: 'Нейрофестиваль Аида',
+        shortTitle: 'Аида',
+        year: 2024,
+        summary:
+          'Айда — первый фестиваль креатива и дизайна с использованием нейросетей. Разработка визуального языка и коммуникационной стратегии.',
+        isNda: false,
+        orderRank: 'a0',
       },
-    },
-  });
+    }));
 
-  await prisma.caseBlock.create({
-    data: {
-      caseId: case1.id,
-      layout: 'HALF',
-      orderRank: 'a1',
-      medias: {
-        create: [
-          {
-            position: 0,
-            type: 'IMAGE',
-            url: aidaPoster1Url,
-            alt: 'Festival poster 1',
-            aspectRatio: '4:3',
-          },
-          {
-            position: 1,
-            type: 'IMAGE',
-            url: aidaPoster2Url,
-            alt: 'Festival poster 2',
-            aspectRatio: '4:3', // Одинаковое с первой картинкой
-          },
-        ],
+  // Add blocks only once (seed must be idempotent)
+  if (!existingCase1 || existingCase1.blocks.length === 0) {
+    console.log('Uploading seed images to S3 (case1)...');
+    const aidaHeroUrl = await createAndUploadSeedImage({
+      label: 'Aida · hero',
+      width: 1600,
+      height: 900,
+    });
+    const aidaPoster1Url = await createAndUploadSeedImage({
+      label: 'Aida · poster 1',
+      width: 1200,
+      height: 900,
+    });
+    const aidaPoster2Url = await createAndUploadSeedImage({
+      label: 'Aida · poster 2',
+      width: 1200,
+      height: 900,
+    });
+    console.log('✓ Seed images uploaded (case1)');
+
+    await prisma.caseBlock.create({
+      data: {
+        caseId: case1.id,
+        layout: 'FULL',
+        orderRank: 'a0',
+        medias: {
+          create: [
+            {
+              position: 0,
+              type: 'IMAGE',
+              url: aidaHeroUrl,
+              alt: 'Main festival visual',
+              aspectRatio: '16:9',
+            },
+          ],
+        },
       },
-    },
-  });
+    });
+
+    await prisma.caseBlock.create({
+      data: {
+        caseId: case1.id,
+        layout: 'HALF',
+        orderRank: 'a1',
+        medias: {
+          create: [
+            {
+              position: 0,
+              type: 'IMAGE',
+              url: aidaPoster1Url,
+              alt: 'Festival poster 1',
+              aspectRatio: '4:3',
+            },
+            {
+              position: 1,
+              type: 'IMAGE',
+              url: aidaPoster2Url,
+              alt: 'Festival poster 2',
+              aspectRatio: '4:3', // Одинаковое с первой картинкой
+            },
+          ],
+        },
+      },
+    });
+  }
 
   // Case 2: NDA case
-  const case2 = await prisma.case.upsert({
+  const existingCase2 = await prisma.case.findUnique({
     where: { slug: 'big-nda-project' },
-    update: {},
-    create: {
-      slug: 'big-nda-project',
-      title: 'Проект под NDA',
-      shortTitle: 'NDA',
-      year: 2023,
-      summary:
-        'Крупный проект по ребрендингу для международной компании. Детали доступны по запросу.',
-      isNda: true,
-      orderRank: 'a2',
-    },
+    include: { blocks: { select: { id: true } } },
   });
 
-  // Add blocks to case2
-  await prisma.caseBlock.create({
-    data: {
-      caseId: case2.id,
-      layout: 'FULL',
-      orderRank: 'a0',
-      medias: {
-        create: [
-          {
-            position: 0,
-            type: 'IMAGE',
-            url: ndaPreviewUrl,
-            alt: 'NDA project preview',
-            aspectRatio: '4:3',
-          },
-        ],
+  const case2 =
+    existingCase2 ||
+    (await prisma.case.create({
+      data: {
+        slug: 'big-nda-project',
+        title: 'Проект под NDA',
+        shortTitle: 'NDA',
+        year: 2023,
+        summary:
+          'Крупный проект по ребрендингу для международной компании. Детали доступны по запросу.',
+        isNda: true,
+        orderRank: 'a2',
       },
-    },
-  });
+    }));
+
+  if (!existingCase2 || existingCase2.blocks.length === 0) {
+    console.log('Uploading seed images to S3 (case2)...');
+    const ndaPreviewUrl = await createAndUploadSeedImage({
+      label: 'NDA · preview',
+      width: 1200,
+      height: 900,
+    });
+    console.log('✓ Seed images uploaded (case2)');
+
+    await prisma.caseBlock.create({
+      data: {
+        caseId: case2.id,
+        layout: 'FULL',
+        orderRank: 'a0',
+        medias: {
+          create: [
+            {
+              position: 0,
+              type: 'IMAGE',
+              url: ndaPreviewUrl,
+              alt: 'NDA project preview',
+              aspectRatio: '4:3',
+            },
+          ],
+        },
+      },
+    });
+  }
 
   console.log('✓ Cases created\n');
 
@@ -373,17 +389,22 @@ async function main() {
   console.log('Creating PIN codes...');
 
   // PIN 1: Access to specific case (1234)
-  const pin1Hash = await hashPin('1234');
-  const pin1 = await prisma.pinCode.upsert({
-    where: { codeHash: pin1Hash },
-    update: {},
-    create: {
-      label: 'Demo PIN for NDA Project',
-      codeHash: pin1Hash,
-      accessAll: false,
-      expiresAt: new Date('2025-12-31'),
-    },
+  const existingPin1 = await prisma.pinCode.findUnique({
+    where: { shortCode: 'demo-1234' },
   });
+
+  const pin1 =
+    existingPin1 ||
+    (await prisma.pinCode.create({
+      data: {
+        label: 'Демо PIN для NDA кейса',
+        code: '1234',
+        shortCode: 'demo-1234',
+        codeHash: await hashPin('1234'),
+        accessAll: false,
+        expiresAt: new Date('2025-12-31'),
+      },
+    }));
 
   // Link pin1 to case2
   await prisma.pinCodeCase.upsert({
@@ -401,17 +422,21 @@ async function main() {
   });
 
   // PIN 2: Access to all NDA cases (9999)
-  const pin2Hash = await hashPin('9999');
-  await prisma.pinCode.upsert({
-    where: { codeHash: pin2Hash },
-    update: {},
-    create: {
-      label: 'Admin PIN - All Access',
-      codeHash: pin2Hash,
-      accessAll: true,
-      expiresAt: null, // No expiration
-    },
+  const existingPin2 = await prisma.pinCode.findUnique({
+    where: { shortCode: 'all-9999' },
   });
+  if (!existingPin2) {
+    await prisma.pinCode.create({
+      data: {
+        label: 'Админ PIN — доступ ко всем NDA',
+        code: '9999',
+        shortCode: 'all-9999',
+        codeHash: await hashPin('9999'),
+        accessAll: true,
+        expiresAt: null, // No expiration
+      },
+    });
+  }
 
   console.log('✓ PIN codes created');
   console.log('  PIN 1234: Access to "Проект под NDA"');

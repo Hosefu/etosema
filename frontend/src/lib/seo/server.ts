@@ -12,10 +12,26 @@ export interface SeoSettings {
   caseDescriptionFallback: string;
 }
 
+export interface FaviconsSet {
+  png16?: string;
+  png32?: string;
+  png48?: string;
+  png64?: string;
+  apple180?: string;
+  android192?: string;
+  android512?: string;
+  ico?: string;
+  svg?: string;
+  manifestUrl?: string;
+  maskIconUrl?: string;
+  maskColor?: string;
+}
+
 type PublicDesignResponse = {
   data?: {
     settings?: {
       faviconUrl?: string | null;
+      favicons?: FaviconsSet | null;
       seo?: Partial<SeoSettings> | null;
     } | null;
   };
@@ -32,6 +48,7 @@ function getBaseUrlFromHeaders(): string {
 export async function getPublicSeo(): Promise<{
   seo: SeoSettings;
   faviconUrl: string | null;
+  favicons: FaviconsSet | null;
   baseUrl: string;
 }> {
   const baseUrl = getBaseUrlFromHeaders();
@@ -49,19 +66,22 @@ export async function getPublicSeo(): Promise<{
   try {
     const res = await fetch(
       `${baseUrl}/api/public/design`,
-      { next: { revalidate: 60 } } as any
+      // Favicons/SEO must update immediately after admin save
+      { cache: 'no-store' } as any
     );
     const json = (await res.json()) as PublicDesignResponse;
     const seo = (json.data?.settings?.seo || {}) as Partial<SeoSettings>;
     const faviconUrl = json.data?.settings?.faviconUrl ?? null;
+    const favicons = json.data?.settings?.favicons ?? null;
 
     return {
       seo: { ...fallback, ...seo },
       faviconUrl,
+      favicons,
       baseUrl,
     };
   } catch {
-    return { seo: fallback, faviconUrl: null, baseUrl };
+    return { seo: fallback, faviconUrl: null, favicons: null, baseUrl };
   }
 }
 

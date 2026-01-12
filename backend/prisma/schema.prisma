@@ -199,6 +199,17 @@ model DesignSystem {
   // Favicon URL
   faviconUrl String?
 
+  // Favicons set (JSON string)
+  // {
+  //   png16, png32, png48, png64,
+  //   apple180,
+  //   android192, android512,
+  //   ico, svg,
+  //   manifestUrl,
+  //   maskIconUrl, maskColor
+  // }
+  favicons String?
+
   // SEO settings (JSON string)
   // { siteName, homeTitle, homeDescription, aboutTitle, aboutDescription, caseTitleTemplate, caseDescriptionFallback }
   seo String?

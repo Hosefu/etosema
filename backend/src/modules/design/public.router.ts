@@ -55,6 +55,7 @@ router.get('/', async (req: Request, res: Response) => {
               ? JSON.parse(design.spacing)
               : { baseGap: 12 },
             faviconUrl: design.faviconUrl,
+            favicons: design.favicons ? JSON.parse(design.favicons) : null,
             seo: {
               ...defaultSeo,
               ...(design.seo ? JSON.parse(design.seo) : {}),

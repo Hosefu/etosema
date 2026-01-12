@@ -245,6 +245,83 @@ export async function adminUploadFile(
 }
 
 /**
+ * Upload base favicon (PNG/SVG) and generate all required sizes + manifest
+ */
+export async function adminUploadFaviconBase(
+  file: File
+): Promise<{
+  success: boolean;
+  data?: { faviconUrl?: string | null; favicons?: FaviconsSet };
+}> {
+  const token = getAdminToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${API_BASE_URL}/api/admin/design/favicons/base`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  return response.json();
+}
+
+/**
+ * Upload favicon.ico (optional)
+ */
+export async function adminUploadFaviconIco(
+  file: File
+): Promise<{ success: boolean; data?: { favicons?: FaviconsSet } }> {
+  const token = getAdminToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${API_BASE_URL}/api/admin/design/favicons/ico`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  return response.json();
+}
+
+/**
+ * Upload safari pinned tab mask-icon (SVG) + optional color
+ */
+export async function adminUploadFaviconMask(
+  file: File,
+  maskColor?: string
+): Promise<{ success: boolean; data?: { favicons?: FaviconsSet } }> {
+  const token = getAdminToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const formData = new FormData();
+  formData.append('file', file);
+  if (maskColor) formData.append('maskColor', maskColor);
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/design/favicons/mask`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    }
+  );
+
+  return response.json();
+}
+
+/**
  * Create a block (admin)
  */
 export async function adminCreateBlock(
@@ -579,6 +656,21 @@ export interface SeoSettings {
   caseDescriptionFallback?: string;
 }
 
+export interface FaviconsSet {
+  png16?: string;
+  png32?: string;
+  png48?: string;
+  png64?: string;
+  apple180?: string;
+  android192?: string;
+  android512?: string;
+  ico?: string;
+  svg?: string;
+  manifestUrl?: string;
+  maskIconUrl?: string;
+  maskColor?: string;
+}
+
 export interface DesignSettings {
   id: number;
   typography: {
@@ -615,6 +707,7 @@ export interface DesignSettings {
     baseGap: number;
   };
   faviconUrl?: string | null;
+  favicons?: FaviconsSet | null;
   seo?: SeoSettings;
 }
 

@@ -3,11 +3,14 @@ import multer from 'multer';
 import path from 'path';
 import { prisma } from '../../db/prisma';
 import { verifyAdminToken, AdminRequest } from '../admin/admin.middleware';
-import { uploadFileToS3 } from '../storage/s3.service';
+import { uploadFileToS3, uploadPublicBufferToS3 } from '../storage/s3.service';
+import sharp from 'sharp';
 
 const router = Router();
 const storage = multer.memoryStorage();
-const upload = multer({
+
+// Uploads for fonts only
+const uploadFont = multer({
   storage,
   limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
@@ -18,6 +21,47 @@ const upload = multer({
     }
   },
 });
+
+// Uploads for favicon assets (png/svg/ico)
+const uploadFavicon = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB is plenty for icons
+  fileFilter: (req, file, cb) => {
+    const name = (file.originalname || '').toLowerCase();
+    const mimetype = (file.mimetype || '').toLowerCase();
+
+    const isSvg =
+      mimetype.includes('image/svg') || name.endsWith('.svg');
+    const isPng =
+      mimetype === 'image/png' || name.endsWith('.png');
+    const isJpeg =
+      mimetype === 'image/jpeg' ||
+      name.endsWith('.jpg') ||
+      name.endsWith('.jpeg');
+    const isIco =
+      mimetype === 'image/x-icon' ||
+      mimetype === 'image/vnd.microsoft.icon' ||
+      name.endsWith('.ico');
+
+    // allow JPEG too (we'll convert to PNG anyway)
+    if (isSvg || isPng || isJpeg || isIco) return cb(null, true);
+    cb(new Error('Only PNG, JPG/JPEG, SVG or ICO files are allowed'));
+  },
+});
+
+function singleFaviconUpload(fieldName: string) {
+  return (req: AdminRequest, res: any, next: any) => {
+    uploadFavicon.single(fieldName)(req as any, res as any, (err: any) => {
+      if (!err) return next();
+      return res.status(400).json({
+        error: {
+          code: 'invalid_file',
+          message: err.message || 'Invalid file',
+        },
+      });
+    });
+  };
+}
 
 // Protect all routes
 router.use(verifyAdminToken);
@@ -130,6 +174,7 @@ router.get('/', async (req: AdminRequest, res) => {
         ...defaultSeo,
         ...(design.seo ? JSON.parse(design.seo) : {}),
       },
+      favicons: design.favicons ? JSON.parse(design.favicons) : null,
     };
 
     res.json({ success: true, data: { settings: parsedSettings, fonts } });
@@ -142,6 +187,260 @@ router.get('/', async (req: AdminRequest, res) => {
       });
   }
 });
+
+type FaviconsSet = {
+  png16?: string;
+  png32?: string;
+  png48?: string;
+  png64?: string;
+  apple180?: string;
+  android192?: string;
+  android512?: string;
+  ico?: string;
+  svg?: string;
+  manifestUrl?: string;
+  maskIconUrl?: string;
+  maskColor?: string;
+};
+
+/**
+ * POST /api/admin/design/favicons/base
+ * Upload a base square icon (PNG/SVG) and generate standard PNG sizes + webmanifest.
+ */
+router.post(
+  '/favicons/base',
+  singleFaviconUpload('file'),
+  async (req: AdminRequest, res) => {
+    try {
+      if (!req.file) throw new Error('No file uploaded');
+
+      const design = await prisma.designSystem.findUnique({ where: { id: 1 } });
+      if (!design) throw new Error('Design system not found');
+
+      const seo = design.seo ? JSON.parse(design.seo) : {};
+      const siteName = (seo.siteName as string) || 'Etosema';
+
+      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      const basePath = `favicons/${uniqueSuffix}`;
+
+      // keep original svg if provided (useful as vector icon)
+      let svgUrl: string | undefined;
+      if (req.file.mimetype.includes('svg') || req.file.originalname.endsWith('.svg')) {
+        svgUrl = await uploadFileToS3(
+          {
+            buffer: req.file.buffer,
+            originalname: 'favicon.svg',
+            mimetype: 'image/svg+xml',
+          },
+          basePath
+        );
+      }
+
+      const sizes: Array<[number, keyof FaviconsSet]> = [
+        [16, 'png16'],
+        [32, 'png32'],
+        [48, 'png48'],
+        [64, 'png64'],
+        [180, 'apple180'],
+        [192, 'android192'],
+        [512, 'android512'],
+      ];
+
+      const pngUrls: Partial<FaviconsSet> = {};
+      for (const [size, key] of sizes) {
+        const buffer = await sharp(req.file.buffer)
+          .rotate()
+          .resize({ width: size, height: size, fit: 'cover' })
+          .png({ compressionLevel: 9, adaptiveFiltering: true })
+          .toBuffer();
+
+        const url = await uploadPublicBufferToS3({
+          key: `${basePath}/${key}.png`,
+          buffer,
+          contentType: 'image/png',
+        });
+        (pngUrls as any)[key] = url;
+      }
+
+      const manifest = {
+        name: siteName,
+        short_name: siteName,
+        icons: [
+          {
+            src: pngUrls.android192,
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: pngUrls.android512,
+            sizes: '512x512',
+            type: 'image/png',
+          },
+        ].filter((x) => x.src),
+        display: 'standalone',
+        background_color: '#ffffff',
+        theme_color: '#ffffff',
+      };
+
+      const manifestUrl = await uploadPublicBufferToS3({
+        key: `${basePath}/site.webmanifest`,
+        buffer: Buffer.from(JSON.stringify(manifest), 'utf-8'),
+        contentType: 'application/manifest+json',
+      });
+
+      const prevFavicons: FaviconsSet | null = design.favicons
+        ? JSON.parse(design.favicons)
+        : null;
+
+      const newFavicons: FaviconsSet = {
+        ...(prevFavicons || {}),
+        ...pngUrls,
+        svg: svgUrl ?? prevFavicons?.svg,
+        manifestUrl,
+      };
+
+      // keep legacy faviconUrl for old clients (32px)
+      const updated = await prisma.designSystem.update({
+        where: { id: 1 },
+        data: {
+          faviconUrl: newFavicons.png32 || newFavicons.png16 || null,
+          favicons: JSON.stringify(newFavicons),
+        },
+      });
+
+      res.json({
+        success: true,
+        data: {
+          faviconUrl: updated.faviconUrl,
+          favicons: newFavicons,
+        },
+      });
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Unknown error';
+      console.error('Error generating favicons:', e);
+      res.status(500).json({ error: { code: 'favicon_error', message } });
+    }
+  }
+);
+
+/**
+ * POST /api/admin/design/favicons/ico
+ * Upload a ready favicon.ico (recommended, because generating ICO server-side requires extra tooling).
+ */
+router.post(
+  '/favicons/ico',
+  singleFaviconUpload('file'),
+  async (req: AdminRequest, res) => {
+    try {
+      if (!req.file) throw new Error('No file uploaded');
+      if (!req.file.originalname.toLowerCase().endsWith('.ico')) {
+        return res.status(400).json({
+          error: {
+            code: 'invalid_file',
+            message: 'Please upload a .ico file',
+          },
+        });
+      }
+      const design = await prisma.designSystem.findUnique({ where: { id: 1 } });
+      if (!design) throw new Error('Design system not found');
+
+      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      const basePath = `favicons/${uniqueSuffix}`;
+
+      const icoUrl = await uploadPublicBufferToS3({
+        key: `${basePath}/favicon.ico`,
+        buffer: req.file.buffer,
+        contentType: 'image/x-icon',
+      });
+
+      const prevFavicons: FaviconsSet | null = design.favicons
+        ? JSON.parse(design.favicons)
+        : null;
+
+      const newFavicons: FaviconsSet = {
+        ...(prevFavicons || {}),
+        ico: icoUrl,
+      };
+
+      await prisma.designSystem.update({
+        where: { id: 1 },
+        data: {
+          favicons: JSON.stringify(newFavicons),
+        },
+      });
+
+      res.json({ success: true, data: { favicons: newFavicons } });
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Unknown error';
+      console.error('Error uploading favicon.ico:', e);
+      res.status(500).json({ error: { code: 'favicon_error', message } });
+    }
+  }
+);
+
+/**
+ * POST /api/admin/design/favicons/mask
+ * Upload safari pinned tab mask-icon SVG + optional color.
+ */
+router.post(
+  '/favicons/mask',
+  singleFaviconUpload('file'),
+  async (req: AdminRequest, res) => {
+    try {
+      if (!req.file) throw new Error('No file uploaded');
+      if (!req.file.originalname.toLowerCase().endsWith('.svg')) {
+        return res.status(400).json({
+          error: {
+            code: 'invalid_file',
+            message: 'Please upload an .svg file',
+          },
+        });
+      }
+      const design = await prisma.designSystem.findUnique({ where: { id: 1 } });
+      if (!design) throw new Error('Design system not found');
+
+      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      const basePath = `favicons/${uniqueSuffix}`;
+
+      const maskIconUrl = await uploadFileToS3(
+        {
+          buffer: req.file.buffer,
+          originalname: 'safari-pinned-tab.svg',
+          mimetype: 'image/svg+xml',
+        },
+        basePath
+      );
+
+      const color =
+        typeof (req.body as any)?.maskColor === 'string'
+          ? (req.body as any).maskColor
+          : undefined;
+
+      const prevFavicons: FaviconsSet | null = design.favicons
+        ? JSON.parse(design.favicons)
+        : null;
+
+      const newFavicons: FaviconsSet = {
+        ...(prevFavicons || {}),
+        maskIconUrl,
+        maskColor: color ?? prevFavicons?.maskColor,
+      };
+
+      await prisma.designSystem.update({
+        where: { id: 1 },
+        data: {
+          favicons: JSON.stringify(newFavicons),
+        },
+      });
+
+      res.json({ success: true, data: { favicons: newFavicons } });
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Unknown error';
+      console.error('Error uploading mask icon:', e);
+      res.status(500).json({ error: { code: 'favicon_error', message } });
+    }
+  }
+);
 
 /**
  * PUT /api/admin/design
@@ -192,6 +491,11 @@ router.put('/', async (req: AdminRequest, res) => {
       const seo = (req.body as { seo?: unknown }).seo;
       data.seo = typeof seo === 'string' ? seo : JSON.stringify(seo);
     }
+    if ((req.body as any)?.favicons !== undefined) {
+      const favicons = (req.body as { favicons?: unknown }).favicons;
+      data.favicons =
+        typeof favicons === 'string' ? favicons : JSON.stringify(favicons);
+    }
 
     const design = await prisma.designSystem.update({
       where: { id: 1 },
@@ -213,7 +517,7 @@ router.put('/', async (req: AdminRequest, res) => {
  * POST /api/admin/design/fonts
  * Upload a new font
  */
-router.post('/fonts', upload.single('file'), async (req: AdminRequest, res) => {
+router.post('/fonts', uploadFont.single('file'), async (req: AdminRequest, res) => {
   try {
     if (!req.file) throw new Error('No file uploaded');
 

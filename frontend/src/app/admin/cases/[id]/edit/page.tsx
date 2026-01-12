@@ -87,6 +87,9 @@ export default function AdminCaseEditPage() {
       if (response.success && response.data) {
         // setCaseData(response.data);
         setBlocks(response.data.blocks);
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/de5edca8-2fa9-45e0-8bd8-1886d64c2d71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'bg120126-2-pre',hypothesisId:'H1',location:'admin/cases/[id]/edit/page.tsx:loadCase',message:'Loaded case blocks',data:{caseId,blockCount:response.data.blocks.length,orderRanks:response.data.blocks.map((b:any)=>b.orderRank),blockIds:response.data.blocks.map((b:any)=>b.id)},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
 
         const settings = response.data.settings
           ? JSON.parse(response.data.settings)
@@ -194,6 +197,9 @@ export default function AdminCaseEditPage() {
 
   const handleAddBlock = async (type: 'MEDIA' | 'TEXT') => {
     try {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/de5edca8-2fa9-45e0-8bd8-1886d64c2d71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'bg120126-2-pre',hypothesisId:'H4',location:'admin/cases/[id]/edit/page.tsx:handleAddBlock',message:'Add block request',data:{caseId,type,currentCount:blocks.length,plannedOrderRank:`${blocks.length+1}`,existingOrderRanks:blocks.map((b:any)=>b.orderRank)},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       const response = await adminCreateBlock({
         caseId,
         type,
@@ -203,6 +209,9 @@ export default function AdminCaseEditPage() {
       });
       if (response.success && response.data) {
         setBlocks([...blocks, response.data]);
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/de5edca8-2fa9-45e0-8bd8-1886d64c2d71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'bg120126-2-pre',hypothesisId:'H4',location:'admin/cases/[id]/edit/page.tsx:handleAddBlock',message:'Add block success',data:{caseId,createdBlockId:(response.data as any).id,createdOrderRank:(response.data as any).orderRank,newCount:blocks.length+1},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
         message.success('Блок добавлен');
       }
     } catch (error) {
@@ -222,6 +231,9 @@ export default function AdminCaseEditPage() {
     ];
 
     try {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/de5edca8-2fa9-45e0-8bd8-1886d64c2d71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'bg120126-2-pre',hypothesisId:'H1',location:'admin/cases/[id]/edit/page.tsx:handleMoveBlock',message:'Move block (pre)',data:{caseId,index,direction,targetIndex,orderRanksBefore:blocks.map((b:any)=>b.orderRank),idsBefore:blocks.map((b:any)=>b.id)},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       await Promise.all([
         adminUpdateBlock(newBlocks[index].id, { orderRank: `${index + 1}` }),
         adminUpdateBlock(newBlocks[targetIndex].id, {
@@ -229,6 +241,9 @@ export default function AdminCaseEditPage() {
         }),
       ]);
       setBlocks(newBlocks);
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/de5edca8-2fa9-45e0-8bd8-1886d64c2d71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'bg120126-2-pre',hypothesisId:'H1',location:'admin/cases/[id]/edit/page.tsx:handleMoveBlock',message:'Move block (post)',data:{caseId,orderRanksAfter:newBlocks.map((b:any)=>b.orderRank),idsAfter:newBlocks.map((b:any)=>b.id)},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       message.success('Блок перемещен');
     } catch (error) {
       message.error('Ошибка перемещения блока');
