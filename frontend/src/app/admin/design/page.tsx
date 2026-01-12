@@ -707,7 +707,6 @@ export default function DesignPage() {
                     
                     const res = await fetch('http://localhost:3001/api/admin/upload', {
                       method: 'POST',
-                      credentials: 'include',
                       body: formData,
                     });
                     
@@ -762,7 +761,6 @@ export default function DesignPage() {
                     
                     const res = await fetch('http://localhost:3001/api/admin/upload', {
                       method: 'POST',
-                      credentials: 'include',
                       body: formData,
                     });
                     

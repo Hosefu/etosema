@@ -212,17 +212,6 @@ export default function AdminProfilePage() {
     }
   };
 
-  const handleUploadLogo = async (file: File) => {
-    try {
-      const response = await adminUploadFile(file);
-      if (response.success && response.data) {
-        form.setFieldsValue({ logoUrl: response.data.url });
-        message.success('Логотип загружен');
-      }
-    } catch (error) {
-      message.error('Ошибка загрузки файла');
-    }
-  };
 
   return (
     <div>
@@ -264,31 +253,9 @@ export default function AdminProfilePage() {
                 <Input.TextArea rows={3} />
               </Form.Item>
 
-              <Divider orientation={'left' as DividerProps['orientation']}>
-                Логотип
-              </Divider>
-              <Form.Item label="URL Логотипа (S3)" name="logoUrl">
-                <Input
-                  addonAfter={
-                    <Upload
-                      beforeUpload={(file) => {
-                        handleUploadLogo(file);
-                        return false;
-                      }}
-                      showUploadList={false}
-                      accept="image/svg+xml,image/png,image/jpeg"
-                    >
-                      <UploadOutlined style={{ cursor: 'pointer' }} />
-                    </Upload>
-                  }
-                />
-              </Form.Item>
-              <Form.Item
-                label="Текст логотипа (если нет картинки)"
-                name="logoText"
-              >
-                <Input placeholder="сёма" />
-              </Form.Item>
+              <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
+                Логотип теперь настраивается в разделе «Дизайн → Логотип и брендинг»
+              </Text>
             </Card>
 
             <Card title="Ссылки и Контакты" loading={loading}>
@@ -305,58 +272,6 @@ export default function AdminProfilePage() {
               </Form.Item>
             </Card>
           </Form>
-        </Col>
-
-        <Col span={8}>
-          <Card
-            title="Предпросмотр Лого"
-            loading={loading}
-            style={{ position: 'sticky', top: 24 }}
-          >
-            <Form.Item
-              noStyle
-              shouldUpdate={(prev, curr) =>
-                prev.logoUrl !== curr.logoUrl || prev.logoText !== curr.logoText
-              }
-            >
-              {() => {
-                const url = form.getFieldValue('logoUrl');
-                const text = form.getFieldValue('logoText') || 'сёма';
-
-                const src = url?.startsWith('http')
-                  ? url
-                  : url
-                    ? `http://localhost:3001${url}`
-                    : null;
-
-                return (
-                  <div
-                    style={{
-                      border: '1px dashed #ddd',
-                      padding: 20,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: '#fff',
-                      minHeight: 100,
-                    }}
-                  >
-                    {src ? (
-                      <img
-                        src={src}
-                        alt="Logo"
-                        style={{ maxWidth: '100%', maxHeight: 60 }}
-                      />
-                    ) : (
-                      <span style={{ fontSize: 24, fontWeight: 'bold' }}>
-                        {text}
-                      </span>
-                    )}
-                  </div>
-                );
-              }}
-            </Form.Item>
-          </Card>
         </Col>
       </Row>
     </div>
