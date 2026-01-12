@@ -154,44 +154,59 @@ export function CaseCard({
   // If absolutely no media, the card will be empty/placeholder.
   const mediaToShow = previewMedia.length > 0 ? previewMedia : [];
 
-  // Calculate global image indices (only for IMAGE type, same logic as CaseViewer)
+  // Calculate global image/video indices (same logic as CaseViewer)
   const mediaWithIndices: Array<{
     mediaIndex: number;
     globalImageIndex: number;
+    globalVideoIndex: number;
   }> = [];
   let globalImageIndex = 0;
+  let globalVideoIndex = 0;
 
   mediaToShow.forEach((media, index) => {
-    if (media.type === 'IMAGE') {
-      mediaWithIndices.push({
-        mediaIndex: index,
-        globalImageIndex: globalImageIndex++,
-      });
-    }
+    mediaWithIndices.push({
+      mediaIndex: index,
+      globalImageIndex: media.type === 'IMAGE' ? globalImageIndex++ : -1,
+      globalVideoIndex: media.type === 'VIDEO' ? globalVideoIndex++ : -1,
+    });
   });
 
   const handleImageClick = (e: React.MouseEvent, index: number) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Find the global image index for this media item
+    // Find the global image/video index for this media item
     const mediaInfo = mediaWithIndices.find((m) => m.mediaIndex === index);
 
-    if (mediaToShow[index].type === 'IMAGE' && mediaInfo) {
+    if (mediaToShow[index].type === 'IMAGE' && mediaInfo && mediaInfo.globalImageIndex >= 0) {
       // Navigate to case page with image anchor
       router.push(
         `/cases/${caseData.slug}#image-${mediaInfo.globalImageIndex}`
       );
+    } else if (mediaToShow[index].type === 'VIDEO' && mediaInfo && mediaInfo.globalVideoIndex >= 0) {
+      // Navigate to case page with video anchor
+      router.push(
+        `/cases/${caseData.slug}#video-${mediaInfo.globalVideoIndex}`
+      );
     } else {
-      // For videos or if no index found, just go to the case page
+      // Fallback: just go to the case page
       router.push(`/cases/${caseData.slug}`);
     }
   };
 
+  // Check if case has custom background color
+  const customBgColor = (caseData as any).useCustomDesign && (caseData as any).backgroundColor
+    ? (caseData as any).backgroundColor
+    : undefined;
+
   // Regular case
   return (
     <div className={styles.card}>
-      <Link href={`/cases/${caseData.slug}`} className={styles.cover}>
+      <Link 
+        href={`/cases/${caseData.slug}`} 
+        className={styles.cover}
+        style={customBgColor ? { backgroundColor: customBgColor } : undefined}
+      >
         <div className={styles.imagesContainer}>
           {mediaToShow.map((item, index) => {
             const ratio = item.aspectRatio || '16:9';

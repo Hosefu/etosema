@@ -6,45 +6,34 @@
 
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { CaseDetail, CaseBlock } from '@/lib/apiClient';
 import { Heading } from '@/components/atoms/Heading/Heading';
 import { Text } from '@/components/atoms/Text/Text';
 import { OptimizedImage } from '@/components/atoms/OptimizedImage/OptimizedImage';
 import { OptimizedVideo } from '@/components/atoms/OptimizedVideo/OptimizedVideo';
+import { parseMarkdown } from '@/lib/utils/markdown';
 import styles from './CaseViewer.module.scss';
 
 export interface CaseViewerProps {
   case: CaseDetail;
+  prevCase?: { slug: string; title: string; shortTitle?: string } | null;
+  nextCase?: { slug: string; title: string; shortTitle?: string } | null;
 }
 
-export function CaseViewer({ case: caseData }: CaseViewerProps) {
+export function CaseViewer({ case: caseData, prevCase, nextCase }: CaseViewerProps) {
   useEffect(() => {
-    const blocks = caseData.blocks || [];
-    const mediaBlocks = blocks.filter((b) => b.type !== 'TEXT');
-    const fullNoMedia = mediaBlocks.filter(
-      (b) => b.layout === 'FULL' && (!b.medias || b.medias.length === 0)
-    ).length;
-    const halfNoMedia = mediaBlocks.filter(
-      (b) => b.layout === 'HALF' && (!b.medias || b.medias.length === 0)
-    ).length;
-
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/de5edca8-2fa9-45e0-8bd8-1886d64c2d71',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'bg120126-2-pre',hypothesisId:'H2',location:'components/organisms/CaseViewer/CaseViewer.tsx:CaseViewer',message:'Render case viewer',data:{slug:caseData.slug,blockCount:blocks.length,blockIds:blocks.map((b)=>b.id),mediaBlocks:mediaBlocks.length,fullNoMedia,halfNoMedia},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-  }, [caseData.slug, caseData.blocks]);
-
-  useEffect(() => {
-    // Check if there's a hash in URL (e.g., #image-2)
+    // Check if there's a hash in URL (e.g., #image-2 or #video-0)
     const hash = window.location.hash;
-    if (hash.startsWith('#image-')) {
-      const imageIndex = parseInt(hash.replace('#image-', ''), 10);
-      if (!isNaN(imageIndex)) {
+    if (hash.startsWith('#image-') || hash.startsWith('#video-')) {
+      const mediaIndex = parseInt(hash.replace(/^#(image|video)-/, ''), 10);
+      if (!isNaN(mediaIndex)) {
         // Small delay to ensure DOM is ready
         setTimeout(() => {
-          const imageElement = document.getElementById(`image-${imageIndex}`);
-          if (imageElement) {
-            imageElement.scrollIntoView({
+          const mediaElement = document.getElementById(hash.slice(1));
+          if (mediaElement) {
+            mediaElement.scrollIntoView({
               behavior: 'smooth',
               block: 'center',
             });
@@ -78,25 +67,26 @@ export function CaseViewer({ case: caseData }: CaseViewerProps) {
     }
   }, [useCustomDesign, caseData.backgroundColor]);
 
-  // Create a mapping of media items to their global image index
+  // Create a mapping of media items to their global image/video index
   const mediaWithIndices: Array<{
     blockId: string;
     mediaIndex: number;
     globalImageIndex: number;
+    globalVideoIndex: number;
   }> = [];
   let globalImageIndex = 0;
+  let globalVideoIndex = 0;
 
   caseData.blocks.forEach((block) => {
     if (block.type === 'MEDIA' || !block.type) {
       // Default to MEDIA if type missing
       block.medias.forEach((media, mediaIndex) => {
-        if (media.type === 'IMAGE') {
-          mediaWithIndices.push({
-            blockId: block.id,
-            mediaIndex,
-            globalImageIndex: globalImageIndex++,
-          });
-        }
+        mediaWithIndices.push({
+          blockId: block.id,
+          mediaIndex,
+          globalImageIndex: media.type === 'IMAGE' ? globalImageIndex++ : -1,
+          globalVideoIndex: media.type === 'VIDEO' ? globalVideoIndex++ : -1,
+        });
       });
     }
   });
@@ -186,6 +176,34 @@ export function CaseViewer({ case: caseData }: CaseViewerProps) {
           />
         ))}
       </div>
+
+      {/* Navigation */}
+      {(prevCase || nextCase) && (
+        <nav className={styles.navigation}>
+          <div className={styles.navLinks}>
+            {prevCase && (
+              <Link href={`/cases/${prevCase.slug}`} className={styles.navLink}>
+                <Text variant="small" className={styles.navLabel}>← Предыдущий</Text>
+                <Text>{prevCase.shortTitle || prevCase.title}</Text>
+              </Link>
+            )}
+            {nextCase && (
+              <Link href={`/cases/${nextCase.slug}`} className={styles.navLink}>
+                <Text variant="small" className={styles.navLabel}>Следующий →</Text>
+                <Text>{nextCase.shortTitle || nextCase.title}</Text>
+              </Link>
+            )}
+          </div>
+          <div className={styles.navMainLinks}>
+            <Link href="/" className={styles.navMainLink}>
+              <Text>На главную</Text>
+            </Link>
+            <Link href="/about" className={styles.navMainLink}>
+              <Text>Обо мне</Text>
+            </Link>
+          </div>
+        </nav>
+      )}
     </div>
   );
 }
@@ -200,6 +218,7 @@ function CaseBlockComponent({
     blockId: string;
     mediaIndex: number;
     globalImageIndex: number;
+    globalVideoIndex: number;
   }>;
   priorityMedia?: number;
 }) {
@@ -222,8 +241,15 @@ function CaseBlockComponent({
 
     return (
       <div className={styles.textBlock} style={blockStyle}>
-        {/* Simple markdown-like rendering: preserve newlines */}
-        <div style={{ whiteSpace: 'pre-wrap' }}>{block.content}</div>
+        {/* Render markdown with preserved newlines */}
+        <div style={{ whiteSpace: 'pre-wrap' }}>
+          {block.content?.split('\n').map((line, i) => (
+            <React.Fragment key={i}>
+              {i > 0 && '\n'}
+              {parseMarkdown(line)}
+            </React.Fragment>
+          ))}
+        </div>
       </div>
     );
   }
@@ -238,6 +264,10 @@ function CaseBlockComponent({
       media.type === 'IMAGE' && mediaInfo
         ? `image-${mediaInfo.globalImageIndex}`
         : undefined;
+    const videoId =
+      media.type === 'VIDEO' && mediaInfo
+        ? `video-${mediaInfo.globalVideoIndex}`
+        : undefined;
 
     const shouldPreload = priorityMedia === 0;
     return (
@@ -247,6 +277,7 @@ function CaseBlockComponent({
           type={media.type}
           alt={media.alt}
           imageId={imageId}
+          videoId={videoId}
           aspectRatio={media.aspectRatio}
           priority={shouldPreload}
         />
@@ -263,6 +294,10 @@ function CaseBlockComponent({
           media.type === 'IMAGE' && mediaInfo
             ? `image-${mediaInfo.globalImageIndex}`
             : undefined;
+        const videoId =
+          media.type === 'VIDEO' && mediaInfo
+            ? `video-${mediaInfo.globalVideoIndex}`
+            : undefined;
 
         return (
           <div key={index} className={styles.halfItem}>
@@ -271,6 +306,7 @@ function CaseBlockComponent({
               type={media.type}
               alt={media.alt}
               imageId={imageId}
+              videoId={videoId}
               aspectRatio={media.aspectRatio}
               priority={priorityMedia === index}
             />
@@ -286,6 +322,7 @@ function MediaItem({
   type,
   alt,
   imageId,
+  videoId,
   aspectRatio,
   priority = false,
 }: {
@@ -293,6 +330,7 @@ function MediaItem({
   type: 'IMAGE' | 'VIDEO';
   alt?: string;
   imageId?: string;
+  videoId?: string;
   aspectRatio?: '16:9' | '4:3' | '1:1';
   priority?: boolean;
 }) {
@@ -305,6 +343,7 @@ function MediaItem({
     return (
       <div
         className={styles.imageContainer}
+        id={videoId}
         style={{
           aspectRatio: safeAspectRatio,
           ...(pad ? { ['--image-pad' as string]: pad } : {}),

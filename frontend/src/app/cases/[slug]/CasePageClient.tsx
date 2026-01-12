@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { usePinAccess } from '@/lib/hooks/usePinAccess';
-import { useCaseBySlug, useProfile, useApplyPin } from '@/hooks/useApi';
+import { useCaseBySlug, useProfile, useApplyPin, useAllCases } from '@/hooks/useApi';
 import { CaseViewer } from '@/components/organisms/CaseViewer/CaseViewer';
 import { PinInput } from '@/components/molecules/PinInput/PinInput';
 import { IconLock } from '@/components/atoms/IconLock/IconLock';
@@ -25,7 +25,31 @@ export default function CasePageClient() {
     error: caseError,
   } = useCaseBySlug(slug);
   const { data: profile, isLoading: profileLoading } = useProfile();
+  const { data: allCases } = useAllCases();
   const applyPinMutation = useApplyPin();
+
+  // Find previous and next cases
+  const { prevCase, nextCase } = useMemo(() => {
+    if (!allCases || !caseData) {
+      return { prevCase: null, nextCase: null };
+    }
+
+    // Filter out locked cases and find current index
+    const accessibleCases = allCases.filter((c) => !c.isLocked);
+    const currentIndex = accessibleCases.findIndex((c) => c.slug === slug);
+
+    if (currentIndex === -1) {
+      return { prevCase: null, nextCase: null };
+    }
+
+    const prev = currentIndex > 0 ? accessibleCases[currentIndex - 1] : null;
+    const next = currentIndex < accessibleCases.length - 1 ? accessibleCases[currentIndex + 1] : null;
+
+    return {
+      prevCase: prev ? { slug: prev.slug, title: prev.title, shortTitle: prev.shortTitle } : null,
+      nextCase: next ? { slug: next.slug, title: next.title, shortTitle: next.shortTitle } : null,
+    };
+  }, [allCases, caseData, slug]);
 
   const [pinError, setPinError] = useState<string | undefined>();
 
@@ -146,7 +170,7 @@ export default function CasePageClient() {
 
   return (
     <div className={styles.page}>
-      <CaseViewer case={caseData} />
+      <CaseViewer case={caseData} prevCase={prevCase} nextCase={nextCase} />
     </div>
   );
 }

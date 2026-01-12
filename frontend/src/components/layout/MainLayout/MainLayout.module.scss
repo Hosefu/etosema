@@ -42,6 +42,17 @@
   letter-spacing: -0.03em;
 }
 
+.logoImage {
+  display: block;
+  max-height: 40px;
+  width: auto;
+}
+
+.logoMask {
+  display: block;
+  transition: background-color $transition-normal;
+}
+
 .nav {
   display: flex;
   gap: gap(3); // was s(40), gap(3)=36 if base 12

@@ -30,6 +30,7 @@ model Case {
   slug       String   @unique
   title      String
   shortTitle String?  // Optional shorter title for cards
+  ndaPublicTitle String? // Public title shown when NDA case is locked (overrides title/shortTitle/seoTitle)
   year       Int
   summary    String?  // Brief description for case header
   isNda      Boolean  @default(false) // Whether this case requires NDA access
@@ -158,8 +159,10 @@ model Profile {
   projectsJson String // JSON string: [{ label: "...", url: "..." }, ...]
   socialsJson  String // JSON string: [{ label: "...", url: "..." }, ...]
 
-  logoUrl      String? // Optional SVG URL (S3)
-  logoText     String? // Optional text logo
+  logoUrl      String? // DEPRECATED: Use logoSvgUrl instead
+  logoSvgUrl   String? // SVG logo with colors (priority #1)
+  logoSvgMaskUrl String? // SVG mask logo (single color, can be CSS-colored) (priority #2 if no logoSvgUrl)
+  logoText     String? // Optional text logo (priority #3 fallback)
   lockedCaseMessage String? // Optional message for locked cases
   
   createdAt    DateTime @default(now())
@@ -195,6 +198,9 @@ model DesignSystem {
 
   // Spacing: { baseGap: number }
   spacing    String?
+
+  // Border Radius: { cardOuter: number, cardInner: number, media: number }
+  borderRadius String?
 
   // Favicon URL
   faviconUrl String?

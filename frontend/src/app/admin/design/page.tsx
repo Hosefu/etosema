@@ -693,23 +693,72 @@ export default function DesignPage() {
               Геометрия: скругления и отступы карточек, сетка, ширина текста в кейсах.
             </Text>
 
-            <Text strong>Карточки</Text>
-            <div style={{ marginTop: 8 }}>
-              <Row gutter={16} style={{ marginBottom: 16 }}>
-                <Col xs={24} md={12}>
-                  <Form.Item label="Скругление (px)">
+            <Text strong>Скругления</Text>
+            <div style={{ marginTop: 8, marginBottom: 24 }}>
+              <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+                Разные радиусы для внешних карточек, внутреннего контента и медиа.
+              </Text>
+              <Row gutter={16}>
+                <Col xs={24} md={8}>
+                  <Form.Item label="Внешнее (карточка)">
                     <InputNumber
-                      value={settings.cards.borderRadius}
+                      value={settings.borderRadius?.cardOuter ?? settings.cards.borderRadius}
                       onChange={(v) =>
                         setSettings({
                           ...settings,
-                          cards: { ...settings.cards, borderRadius: v || 0 },
+                          borderRadius: { 
+                            ...settings.borderRadius, 
+                            cardOuter: v || 0 
+                          },
                         })
                       }
                       style={{ width: '100%' }}
+                      addonAfter="px"
                     />
                   </Form.Item>
                 </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item label="Внутреннее (контент)">
+                    <InputNumber
+                      value={settings.borderRadius?.cardInner ?? 12}
+                      onChange={(v) =>
+                        setSettings({
+                          ...settings,
+                          borderRadius: { 
+                            ...settings.borderRadius, 
+                            cardInner: v || 0 
+                          },
+                        })
+                      }
+                      style={{ width: '100%' }}
+                      addonAfter="px"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item label="Медиа (фото/видео)">
+                    <InputNumber
+                      value={settings.borderRadius?.media ?? 8}
+                      onChange={(v) =>
+                        setSettings({
+                          ...settings,
+                          borderRadius: { 
+                            ...settings.borderRadius, 
+                            media: v || 0 
+                          },
+                        })
+                      }
+                      style={{ width: '100%' }}
+                      addonAfter="px"
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </div>
+
+            <Text strong>Карточки</Text>
+            <div style={{ marginTop: 8 }}>
+              <Row gutter={16} style={{ marginBottom: 16 }}>
                 <Col xs={24} md={12}>
                   <Form.Item label="Фиксированная высота (0 = авто)">
                     <InputNumber
@@ -724,19 +773,21 @@ export default function DesignPage() {
                     />
                   </Form.Item>
                 </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item label="Внутренний отступ (px)">
+                    <InputNumber
+                      value={settings.cards.padding}
+                      onChange={(v) =>
+                        setSettings({
+                          ...settings,
+                          cards: { ...settings.cards, padding: v || 0 },
+                        })
+                      }
+                      style={{ width: '100%' }}
+                    />
+                  </Form.Item>
+                </Col>
               </Row>
-              <Form.Item label="Внутренний отступ (px)">
-                <InputNumber
-                  value={settings.cards.padding}
-                  onChange={(v) =>
-                    setSettings({
-                      ...settings,
-                      cards: { ...settings.cards, padding: v || 0 },
-                    })
-                  }
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
             </div>
 
             <Divider />

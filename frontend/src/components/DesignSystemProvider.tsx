@@ -58,7 +58,9 @@ export function DesignSystemProvider() {
       --link-color: ${s.links.color};
       --link-thickness: ${s.links.thickness ?? 1}px;
 
-      --card-radius: ${s.cards?.borderRadius ?? 0};
+      --card-radius: ${s.borderRadius?.cardOuter ?? s.cards?.borderRadius ?? 0};
+      --card-radius-inner: ${s.borderRadius?.cardInner ?? 12};
+      --media-radius: ${s.borderRadius?.media ?? 8};
       --card-padding: ${s.cards?.padding ?? 0};
       --card-height-css: ${s.cards?.height && s.cards.height > 0 ? `calc(var(--scale) * ${s.cards.height})` : 'auto'};
 

@@ -288,7 +288,7 @@ async function main() {
       data: {
         caseId: case1.id,
         layout: 'FULL',
-        orderRank: 'a0',
+        orderRank: '0000000001',
         medias: {
           create: [
             {
@@ -307,7 +307,7 @@ async function main() {
       data: {
         caseId: case1.id,
         layout: 'HALF',
-        orderRank: 'a1',
+        orderRank: '0000000002',
         medias: {
           create: [
             {
@@ -364,7 +364,7 @@ async function main() {
       data: {
         caseId: case2.id,
         layout: 'FULL',
-        orderRank: 'a0',
+        orderRank: '0000000001',
         medias: {
           create: [
             {

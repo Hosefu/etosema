@@ -105,7 +105,7 @@
   padding-bottom: var(--image-pad, 56.25%); // ensures height for fill images on SSR
   background: $color-bg-page; // Or transparent if overriding bg?
   background: rgba(0,0,0,0.05); // Use semi-transparent for neutrality
-  border-radius: $card-radius;
+  border-radius: calc(var(--scale) * var(--media-radius, 8));
   overflow: hidden;
 }
 
@@ -120,6 +120,67 @@ video.media {
   border-radius: $card-radius;
 }
 
+// Navigation
+.navigation {
+  @include grid-full;
+  display: flex;
+  flex-direction: column;
+  gap: gap(4);
+  margin-top: gap(6);
+  padding-top: gap(4);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.navLinks {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: gap(3);
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.navLink {
+  display: flex;
+  flex-direction: column;
+  gap: gap(1);
+  padding: gap(2);
+  border-radius: $card-radius;
+  transition: background-color $transition-normal;
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:last-child {
+    text-align: right;
+  }
+}
+
+.navLabel {
+  opacity: 0.6;
+}
+
+.navMainLinks {
+  display: flex;
+  gap: gap(2);
+  justify-content: center;
+}
+
+.navMainLink {
+  padding: gap(1) gap(2);
+  text-decoration: none;
+  color: inherit;
+  transition: opacity $transition-normal;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
 // Responsive
 @include mobile {
   .viewer {
@@ -129,5 +190,9 @@ video.media {
 
   .blocks {
     gap: gap(2);
+  }
+
+  .navigation {
+    margin-top: gap(4);
   }
 }

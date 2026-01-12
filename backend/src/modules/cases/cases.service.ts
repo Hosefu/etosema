@@ -88,19 +88,33 @@ export class CasesService {
         }
       }
 
+      // For locked NDA cases, use ndaPublicTitle if available
+      const displayTitle = isLocked && (caseItem as any).ndaPublicTitle 
+        ? (caseItem as any).ndaPublicTitle 
+        : caseItem.title;
+      const displayShortTitle = isLocked && (caseItem as any).ndaPublicTitle
+        ? undefined
+        : (caseItem.shortTitle || undefined);
+      const displaySeoTitle = isLocked && (caseItem as any).ndaPublicTitle
+        ? (caseItem as any).ndaPublicTitle
+        : (caseItem.seoTitle || undefined);
+
       return {
         id: caseItem.id,
         slug: caseItem.slug,
-        title: caseItem.title,
-        shortTitle: caseItem.shortTitle || undefined,
+        title: displayTitle,
+        shortTitle: displayShortTitle,
         year: caseItem.year,
         coverUrl,
         isNda: caseItem.isNda,
         isLocked,
-        seoTitle: caseItem.seoTitle || undefined,
-        seoDescription: caseItem.seoDescription || undefined,
+        seoTitle: displaySeoTitle,
+        seoDescription: isLocked ? undefined : (caseItem.seoDescription || undefined),
         blocks,
-      };
+        // Include custom design settings for card background
+        useCustomDesign: caseItem.useCustomDesign,
+        backgroundColor: caseItem.backgroundColor,
+      } as any;
     });
   }
 

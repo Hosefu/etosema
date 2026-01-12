@@ -67,8 +67,8 @@
   width: 100%;
   min-height: s(200);
   padding-bottom: var(--image-pad, 56.25%); // ensures height for fill images on SSR
-  // Using derived radius for inner content
-  border-radius: calc($card-radius * 0.33); 
+  // Using media radius from design system
+  border-radius: calc(var(--scale) * var(--media-radius, 8)); 
   overflow: hidden;
   cursor: pointer;
   transition: transform $transition-fast;
