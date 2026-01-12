@@ -66,10 +66,10 @@
 
 .navLink {
   @include text-card-title;
-  color: $color-text-primary;
+  color: inherit; // Inherit color from parent nav (allows coloring by heading color)
   transition: opacity $transition-fast;
   text-decoration: underline;
-  text-decoration-color: rgba(0, 0, 0, 0.3);
+  text-decoration-color: currentColor;
   text-underline-offset: 25%;
   text-decoration-thickness: var(--link-thickness);
 
