@@ -87,9 +87,8 @@ export function FaviconLoader() {
           append({ rel: 'apple-touch-icon', href: iconHref });
         }
 
-        if (favicons?.manifestUrl) {
-          append({ rel: 'manifest', href: favicons.manifestUrl });
-        }
+        // Always use same-origin manifest endpoint to avoid S3 CORS.
+        append({ rel: 'manifest', href: '/site.webmanifest' });
 
         if (favicons?.maskIconUrl) {
           append({

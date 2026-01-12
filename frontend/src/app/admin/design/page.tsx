@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 import {
   Layout,
   Card,
@@ -32,6 +30,7 @@ import {
   adminUploadFaviconBase,
   adminUploadFaviconIco,
   adminUploadFaviconMask,
+  adminUploadFile,
   adminUploadFont,
   adminAddGoogleFont,
   adminDeleteFont,
@@ -704,20 +703,9 @@ export default function DesignPage() {
                   const { file, onSuccess, onError } = options;
                   try {
                     const uploadFile = file as File;
-                    const formData = new FormData();
-                    formData.append('file', uploadFile);
-                    
-                    const res = await fetch(`${API_BASE_URL}/api/admin/upload`, {
-                      method: 'POST',
-                      body: formData,
-                    });
-                    
-                    if (res.ok) {
-                      const data = await res.json();
-                      setSettings((prev) => ({
-                        ...prev,
-                        logoSvgUrl: data.data.url,
-                      }));
+                    const data = await adminUploadFile(uploadFile);
+                    if (data.success && data.data?.url) {
+                      setSettings((prev) => ({ ...prev, logoSvgUrl: data.data!.url }));
                       message.success('SVG логотип загружен');
                       onSuccess?.(data as unknown as void);
                     } else {
@@ -758,19 +746,11 @@ export default function DesignPage() {
                   const { file, onSuccess, onError } = options;
                   try {
                     const uploadFile = file as File;
-                    const formData = new FormData();
-                    formData.append('file', uploadFile);
-                    
-                    const res = await fetch(`${API_BASE_URL}/api/admin/upload`, {
-                      method: 'POST',
-                      body: formData,
-                    });
-                    
-                    if (res.ok) {
-                      const data = await res.json();
+                    const data = await adminUploadFile(uploadFile);
+                    if (data.success && data.data?.url) {
                       setSettings((prev) => ({
                         ...prev,
-                        logoSvgMaskUrl: data.data.url,
+                        logoSvgMaskUrl: data.data!.url,
                       }));
                       message.success('SVG-mask логотип загружен');
                       onSuccess?.(data as unknown as void);

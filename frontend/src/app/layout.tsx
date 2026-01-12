@@ -66,7 +66,8 @@ export async function generateMetadata(): Promise<Metadata> {
         { url: iconHref },
       ],
     },
-    manifest: favicons?.manifestUrl || undefined,
+    // Always serve manifest from our origin to avoid S3 CORS issues.
+    manifest: '/site.webmanifest',
   };
 }
 

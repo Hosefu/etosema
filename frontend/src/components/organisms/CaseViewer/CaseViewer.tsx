@@ -148,6 +148,30 @@ export function CaseViewer({ case: caseData, prevCase, nextCase }: CaseViewerPro
       : {}),
   } as React.CSSProperties;
 
+  // Ensure header/logo/menu can inherit the case heading color via CSS variables
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const root = document.documentElement;
+    const headingColor =
+      useCustomDesign && typeof settings.headingColor === 'string'
+        ? settings.headingColor
+        : null;
+
+    if (headingColor) {
+      root.style.setProperty('--heading-large-color', headingColor);
+      root.style.setProperty('--heading-small-color', headingColor);
+      return () => {
+        root.style.removeProperty('--heading-large-color');
+        root.style.removeProperty('--heading-small-color');
+      };
+    }
+
+    // If custom design is off or no heading color specified, ensure cleanup
+    root.style.removeProperty('--heading-large-color');
+    root.style.removeProperty('--heading-small-color');
+  }, [useCustomDesign, settings.headingColor]);
+
   return (
     <div className={styles.viewer} style={containerStyle}>
       {/* Header */}
