@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 import {
   Layout,
   Card,
@@ -705,7 +707,7 @@ export default function DesignPage() {
                     const formData = new FormData();
                     formData.append('file', uploadFile);
                     
-                    const res = await fetch('http://localhost:3001/api/admin/upload', {
+                    const res = await fetch(`${API_BASE_URL}/api/admin/upload`, {
                       method: 'POST',
                       body: formData,
                     });
@@ -759,7 +761,7 @@ export default function DesignPage() {
                     const formData = new FormData();
                     formData.append('file', uploadFile);
                     
-                    const res = await fetch('http://localhost:3001/api/admin/upload', {
+                    const res = await fetch(`${API_BASE_URL}/api/admin/upload`, {
                       method: 'POST',
                       body: formData,
                     });
