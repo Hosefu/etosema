@@ -124,8 +124,7 @@ export interface ProfileData {
   contacts: LinkBlock;
   projects: LinkBlock;
   socials: LinkBlock;
-  logoUrl?: string | null;
-  logoText?: string | null;
+  logoUrl?: string | null; // Deprecated, kept for backward compatibility
   lockedCaseMessage?: string | null;
 }
 
