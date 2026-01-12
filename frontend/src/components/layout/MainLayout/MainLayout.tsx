@@ -115,7 +115,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             />
           ) : (
             <span className={styles.logoText} style={{ color: logoColor || 'inherit' }}>
-              {design?.logoText || profile?.logoText || 'сёма'}
+              {design?.logoText || 'сёма'}
             </span>
           )}
         </Link>
