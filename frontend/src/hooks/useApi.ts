@@ -48,6 +48,11 @@ export function useCases() {
 }
 
 /**
+ * Alias for useCases
+ */
+export const useAllCases = useCases;
+
+/**
  * Hook to fetch a single case by slug
  */
 export function useCaseBySlug(slug: string | null) {

@@ -706,6 +706,11 @@ export interface DesignSettings {
   spacing: {
     baseGap: number;
   };
+  borderRadius?: {
+    cardOuter?: number;
+    cardInner?: number;
+    media?: number;
+  };
   faviconUrl?: string | null;
   favicons?: FaviconsSet | null;
   seo?: SeoSettings;
