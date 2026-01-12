@@ -7,17 +7,17 @@ import {
   Button,
   message,
   Card,
-  Divider,
   Row,
   Col,
-  Text,
+  Typography,
 } from 'antd';
 import {
   SaveOutlined,
   PlusOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
-import type { DividerProps } from 'antd';
+
+const { Text } = Typography;
 import {
   adminGetProfile,
   adminUpdateProfile,
