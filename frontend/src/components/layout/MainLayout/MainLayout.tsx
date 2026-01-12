@@ -78,16 +78,8 @@ export function MainLayout({ children }: MainLayoutProps) {
     <div className={styles.layout}>
       <header className={styles.header}>
         <Link href="/" className={styles.logo}>
-          {design?.logoSvgUrl ? (
-            // SVG logo with own colors
-            <img
-              src={design.logoSvgUrl}
-              alt="Logo"
-              className={styles.logoImage}
-              style={{ maxHeight: 40, width: 'auto' }}
-            />
-          ) : design?.logoSvgMaskUrl ? (
-            // SVG mask logo - can be colored
+          {design?.logoSvgMaskUrl ? (
+            // SVG mask logo - colored by heading color (preferred if present)
             <div
               className={styles.logoMask}
               style={{
@@ -104,6 +96,14 @@ export function MainLayout({ children }: MainLayoutProps) {
                 height: 40,
                 minWidth: 80,
               }}
+            />
+          ) : design?.logoSvgUrl ? (
+            // SVG logo with own colors (doesn't recolor)
+            <img
+              src={design.logoSvgUrl}
+              alt="Logo"
+              className={styles.logoImage}
+              style={{ maxHeight: 40, width: 'auto' }}
             />
           ) : profile?.logoUrl ? (
             // Fallback: old PNG logo (deprecated)

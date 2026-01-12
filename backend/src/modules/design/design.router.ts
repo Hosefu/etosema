@@ -448,17 +448,33 @@ router.post(
  */
 router.put('/', async (req: AdminRequest, res) => {
   try {
-    const { typography, colors, links, cards, grid, spacing, faviconUrl } =
-      req.body as {
-        typography?: unknown;
-        colors?: unknown;
-        links?: unknown;
-        cards?: unknown;
-        grid?: unknown;
-        spacing?: unknown;
-        faviconUrl?: string | null;
-        seo?: unknown;
-      };
+    const {
+      typography,
+      colors,
+      links,
+      cards,
+      grid,
+      spacing,
+      faviconUrl,
+      logoSvgUrl,
+      logoSvgMaskUrl,
+      logoText,
+      borderRadius,
+    } = req.body as {
+      typography?: unknown;
+      colors?: unknown;
+      links?: unknown;
+      cards?: unknown;
+      grid?: unknown;
+      spacing?: unknown;
+      faviconUrl?: string | null;
+      seo?: unknown;
+      favicons?: unknown;
+      logoSvgUrl?: string | null;
+      logoSvgMaskUrl?: string | null;
+      logoText?: string | null;
+      borderRadius?: unknown;
+    };
 
     // Allow partial updates: only provided fields are overwritten.
     // This prevents accidental "wipe" when UI sends only one field (e.g. favicon).
@@ -495,6 +511,21 @@ router.put('/', async (req: AdminRequest, res) => {
       const favicons = (req.body as { favicons?: unknown }).favicons;
       data.favicons =
         typeof favicons === 'string' ? favicons : JSON.stringify(favicons);
+    }
+    if (logoSvgUrl !== undefined) {
+      data.logoSvgUrl = logoSvgUrl;
+    }
+    if (logoSvgMaskUrl !== undefined) {
+      data.logoSvgMaskUrl = logoSvgMaskUrl;
+    }
+    if (logoText !== undefined) {
+      data.logoText = logoText;
+    }
+    if (borderRadius !== undefined) {
+      data.borderRadius =
+        typeof borderRadius === 'string'
+          ? borderRadius
+          : JSON.stringify(borderRadius);
     }
 
     const design = await prisma.designSystem.update({
