@@ -694,33 +694,121 @@ export default function DesignPage() {
             </Text>
 
             <Form.Item label="SVG логотип (с собственными цветами)">
-              <Input
-                value={settings.logoSvgUrl || ''}
-                onChange={(e) =>
-                  setSettings({
-                    ...settings,
-                    logoSvgUrl: e.target.value,
-                  })
-                }
-                placeholder="https://example.com/logo.svg"
-              />
-              <Text type="secondary" style={{ fontSize: 12 }}>
+              <Upload
+                accept=".svg"
+                maxCount={1}
+                showUploadList={false}
+                customRequest={async (options) => {
+                  const { file, onSuccess, onError } = options;
+                  try {
+                    const uploadFile = file as File;
+                    const formData = new FormData();
+                    formData.append('file', uploadFile);
+                    
+                    const res = await fetch('http://localhost:3001/api/admin/upload', {
+                      method: 'POST',
+                      credentials: 'include',
+                      body: formData,
+                    });
+                    
+                    if (res.ok) {
+                      const data = await res.json();
+                      setSettings((prev) => ({
+                        ...prev,
+                        logoSvgUrl: data.data.url,
+                      }));
+                      message.success('SVG логотип загружен');
+                      onSuccess?.(data as unknown as void);
+                    } else {
+                      throw new Error('Upload failed');
+                    }
+                  } catch (e) {
+                    message.error('Ошибка загрузки');
+                    onError?.(e as Error);
+                  }
+                }}
+              >
+                <Button icon={<UploadOutlined />}>Загрузить SVG</Button>
+              </Upload>
+              {settings.logoSvgUrl && (
+                <div style={{ marginTop: 8 }}>
+                  <img src={settings.logoSvgUrl} alt="Logo preview" style={{ maxHeight: 40 }} />
+                  <Button 
+                    type="link" 
+                    danger 
+                    size="small"
+                    onClick={() => setSettings({ ...settings, logoSvgUrl: null })}
+                  >
+                    Удалить
+                  </Button>
+                </div>
+              )}
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
                 Приоритет #1. SVG с цветами (не окрашивается автоматически)
               </Text>
             </Form.Item>
 
             <Form.Item label="SVG-mask логотип (для окрашивания)">
-              <Input
-                value={settings.logoSvgMaskUrl || ''}
-                onChange={(e) =>
-                  setSettings({
-                    ...settings,
-                    logoSvgMaskUrl: e.target.value,
-                  })
-                }
-                placeholder="https://example.com/logo-mask.svg"
-              />
-              <Text type="secondary" style={{ fontSize: 12 }}>
+              <Upload
+                accept=".svg"
+                maxCount={1}
+                showUploadList={false}
+                customRequest={async (options) => {
+                  const { file, onSuccess, onError } = options;
+                  try {
+                    const uploadFile = file as File;
+                    const formData = new FormData();
+                    formData.append('file', uploadFile);
+                    
+                    const res = await fetch('http://localhost:3001/api/admin/upload', {
+                      method: 'POST',
+                      credentials: 'include',
+                      body: formData,
+                    });
+                    
+                    if (res.ok) {
+                      const data = await res.json();
+                      setSettings((prev) => ({
+                        ...prev,
+                        logoSvgMaskUrl: data.data.url,
+                      }));
+                      message.success('SVG-mask логотип загружен');
+                      onSuccess?.(data as unknown as void);
+                    } else {
+                      throw new Error('Upload failed');
+                    }
+                  } catch (e) {
+                    message.error('Ошибка загрузки');
+                    onError?.(e as Error);
+                  }
+                }}
+              >
+                <Button icon={<UploadOutlined />}>Загрузить SVG-mask</Button>
+              </Upload>
+              {settings.logoSvgMaskUrl && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ 
+                    width: 100, 
+                    height: 40, 
+                    backgroundColor: '#000',
+                    maskImage: `url(${settings.logoSvgMaskUrl})`,
+                    WebkitMaskImage: `url(${settings.logoSvgMaskUrl})`,
+                    maskSize: 'contain',
+                    WebkitMaskSize: 'contain',
+                    maskRepeat: 'no-repeat',
+                    WebkitMaskRepeat: 'no-repeat',
+                  }} />
+                  <Button 
+                    type="link" 
+                    danger 
+                    size="small"
+                    onClick={() => setSettings({ ...settings, logoSvgMaskUrl: null })}
+                  >
+                    Удалить
+                  </Button>
+                </div>
+              )}
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
                 Приоритет #2. Одноцветный SVG-mask, окрашивается цветом заголовка
               </Text>
             </Form.Item>
