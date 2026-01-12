@@ -21,6 +21,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [design, setDesign] = useState<any>(null);
   const [logoColor, setLogoColor] = useState<string | undefined>(undefined);
+  const [logoAspect, setLogoAspect] = useState<number | null>(null);
 
   useEffect(() => {
     getProfile()
@@ -42,6 +43,46 @@ export function MainLayout({ children }: MainLayoutProps) {
         .catch(console.error);
     });
   }, []);
+
+  // Keep logo box size consistent between SVG <img> and SVG-mask modes.
+  // We infer aspect ratio from the actual SVG being used (mask preferred).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const url: string | null =
+      (design?.logoSvgMaskUrl as string | null) ||
+      (design?.logoSvgUrl as string | null) ||
+      null;
+
+    if (!url) {
+      setLogoAspect(null);
+      return;
+    }
+
+    let cancelled = false;
+    const img = new Image();
+    img.onload = () => {
+      if (cancelled) return;
+      const w = img.naturalWidth || 0;
+      const h = img.naturalHeight || 0;
+      if (w > 0 && h > 0) {
+        const ratio = w / h;
+        // Avoid extreme values in case the SVG has weird intrinsic sizing
+        const clamped = Math.max(0.5, Math.min(8, ratio));
+        setLogoAspect(clamped);
+      } else {
+        setLogoAspect(null);
+      }
+    };
+    img.onerror = () => {
+      if (!cancelled) setLogoAspect(null);
+    };
+    img.src = url;
+
+    return () => {
+      cancelled = true;
+    };
+  }, [design?.logoSvgMaskUrl, design?.logoSvgUrl]);
 
   // Get logo color from CSS custom property (set by case or design system)
   useEffect(() => {
@@ -73,6 +114,8 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   const isWorksPage = pathname === '/';
   const isAboutPage = pathname === '/about';
+  const logoHeight = 40;
+  const logoWidth = Math.round(logoHeight * (logoAspect ?? 3));
 
   return (
     <div className={styles.layout}>
@@ -92,9 +135,8 @@ export function MainLayout({ children }: MainLayoutProps) {
                 maskPosition: 'center',
                 WebkitMaskPosition: 'center',
                 backgroundColor: logoColor || 'var(--heading-large-color, currentColor)',
-                width: 'auto',
-                height: 40,
-                minWidth: 80,
+                width: logoWidth,
+                height: logoHeight,
               }}
             />
           ) : design?.logoSvgUrl ? (
@@ -103,7 +145,11 @@ export function MainLayout({ children }: MainLayoutProps) {
               src={design.logoSvgUrl}
               alt="Logo"
               className={styles.logoImage}
-              style={{ maxHeight: 40, width: 'auto' }}
+              style={{
+                height: logoHeight,
+                width: logoWidth,
+                objectFit: 'contain',
+              }}
             />
           ) : profile?.logoUrl ? (
             // Fallback: old PNG logo (deprecated)
@@ -111,7 +157,11 @@ export function MainLayout({ children }: MainLayoutProps) {
               src={profile.logoUrl}
               alt="Logo"
               className={styles.logoImage}
-              style={{ maxHeight: 40, width: 'auto' }}
+              style={{
+                height: logoHeight,
+                width: logoWidth,
+                objectFit: 'contain',
+              }}
             />
           ) : (
             <span className={styles.logoText} style={{ color: logoColor || 'inherit' }}>
