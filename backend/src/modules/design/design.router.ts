@@ -142,6 +142,7 @@ router.get('/', async (req: AdminRequest, res) => {
       aboutDescription: 'Контакты и информация обо мне',
       caseTitleTemplate: '{title} — Etosema',
       caseDescriptionFallback: '',
+      metrikaCode: '',
     };
 
     const parsedSettings = {

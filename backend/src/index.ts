@@ -9,6 +9,7 @@ import app from './app';
 import { config } from './config/env';
 import { prisma, disconnectPrisma } from './db/prisma';
 import { logger } from './utils/logger';
+import { startMonitoringService } from './modules/monitoring/monitoring.service';
 
 // ============================================================================
 // SERVER START
@@ -22,6 +23,8 @@ async function start(): Promise<void> {
     // Test database connection
     await prisma.$connect();
     logger.info('Database connected');
+
+    const stopMonitoring = startMonitoringService(prisma);
 
     // Start listening
     const server = app.listen(config.port, () => {
@@ -42,6 +45,7 @@ async function start(): Promise<void> {
     // Graceful shutdown
     const shutdown = async (): Promise<void> => {
       logger.info('Shutting down gracefully...');
+      stopMonitoring?.();
 
       server.close(async () => {
         await disconnectPrisma();

@@ -126,6 +126,14 @@ export interface ProfileData {
   socials: LinkBlock;
   logoUrl?: string | null; // Deprecated, kept for backward compatibility
   lockedCaseMessage?: string | null;
+  cvDocxUrl?: string | null;
+  cvPdfUrl?: string | null;
+  cvHhUrl?: string | null;
+  cvHabrUrl?: string | null;
+  cvDocxEnabled?: boolean;
+  cvPdfEnabled?: boolean;
+  cvHhEnabled?: boolean;
+  cvHabrEnabled?: boolean;
 }
 
 // ============================================================================
@@ -138,6 +146,17 @@ export interface TypographyConfig {
   lineHeight: number;
   letterSpacing: number;
   color: string;
+}
+
+export interface SeoSettings {
+  siteName?: string;
+  homeTitle?: string;
+  homeDescription?: string;
+  aboutTitle?: string;
+  aboutDescription?: string;
+  caseTitleTemplate?: string;
+  caseDescriptionFallback?: string;
+  metrikaCode?: string;
 }
 
 export interface DesignSettings {
@@ -181,6 +200,7 @@ export interface DesignSettings {
   logoSvgMaskUrl?: string | null;
   logoText?: string | null;
   faviconUrl?: string | null;
+  seo?: SeoSettings | null;
 }
 
 export interface Font {

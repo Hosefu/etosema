@@ -129,8 +129,64 @@ model Profile {
   projectsJson String // JSON string: [{ label: "...", url: "..." }, ...]
   socialsJson  String // JSON string: [{ label: "...", url: "..." }, ...]
 
+  logoUrl      String?
+  lockedCaseMessage String?
+
+  cvDocxUrl     String?
+  cvPdfUrl      String?
+  cvHhUrl       String?
+  cvHabrUrl     String?
+  cvDocxEnabled Boolean @default(false)
+  cvPdfEnabled  Boolean @default(false)
+  cvHhEnabled   Boolean @default(false)
+  cvHabrEnabled Boolean @default(false)
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   @@map("profiles")
+}
+
+// ============================================================================
+// MONITORING MODELS - Telegram notifications + visit stats
+// ============================================================================
+
+model MonitoringSettings {
+  id                   Int     @id @default(1)
+  enabled              Boolean @default(true)
+  botToken             String?
+  allowedChatIdsJson   String  @default("[]")
+  dailySummaryHour     Int     @default(22)
+  lastDailySummaryDate String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("monitoring_settings")
+}
+
+model MonitoringEvent {
+  id        String   @id @default(cuid())
+  ip        String
+  path      String
+  action    String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([ip, createdAt])
+  @@map("monitoring_events")
+}
+
+model MonitoringSession {
+  id          String   @id @default(cuid())
+  ip          String
+  startedAt   DateTime
+  lastEventAt DateTime
+  actionsJson String
+  userAgent   String?
+  reportedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([ip, lastEventAt])
+  @@map("monitoring_sessions")
 }

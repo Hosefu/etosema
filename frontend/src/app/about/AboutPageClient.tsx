@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { Heading } from '@/components/atoms/Heading/Heading';
 import { Text } from '@/components/atoms/Text/Text';
 import { Link } from '@/components/atoms/Link/Link';
@@ -9,6 +10,23 @@ import styles from './page.module.scss';
 
 export default function AboutPageClient() {
   const { data: profile, isLoading: loading, error } = useProfile();
+  const [cvMenuOpen, setCvMenuOpen] = useState(false);
+  const cvMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!cvMenuOpen) return;
+    const handleClick = (event: MouseEvent) => {
+      if (!cvMenuRef.current) return;
+      const target = event.target as Node;
+      if (!cvMenuRef.current.contains(target)) {
+        setCvMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+    };
+  }, [cvMenuOpen]);
 
   if (loading) {
     return (
@@ -40,6 +58,37 @@ export default function AboutPageClient() {
       </div>
     );
   }
+
+  const cvItems = [
+    {
+      key: 'docx',
+      label: 'Скачать DOCX',
+      url: profile.cvDocxUrl,
+      enabled: profile.cvDocxEnabled,
+      download: true,
+    },
+    {
+      key: 'pdf',
+      label: 'Скачать PDF',
+      url: profile.cvPdfUrl,
+      enabled: profile.cvPdfEnabled,
+      download: true,
+    },
+    {
+      key: 'hh',
+      label: 'Перейти на Hh.ru',
+      url: profile.cvHhUrl,
+      enabled: profile.cvHhEnabled,
+      download: false,
+    },
+    {
+      key: 'habr',
+      label: 'Перейти на Хабр Карьеру',
+      url: profile.cvHabrUrl,
+      enabled: profile.cvHabrEnabled,
+      download: false,
+    },
+  ].filter((item) => item.enabled && item.url);
 
   return (
     <div className={styles.page}>
@@ -105,6 +154,38 @@ export default function AboutPageClient() {
               ))}
             </div>
           </div>
+
+          {cvItems.length > 0 && (
+            <div className={styles.column}>
+              <div className={styles.cvBlock} ref={cvMenuRef}>
+                <button
+                  type="button"
+                  className={styles.cvButton}
+                  onClick={() => setCvMenuOpen((prev) => !prev)}
+                  aria-haspopup="menu"
+                  aria-expanded={cvMenuOpen}
+                >
+                  Скачать CV
+                </button>
+                {cvMenuOpen && (
+                  <div className={styles.cvMenu} role="menu">
+                    {cvItems.map((item) => (
+                      <a
+                        key={item.key}
+                        href={item.url as string}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.cvMenuItem}
+                        download={item.download ? '' : undefined}
+                      >
+                        {item.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

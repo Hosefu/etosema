@@ -10,6 +10,7 @@ export interface SeoSettings {
   aboutDescription: string;
   caseTitleTemplate: string; // contains {title}
   caseDescriptionFallback: string;
+  metrikaCode?: string;
 }
 
 export interface FaviconsSet {
@@ -50,6 +51,7 @@ export async function getPublicSeo(): Promise<{
   faviconUrl: string | null;
   favicons: FaviconsSet | null;
   baseUrl: string;
+  metrikaCode: string | null;
 }> {
   const baseUrl = getBaseUrlFromHeaders();
 
@@ -61,6 +63,7 @@ export async function getPublicSeo(): Promise<{
     aboutDescription: 'Контакты и информация обо мне',
     caseTitleTemplate: '{title} — Etosema',
     caseDescriptionFallback: '',
+    metrikaCode: '',
   };
 
   try {
@@ -73,15 +76,26 @@ export async function getPublicSeo(): Promise<{
     const seo = (json.data?.settings?.seo || {}) as Partial<SeoSettings>;
     const faviconUrl = json.data?.settings?.faviconUrl ?? null;
     const favicons = json.data?.settings?.favicons ?? null;
+    const metrikaCode =
+      typeof seo.metrikaCode === 'string' && seo.metrikaCode.trim()
+        ? seo.metrikaCode
+        : null;
 
     return {
       seo: { ...fallback, ...seo },
       faviconUrl,
       favicons,
       baseUrl,
+      metrikaCode,
     };
   } catch {
-    return { seo: fallback, faviconUrl: null, favicons: null, baseUrl };
+    return {
+      seo: fallback,
+      faviconUrl: null,
+      favicons: null,
+      baseUrl,
+      metrikaCode: null,
+    };
   }
 }
 

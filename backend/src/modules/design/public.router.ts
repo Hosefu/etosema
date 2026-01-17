@@ -22,6 +22,7 @@ router.get('/', async (req: Request, res: Response) => {
       // Use {title} placeholder
       caseTitleTemplate: '{title} — Etosema',
       caseDescriptionFallback: '',
+      metrikaCode: '',
     };
 
     const data = {

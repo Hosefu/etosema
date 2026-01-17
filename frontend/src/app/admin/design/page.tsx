@@ -224,6 +224,7 @@ const defaultSettings: DesignSettings = {
     aboutDescription: 'Контакты и информация обо мне',
     caseTitleTemplate: '{title} — Сёма',
     caseDescriptionFallback: '',
+    metrikaCode: '',
   },
 };
 
@@ -1125,6 +1126,28 @@ export default function DesignPage() {
                     })
                   }
                   autoSize={{ minRows: 2, maxRows: 6 }}
+                />
+              </Form.Item>
+            </div>
+
+            <Divider />
+
+            <Text strong>Аналитика</Text>
+            <div style={{ marginTop: 8 }}>
+              <Form.Item
+                label="Код Яндекс Метрики"
+                help="Вставьте полный HTML-код счетчика (script + noscript)."
+              >
+                <Input.TextArea
+                  value={settings.seo?.metrikaCode}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      seo: { ...(settings.seo || {}), metrikaCode: e.target.value },
+                    })
+                  }
+                  autoSize={{ minRows: 4, maxRows: 10 }}
+                  placeholder="<!-- Yandex.Metrika counter -->"
                 />
               </Form.Item>
             </div>

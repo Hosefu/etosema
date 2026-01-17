@@ -589,6 +589,14 @@ export interface Profile {
   logoUrl?: string | null;
   logoText?: string | null;
   lockedCaseMessage?: string | null;
+  cvDocxUrl?: string | null;
+  cvPdfUrl?: string | null;
+  cvHhUrl?: string | null;
+  cvHabrUrl?: string | null;
+  cvDocxEnabled?: boolean;
+  cvPdfEnabled?: boolean;
+  cvHhEnabled?: boolean;
+  cvHabrEnabled?: boolean;
 }
 
 // ...
@@ -654,6 +662,7 @@ export interface SeoSettings {
   // Use {title} placeholder
   caseTitleTemplate?: string;
   caseDescriptionFallback?: string;
+  metrikaCode?: string;
 }
 
 export interface FaviconsSet {
@@ -719,6 +728,14 @@ export interface DesignSettings {
   seo?: SeoSettings;
 }
 
+export interface MonitoringSettings {
+  enabled: boolean;
+  botToken: string | null;
+  allowedChatIds: number[];
+  dailySummaryHour: number;
+  lastDailySummaryDate?: string | null;
+}
+
 export interface Font {
   id: string;
   name: string;
@@ -764,6 +781,60 @@ export async function adminUpdateDesign(
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(data),
+  });
+
+  return response.json();
+}
+
+// ============================================================================
+// MONITORING
+// ============================================================================
+
+export async function adminGetMonitoringSettings(): Promise<{
+  success: boolean;
+  data?: MonitoringSettings;
+}> {
+  const token = getAdminToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const response = await fetch(`${API_BASE_URL}/api/admin/monitoring/settings`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.json();
+}
+
+export async function adminUpdateMonitoringSettings(
+  data: Partial<MonitoringSettings>
+): Promise<{ success: boolean; data?: MonitoringSettings }> {
+  const token = getAdminToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const response = await fetch(`${API_BASE_URL}/api/admin/monitoring/settings`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  return response.json();
+}
+
+export async function adminSendMonitoringTest(): Promise<{
+  success: boolean;
+}> {
+  const token = getAdminToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const response = await fetch(`${API_BASE_URL}/api/admin/monitoring/test`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   return response.json();

@@ -13,6 +13,7 @@ import {
   UserOutlined,
   LogoutOutlined,
   BgColorsOutlined,
+  RobotOutlined,
 } from '@ant-design/icons';
 import { clearAdminToken, adminGetProfile } from '@/lib/adminClient';
 
@@ -51,6 +52,7 @@ export default function AdminLayout({
     else if (pathname.includes('/pins')) setSelectedKey('pins');
     else if (pathname.includes('/profile')) setSelectedKey('profile');
     else if (pathname.includes('/design')) setSelectedKey('design');
+    else if (pathname.includes('/monitoring')) setSelectedKey('monitoring');
   }, [pathname, router]);
 
   const handleLogout = () => {
@@ -87,6 +89,12 @@ export default function AdminLayout({
       icon: <BgColorsOutlined />,
       label: 'Дизайн',
       onClick: () => router.push('/admin/design'),
+    },
+    {
+      key: 'monitoring',
+      icon: <RobotOutlined />,
+      label: 'Мониторинг',
+      onClick: () => router.push('/admin/monitoring'),
     },
     {
       key: 'logout',

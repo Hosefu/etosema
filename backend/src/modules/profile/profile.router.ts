@@ -85,6 +85,14 @@ router.get('/', async (req: Request, res: Response) => {
       socials: parseLinkBlock(profile.socialsJson),
       logoUrl: profile.logoUrl, // Deprecated, kept for backward compatibility
       lockedCaseMessage: profile.lockedCaseMessage,
+      cvDocxUrl: profile.cvDocxUrl,
+      cvPdfUrl: profile.cvPdfUrl,
+      cvHhUrl: profile.cvHhUrl,
+      cvHabrUrl: profile.cvHabrUrl,
+      cvDocxEnabled: profile.cvDocxEnabled,
+      cvPdfEnabled: profile.cvPdfEnabled,
+      cvHhEnabled: profile.cvHhEnabled,
+      cvHabrEnabled: profile.cvHabrEnabled,
     };
 
     const response: ApiResponse = { data };

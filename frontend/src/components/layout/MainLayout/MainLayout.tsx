@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { getProfile, ProfileData } from '@/lib/apiClient';
+import { VisitTracker } from '@/components/Tracking/VisitTracker';
 import styles from './MainLayout.module.scss';
 
 export interface MainLayoutProps {
@@ -119,6 +120,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <div className={styles.layout}>
+      <VisitTracker />
       <header className={styles.header}>
         <Link href="/" className={styles.logo}>
           {design?.logoSvgMaskUrl ? (

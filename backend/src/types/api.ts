@@ -186,6 +186,14 @@ export interface ProfileData {
   logoUrl?: string | null;
   logoText?: string | null;
   lockedCaseMessage?: string | null;
+  cvDocxUrl?: string | null;
+  cvPdfUrl?: string | null;
+  cvHhUrl?: string | null;
+  cvHabrUrl?: string | null;
+  cvDocxEnabled?: boolean;
+  cvPdfEnabled?: boolean;
+  cvHhEnabled?: boolean;
+  cvHabrEnabled?: boolean;
 }
 
 // ============================================================================

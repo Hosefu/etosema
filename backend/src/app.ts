@@ -22,6 +22,8 @@ import profileRouter from './modules/profile/profile.router';
 import adminRouter from './modules/admin/admin.router';
 import designRouter from './modules/design/design.router';
 import publicDesignRouter from './modules/design/public.router';
+import monitoringRouter from './modules/monitoring/monitoring.router';
+import monitoringPublicRouter from './modules/monitoring/monitoring.public.router';
 import {
   errorHandler,
   notFoundHandler,
@@ -39,6 +41,7 @@ setupGlobalErrorHandlers();
 // ============================================================================
 
 const app = express();
+app.set('trust proxy', true);
 
 // ============================================================================
 // MIDDLEWARE
@@ -132,11 +135,13 @@ app.use('/api/public/cases', casesRouter);
 app.use('/api/public/pin', pinRouter);
 app.use('/api/public/profile', profileRouter);
 app.use('/api/public/design', publicDesignRouter);
+app.use('/api/public', monitoringPublicRouter);
 
 /**
  * Admin API routes (protected)
  */
 app.use('/api/admin/design', designRouter);
+app.use('/api/admin/monitoring', monitoringRouter);
 app.use('/api/admin', adminRouter);
 
 // ============================================================================

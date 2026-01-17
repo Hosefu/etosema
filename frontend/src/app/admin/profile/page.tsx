@@ -10,17 +10,21 @@ import {
   Row,
   Col,
   Typography,
+  Upload,
+  Switch,
 } from 'antd';
 import {
   SaveOutlined,
   PlusOutlined,
   DeleteOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 
 const { Text } = Typography;
 import {
   adminGetProfile,
   adminUpdateProfile,
+  adminUploadFile,
   LinkBlock,
   LinkItem,
 } from '@/lib/adminClient';
@@ -113,6 +117,88 @@ const LinksBlockEditor = ({
   );
 };
 
+const CvItemEditor = ({
+  label,
+  enabledName,
+  urlName,
+  accept,
+  allowUpload = true,
+  placeholder,
+  form,
+}: {
+  label: string;
+  enabledName: string;
+  urlName: string;
+  accept: string;
+  allowUpload?: boolean;
+  placeholder?: string;
+  form: ReturnType<typeof Form.useForm>[0];
+}) => {
+  const url = Form.useWatch(urlName, form) as string | undefined;
+  const inputPlaceholder = placeholder || `${label}: ссылка или загрузка`;
+
+  return (
+    <div
+      style={{
+        background: '#fafafa',
+        padding: 12,
+        borderRadius: 8,
+        border: '1px solid #f0f0f0',
+        marginBottom: 12,
+      }}
+    >
+      <Row gutter={12} align="middle">
+        <Col flex="none">
+          <Form.Item name={enabledName} valuePropName="checked" noStyle>
+            <Switch />
+          </Form.Item>
+        </Col>
+        <Col flex="auto">
+          <Form.Item name={urlName} noStyle>
+            <Input placeholder={inputPlaceholder} />
+          </Form.Item>
+        </Col>
+        {allowUpload && (
+          <Col>
+            <Upload
+              accept={accept}
+              maxCount={1}
+              showUploadList={false}
+              customRequest={async (options) => {
+                const { file, onSuccess, onError } = options;
+                try {
+                  const uploadFile = file as File;
+                  const data = await adminUploadFile(uploadFile);
+                  if (data.success && data.data?.url) {
+                    form.setFieldValue(urlName, data.data.url);
+                    message.success(`${label} загружен`);
+                    onSuccess?.(data as unknown as void);
+                  } else {
+                    throw new Error('Upload failed');
+                  }
+                } catch (e) {
+                  message.error('Ошибка загрузки');
+                  onError?.(e as Error);
+                }
+              }}
+            >
+              <Button icon={<UploadOutlined />}>Загрузить</Button>
+            </Upload>
+          </Col>
+        )}
+        <Col>
+          <Button
+            disabled={!url}
+            onClick={() => form.setFieldValue(urlName, '')}
+          >
+            Очистить
+          </Button>
+        </Col>
+      </Row>
+    </div>
+  );
+};
+
 export default function AdminProfilePage() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -142,6 +228,14 @@ export default function AdminProfilePage() {
             title: 'Соцсети',
             items: [],
           }),
+          cvDocxEnabled: data.cvDocxEnabled ?? false,
+          cvPdfEnabled: data.cvPdfEnabled ?? false,
+          cvHhEnabled: data.cvHhEnabled ?? false,
+          cvHabrEnabled: data.cvHabrEnabled ?? false,
+          cvDocxUrl: data.cvDocxUrl ?? '',
+          cvPdfUrl: data.cvPdfUrl ?? '',
+          cvHhUrl: data.cvHhUrl ?? '',
+          cvHabrUrl: data.cvHabrUrl ?? '',
         });
       }
     } catch (error) {
@@ -268,6 +362,44 @@ export default function AdminProfilePage() {
               <Form.Item label="Блок 3 (Соцсети)" name="socials">
                 <LinksBlockEditor />
               </Form.Item>
+            </Card>
+
+            <Card title="CV" loading={loading} style={{ marginTop: 24 }}>
+              <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+                Включите нужные варианты и заполните ссылку или загрузите файл.
+              </Text>
+              <CvItemEditor
+                label="DOCX"
+                enabledName="cvDocxEnabled"
+                urlName="cvDocxUrl"
+                accept=".docx"
+                form={form}
+              />
+              <CvItemEditor
+                label="PDF"
+                enabledName="cvPdfEnabled"
+                urlName="cvPdfUrl"
+                accept=".pdf"
+                form={form}
+              />
+              <CvItemEditor
+                label="Hh.ru"
+                enabledName="cvHhEnabled"
+                urlName="cvHhUrl"
+                accept=""
+                allowUpload={false}
+                placeholder="Hh.ru: ссылка на резюме"
+                form={form}
+              />
+              <CvItemEditor
+                label="Хабр Карьера"
+                enabledName="cvHabrEnabled"
+                urlName="cvHabrUrl"
+                accept=""
+                allowUpload={false}
+                placeholder="Хабр Карьера: ссылка на профиль"
+                form={form}
+              />
             </Card>
           </Form>
         </Col>

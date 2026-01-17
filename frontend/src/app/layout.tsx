@@ -71,14 +71,22 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { metrikaCode } = await getPublicSeo();
+
   return (
     <html lang="ru">
       <body className={inter.variable}>
+        {metrikaCode ? (
+          <div
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{ __html: metrikaCode }}
+          />
+        ) : null}
         <DesignSystemProvider />
         <QueryProvider>
           <MainLayout>{children}</MainLayout>
