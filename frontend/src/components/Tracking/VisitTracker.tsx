@@ -18,9 +18,16 @@ export function VisitTracker() {
     if (lastPathRef.current === path) return;
 
     lastPathRef.current = path;
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('pin_session_token')
+        : null;
     fetch(`${API_BASE_URL}/api/public/track`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ path, action: 'page_view' }),
     }).catch(() => null);
   }, [pathname, searchParams]);
