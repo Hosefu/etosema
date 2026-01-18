@@ -14,7 +14,7 @@ export function VisitTracker() {
   useEffect(() => {
     const search = searchParams?.toString();
     const path = search ? `${pathname}?${search}` : pathname;
-    if (!path || path.startsWith('/admin')) return;
+    if (!path || path.startsWith('/admin') || path.startsWith('/miniapp')) return;
     if (lastPathRef.current === path) return;
 
     lastPathRef.current = path;
