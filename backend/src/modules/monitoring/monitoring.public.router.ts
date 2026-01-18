@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import { prisma } from '../../db/prisma';
 import {
   getDailySummaryData,
@@ -115,6 +116,99 @@ router.get('/monitoring/pins', async (req: RequestWithPin, res: Response) => {
   const data = await getPinsData(prisma, query);
   res.json({ success: true, data });
 });
+
+/**
+ * GET /api/public/monitoring/cases
+ */
+router.get('/monitoring/cases', async (req: RequestWithPin, res: Response) => {
+  if (!(await ensureAllowedIp(req, res))) return;
+  const onlyNda = req.query?.nda === '1';
+  const cases = await prisma.case.findMany({
+    where: onlyNda ? { isNda: true } : undefined,
+    orderBy: { year: 'desc' },
+    select: { id: true, title: true, isNda: true },
+  });
+  res.json({ success: true, data: cases });
+});
+
+/**
+ * POST /api/public/monitoring/pins
+ */
+router.post('/monitoring/pins', async (req: RequestWithPin, res: Response) => {
+  if (!(await ensureAllowedIp(req, res))) return;
+  const { code, label, shortCode, accessAll, expiresAt, caseIds } =
+    req.body as {
+      code?: string;
+      label?: string | null;
+      shortCode?: string | null;
+      accessAll?: boolean;
+      expiresAt?: string | null;
+      caseIds?: string[];
+    };
+
+  if (!code || typeof code !== 'string') {
+    res.status(400).json({
+      error: { code: 'invalid_request', message: 'PIN code is required' },
+    });
+    return;
+  }
+
+  if (!accessAll && (!caseIds || caseIds.length === 0)) {
+    res.status(400).json({
+      error: {
+        code: 'invalid_request',
+        message: 'Case list is required for non-all PIN',
+      },
+    });
+    return;
+  }
+
+  const codeHash = await bcrypt.hash(code, 10);
+  try {
+    const pin = await prisma.pinCode.create({
+      data: {
+        label: label || null,
+        code,
+        shortCode: shortCode || null,
+        codeHash,
+        accessAll: Boolean(accessAll),
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+        cases: accessAll
+          ? undefined
+          : {
+              create: (caseIds || []).map((caseId) => ({ caseId })),
+            },
+      },
+    });
+
+    res.json({ success: true, data: pin });
+  } catch (error) {
+    res.status(400).json({
+      error: {
+        code: 'create_failed',
+        message: 'Failed to create PIN',
+      },
+    });
+  }
+});
+
+/**
+ * DELETE /api/public/monitoring/pins/:id
+ */
+router.delete(
+  '/monitoring/pins/:id',
+  async (req: RequestWithPin, res: Response) => {
+    if (!(await ensureAllowedIp(req, res))) return;
+    try {
+      await prisma.pinCode.delete({ where: { id: req.params.id } });
+      res.json({ success: true });
+    } catch {
+      res.status(400).json({
+        error: { code: 'delete_failed', message: 'Failed to delete PIN' },
+      });
+    }
+  }
+);
 
 /**
  * GET /api/public/monitoring/pins/:pin/summary

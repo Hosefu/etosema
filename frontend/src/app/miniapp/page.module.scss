@@ -20,17 +20,18 @@
 }
 
 .tabs {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: gap(1);
 }
 
 .tabs button {
-  padding: gap(1) gap(2);
+  padding: gap(1) gap(1.5);
   border: 1px solid var(--color-border, #e5e5e5);
   border-radius: radius(2);
   background: var(--color-card, #fff);
   cursor: pointer;
+  text-align: center;
 }
 
 .tabs button.active {
@@ -67,7 +68,36 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: gap(1.5);
+  gap: gap(1);
+}
+
+.listCard {
+  background: var(--color-card, #fff);
+  border-radius: var(--card-radius, 0);
+  border: 1px solid var(--color-border, #e5e5e5);
+  overflow: hidden;
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: gap(1);
+  padding: gap(1.5);
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+}
+
+.listItem:last-child {
+  border-bottom: none;
+}
+
+.inlineList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: gap(0.5) gap(1.5);
+  margin-top: gap(1);
+  font-size: 13px;
+  color: var(--color-text-secondary, #666);
 }
 
 .card {
@@ -111,10 +141,21 @@
   border: 1px solid var(--color-border, #e5e5e5);
   background: var(--color-card, #fff);
   cursor: pointer;
+  flex: 1;
 }
 
 .activePin {
   border-color: var(--color-text-primary, #111);
+}
+
+.danger {
+  border: 1px solid #f2b8b5;
+  background: #ffeceb;
+  color: #a80000;
+  padding: gap(0.75) gap(1.25);
+  border-radius: radius(2);
+  cursor: pointer;
+  height: fit-content;
 }
 
 .metrics {
@@ -148,8 +189,60 @@
   margin-bottom: gap(2);
 }
 
+.formGrid {
+  display: grid;
+  gap: gap(1);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: gap(1.5);
+}
+
+.formGrid input {
+  padding: gap(1) gap(1.25);
+  border-radius: radius(2);
+  border: 1px solid var(--color-border, #e5e5e5);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: gap(1);
+  margin-bottom: gap(1.5);
+}
+
+.caseList {
+  display: flex;
+  flex-direction: column;
+  gap: gap(0.5);
+  margin-bottom: gap(1.5);
+  padding: gap(1);
+  border-radius: radius(2);
+  border: 1px dashed var(--color-border, #e5e5e5);
+}
+
+.caseList label {
+  display: flex;
+  align-items: center;
+  gap: gap(1);
+  font-size: 14px;
+}
+
+.pinSummary {
+  margin-top: gap(2);
+}
+
+.listStack {
+  display: flex;
+  flex-direction: column;
+  gap: gap(0.5);
+  margin-top: gap(1);
+}
+
 @include mobile {
   .split {
+    grid-template-columns: 1fr;
+  }
+
+  .formGrid {
     grid-template-columns: 1fr;
   }
 }

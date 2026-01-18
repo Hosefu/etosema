@@ -97,6 +97,11 @@ async function ensureGoogleFont(params: {
 }
 
 async function main() {
+  if (process.env.NODE_ENV === 'production' && process.env.SEED_DEMO !== 'true') {
+    console.log('🌱 Seeding skipped in production (SEED_DEMO not set).');
+    return;
+  }
+
   console.log('🌱 Seeding database...\n');
 
   // ==========================================================================

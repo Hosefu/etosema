@@ -39,6 +39,12 @@ type PinRow = {
   expiresAt: string | null;
 };
 
+type CaseOption = {
+  id: string;
+  title: string;
+  isNda: boolean;
+};
+
 type PinSummary = {
   pin: {
     id: string;
@@ -97,6 +103,16 @@ export default function MiniAppPage() {
   const [selectedPin, setSelectedPin] = useState<PinRow | null>(null);
   const [pinDate, setPinDate] = useState(todayString());
   const [pinSummary, setPinSummary] = useState<PinSummary | null>(null);
+  const [cases, setCases] = useState<CaseOption[]>([]);
+  const [newPin, setNewPin] = useState({
+    code: '',
+    label: '',
+    shortCode: '',
+    accessAll: false,
+    expiresAt: '',
+    caseIds: [] as string[],
+  });
+  const [creatingPin, setCreatingPin] = useState(false);
 
   const [settings, setSettings] = useState<MonitoringSettings | null>(null);
   const [saving, setSaving] = useState(false);
@@ -137,6 +153,9 @@ export default function MiniAppPage() {
             setSelectedPin((prev) => prev && data.find((p) => p.id === prev.id) ? prev : data[0]);
           }
         })
+        .catch((e) => setError(e.message));
+      fetchJson<CaseOption[]>('/api/public/monitoring/cases?nda=1')
+        .then(setCases)
         .catch((e) => setError(e.message));
     }
   }, [tab, pinQuery]);
@@ -193,6 +212,59 @@ export default function MiniAppPage() {
       setError(e.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCreatePin = async () => {
+    if (!newPin.code) {
+      setError('Введите PIN-код');
+      return;
+    }
+    if (!newPin.accessAll && newPin.caseIds.length === 0) {
+      setError('Выберите хотя бы один кейс для доступа');
+      return;
+    }
+    setCreatingPin(true);
+    setError(null);
+    try {
+      await fetchJson('/api/public/monitoring/pins', {
+        method: 'POST',
+        body: JSON.stringify({
+          code: newPin.code,
+          label: newPin.label || null,
+          shortCode: newPin.shortCode || null,
+          accessAll: newPin.accessAll,
+          expiresAt: newPin.expiresAt || null,
+          caseIds: newPin.caseIds,
+        }),
+      });
+      setNewPin({
+        code: '',
+        label: '',
+        shortCode: '',
+        accessAll: false,
+        expiresAt: '',
+        caseIds: [],
+      });
+      const data = await fetchJson<PinRow[]>('/api/public/monitoring/pins');
+      setPins(data);
+      setSelectedPin(data[0] || null);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setCreatingPin(false);
+    }
+  };
+
+  const handleDeletePin = async (id: string) => {
+    setError(null);
+    try {
+      await fetchJson(`/api/public/monitoring/pins/${id}`, { method: 'DELETE' });
+      const data = await fetchJson<PinRow[]>('/api/public/monitoring/pins');
+      setPins(data);
+      setSelectedPin(data[0] || null);
+    } catch (e: any) {
+      setError(e.message);
     }
   };
 
@@ -263,9 +335,9 @@ export default function MiniAppPage() {
           <div className={styles.controls}>
             <input type="date" value={sessionsDate} onChange={(e) => setSessionsDate(e.target.value)} />
           </div>
-          <div className={styles.list}>
+          <div className={styles.listCard}>
             {sessions.map((session) => (
-              <div key={session.id} className={styles.card}>
+              <div key={session.id} className={styles.listItem}>
                 <div className={styles.cardTitle}>
                   {session.ip} {session.pinLabel ? `• ${session.pinLabel}` : '• Без PIN'}
                 </div>
@@ -273,13 +345,13 @@ export default function MiniAppPage() {
                   {new Date(session.startedAt).toLocaleString('ru-RU')} →{' '}
                   {new Date(session.lastEventAt).toLocaleString('ru-RU')}
                 </div>
-                <ul>
+                <div className={styles.inlineList}>
                   {session.actions.map((action) => (
-                    <li key={action.path}>
+                    <span key={action.path}>
                       {action.path}: {action.count}
-                    </li>
+                    </span>
                   ))}
-                </ul>
+                </div>
               </div>
             ))}
           </div>
@@ -333,48 +405,109 @@ export default function MiniAppPage() {
             <input type="date" value={pinDate} onChange={(e) => setPinDate(e.target.value)} />
           </div>
           <div className={styles.split}>
-            <div className={styles.list}>
+            <div className={styles.listCard}>
               {pins.map((pin) => (
-                <button
-                  key={pin.id}
-                  className={`${styles.pinItem} ${selectedPin?.id === pin.id ? styles.activePin : ''}`}
-                  onClick={() => setSelectedPin(pin)}
-                >
-                  <div>{pin.label || 'Без названия'}</div>
-                  <div className={styles.muted}>{pin.shortCode || pin.code || '—'}</div>
-                </button>
+                <div key={pin.id} className={styles.listItem}>
+                  <button
+                    className={`${styles.pinItem} ${selectedPin?.id === pin.id ? styles.activePin : ''}`}
+                    onClick={() => setSelectedPin(pin)}
+                  >
+                    <div>{pin.label || 'Без названия'}</div>
+                    <div className={styles.muted}>{pin.shortCode || pin.code || '—'}</div>
+                  </button>
+                  <button className={styles.danger} onClick={() => handleDeletePin(pin.id)}>
+                    Удалить
+                  </button>
+                </div>
               ))}
             </div>
-            {pinSummary && (
-              <div className={styles.card}>
-                <div className={styles.cardTitle}>{pinSummary.pin.label || 'Без названия'}</div>
-                <div className={styles.muted}>
-                  {pinSummary.pin.shortCode || pinSummary.pin.code}
-                </div>
-                <div className={styles.metrics}>
-                  <div>Попыток: {pinSummary.total}</div>
-                  <div>Успешных: {pinSummary.successCount}</div>
-                  <div>IP: {pinSummary.uniqueIps}</div>
-                </div>
-                <div className={styles.subTitle}>Топ страниц</div>
-                <ul>
-                  {pinSummary.topPaths.map((item) => (
-                    <li key={item.path}>
-                      {item.path}: {item.count}
-                    </li>
-                  ))}
-                </ul>
-                <div className={styles.subTitle}>Последние события</div>
-                <ul>
-                  {pinSummary.lastEntries.map((entry, idx) => (
-                    <li key={`${entry.ip}-${idx}`}>
-                      {new Date(entry.at).toLocaleString('ru-RU')} • {entry.ip} •{' '}
-                      {entry.success ? 'успех' : 'ошибка'} {entry.path ? `• ${entry.path}` : ''}
-                    </li>
-                  ))}
-                </ul>
+            <div className={styles.card}>
+              <div className={styles.cardTitle}>Создать PIN</div>
+              <div className={styles.formGrid}>
+                <input
+                  placeholder="PIN код"
+                  value={newPin.code}
+                  onChange={(e) => setNewPin({ ...newPin, code: e.target.value })}
+                />
+                <input
+                  placeholder="Метка"
+                  value={newPin.label}
+                  onChange={(e) => setNewPin({ ...newPin, label: e.target.value })}
+                />
+                <input
+                  placeholder="Short code"
+                  value={newPin.shortCode}
+                  onChange={(e) => setNewPin({ ...newPin, shortCode: e.target.value })}
+                />
+                <input
+                  type="date"
+                  value={newPin.expiresAt}
+                  onChange={(e) => setNewPin({ ...newPin, expiresAt: e.target.value })}
+                />
               </div>
-            )}
+              <label className={styles.checkboxRow}>
+                <input
+                  type="checkbox"
+                  checked={newPin.accessAll}
+                  onChange={(e) => setNewPin({ ...newPin, accessAll: e.target.checked })}
+                />
+                <span>Доступ ко всем кейсам</span>
+              </label>
+              {!newPin.accessAll && (
+                <div className={styles.caseList}>
+                  {cases.map((item) => (
+                    <label key={item.id}>
+                      <input
+                        type="checkbox"
+                        checked={newPin.caseIds.includes(item.id)}
+                        onChange={(e) =>
+                          setNewPin({
+                            ...newPin,
+                            caseIds: e.target.checked
+                              ? [...newPin.caseIds, item.id]
+                              : newPin.caseIds.filter((id) => id !== item.id),
+                          })
+                        }
+                      />
+                      <span>{item.title}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+              <button onClick={handleCreatePin} disabled={creatingPin}>
+                {creatingPin ? 'Создание...' : 'Создать PIN'}
+              </button>
+              {pinSummary && (
+                <div className={styles.pinSummary}>
+                  <div className={styles.cardTitle}>{pinSummary.pin.label || 'Без названия'}</div>
+                  <div className={styles.muted}>
+                    {pinSummary.pin.shortCode || pinSummary.pin.code}
+                  </div>
+                  <div className={styles.metrics}>
+                    <div>Попыток: {pinSummary.total}</div>
+                    <div>Успешных: {pinSummary.successCount}</div>
+                    <div>IP: {pinSummary.uniqueIps}</div>
+                  </div>
+                  <div className={styles.subTitle}>Топ страниц</div>
+                  <div className={styles.inlineList}>
+                    {pinSummary.topPaths.map((item) => (
+                      <span key={item.path}>
+                        {item.path}: {item.count}
+                      </span>
+                    ))}
+                  </div>
+                  <div className={styles.subTitle}>Последние события</div>
+                  <div className={styles.listStack}>
+                    {pinSummary.lastEntries.map((entry, idx) => (
+                      <div key={`${entry.ip}-${idx}`} className={styles.muted}>
+                        {new Date(entry.at).toLocaleString('ru-RU')} • {entry.ip} •{' '}
+                        {entry.success ? 'успех' : 'ошибка'} {entry.path ? `• ${entry.path}` : ''}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </section>
       )}
