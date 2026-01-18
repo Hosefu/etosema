@@ -146,6 +146,12 @@ type TelegramUpdate = {
     chat: { id: number; type: string };
     from?: { id: number; username?: string; first_name?: string };
   };
+  callback_query?: {
+    id: string;
+    data?: string;
+    message?: { message_id: number; chat: { id: number } };
+    from?: { id: number; username?: string; first_name?: string };
+  };
 };
 
 async function callTelegramApi<T>(
@@ -169,14 +175,20 @@ async function callTelegramApi<T>(
 async function sendMessage(
   botToken: string,
   chatId: number,
-  text: string
+  text: string,
+  replyMarkup?: Record<string, unknown>
 ) {
-  await callTelegramApi(botToken, 'sendMessage', { chat_id: chatId, text });
+  await callTelegramApi(botToken, 'sendMessage', {
+    chat_id: chatId,
+    text,
+    reply_markup: replyMarkup,
+  });
 }
 
 async function sendToAllowed(
   settings: MonitoringSettings,
-  text: string
+  text: string,
+  replyMarkup?: Record<string, unknown>
 ): Promise<void> {
   if (!settings.enabled) return;
   if (!settings.botToken) return;
@@ -184,7 +196,12 @@ async function sendToAllowed(
 
   await Promise.all(
     settings.allowedChatIds.map((chatId) =>
-      sendMessage(settings.botToken as string, chatId, text).catch((err) => {
+      sendMessage(
+        settings.botToken as string,
+        chatId,
+        text,
+        replyMarkup
+      ).catch((err) => {
         logger.warn({ err, chatId }, 'Failed to send Telegram message');
       })
     )
@@ -211,16 +228,60 @@ const summarizeActions = (actions: Array<{ path: string }>) => {
 
   const lines = Array.from(counts.entries())
     .sort((a, b) => b[1] - a[1])
-    .map(([path, count]) => `- ${path} (${count})`);
+    .map(([path, count]) => `• ${path} — ${count}`);
 
-  return lines.length ? lines.join('\n') : '- нет данных';
+  return lines.length ? lines.join('\n') : '• нет данных';
+};
+
+const buildPinUsageSummary = (pinLabels: Array<string | null | undefined>) => {
+  const counts = new Map<string, number>();
+  pinLabels.forEach((label) => {
+    const key = label?.trim() || 'Без PIN';
+    counts.set(key, (counts.get(key) || 0) + 1);
+  });
+  const lines = Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, count]) => `• ${label} — ${count}`);
+  return lines.length ? lines.join('\n') : '• нет данных';
+};
+
+const buildMainKeyboard = () => ({
+  inline_keyboard: [
+    [
+      { text: 'Сводка сегодня', callback_data: 'summary:today' },
+      { text: 'Сводка вчера', callback_data: 'summary:yesterday' },
+    ],
+    [{ text: 'PIN-коды', callback_data: 'pins:list' }],
+    [{ text: 'Помощь', callback_data: 'help' }],
+  ],
+});
+
+const buildSessionKeyboard = (ip: string, dateString: string) => ({
+  inline_keyboard: [
+    [
+      {
+        text: `Сводка по IP`,
+        callback_data: `ip:${ip}:${dateString}`,
+      },
+    ],
+  ],
+});
+
+const parseCallbackDate = (token?: string) => {
+  if (!token || token === 'today') return getMoscowDateString();
+  if (token === 'yesterday') {
+    const today = new Date();
+    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+    return getMoscowDateString(yesterday);
+  }
+  return token;
 };
 
 async function buildDailySummary(prisma: PrismaClient, dateString: string) {
   const { startUtc, endUtc } = getMoscowDayRangeUtc(dateString);
   const events = (await prisma.monitoringEvent.findMany({
     where: { createdAt: { gte: startUtc, lt: endUtc } },
-  })) as Array<{ ip: string; path: string }>;
+  })) as Array<{ ip: string; path: string; pinLabel?: string | null }>;
   const total = events.length;
   const uniqueIps = new Set(events.map((e) => e.ip));
   const pathCounts = new Map<string, number>();
@@ -234,11 +295,13 @@ async function buildDailySummary(prisma: PrismaClient, dateString: string) {
     .join('\n');
 
   return [
-    `Сводка за ${dateString} (МСК)`,
-    `Всего действий: ${total}`,
-    `Уникальных IP: ${uniqueIps.size}`,
-    'Топ страниц:',
-    topPaths || '- нет данных',
+    `📊 Сводка за ${dateString} (МСК)`,
+    `• Всего действий: ${total}`,
+    `• Уникальных IP: ${uniqueIps.size}`,
+    '• По PIN-кодам:',
+    buildPinUsageSummary(events.map((event) => event.pinLabel)),
+    '• Топ страниц:',
+    topPaths || '• нет данных',
   ].join('\n');
 }
 
@@ -253,12 +316,15 @@ async function buildIpSummary(
       ip,
       createdAt: { gte: startUtc, lt: endUtc },
     },
-  })) as Array<{ path: string }>;
+  })) as Array<{ path: string; pinLabel?: string | null }>;
   const lines = summarizeActions(events.map((event) => ({ path: event.path })));
   return [
-    `Сводка по IP ${ip} за ${dateString} (МСК)`,
-    `Всего действий: ${events.length}`,
-    'Действия:',
+    `📍 IP: ${ip}`,
+    `Дата: ${dateString} (МСК)`,
+    `• Всего действий: ${events.length}`,
+    '• По PIN-кодам:',
+    buildPinUsageSummary(events.map((event) => event.pinLabel)),
+    '• Действия:',
     lines,
   ].join('\n');
 }
@@ -282,13 +348,13 @@ async function buildPinsList(prisma: PrismaClient, query?: string) {
   }
 
   return [
-    query ? `PIN-коды по запросу "${query}":` : 'PIN-коды:',
+    query ? `🔎 PIN-коды по запросу "${query}":` : '📌 PIN-коды:',
     ...pins.map((pin) => {
       const label = pin.label || 'Без названия';
       const shortCode = pin.shortCode ? `short: ${pin.shortCode}` : '';
       const code = pin.code ? `code: ${pin.code}` : '';
       const parts = [label, shortCode, code].filter(Boolean).join(' | ');
-      return `- ${parts}`;
+      return `• ${parts}`;
     }),
   ].join('\n');
 }
@@ -344,15 +410,16 @@ async function buildPinSummary(
   });
 
   return [
-    `Сводка по PIN-коду "${pin.code || pin.shortCode || pinValue}" за ${dateString} (МСК)`,
+    `🔐 PIN: ${pin.code || pin.shortCode || pinValue}`,
     `Название: ${pin.label || 'Без названия'}`,
-    `Всего попыток: ${total}`,
-    `Успешных: ${successCount}`,
-    `Уникальных IP: ${uniqueIps.size}`,
-    'Топ страниц:',
-    topPaths || '- нет данных',
-    'Последние события:',
-    lastEntries.length ? lastEntries.join('\n') : '- нет данных',
+    `Дата: ${dateString} (МСК)`,
+    `• Всего попыток: ${total}`,
+    `• Успешных: ${successCount}`,
+    `• Уникальных IP: ${uniqueIps.size}`,
+    '• Топ страниц:',
+    topPaths || '• нет данных',
+    '• Последние события:',
+    lastEntries.length ? lastEntries.join('\n') : '• нет данных',
   ].join('\n');
 }
 
@@ -369,19 +436,19 @@ async function handleBotCommand(
   if (command === '/help' || command === '/start') {
     const help = [
       'Команды мониторинга:',
-      '/summary [YYYY-MM-DD] — сводка за день (по умолчанию сегодня)',
-      '/ip <ip> [YYYY-MM-DD] — сводка по IP за день',
-      '/pins [поиск] — список PIN-кодов по названию',
-      '/pin <code|short> [YYYY-MM-DD] — сводка по PIN-коду',
+      '• /summary [YYYY-MM-DD] — сводка за день',
+      '• /ip <ip> [YYYY-MM-DD] — сводка по IP',
+      '• /pins [поиск] — список PIN-кодов',
+      '• /pin <code|short> [YYYY-MM-DD] — сводка по PIN-коду',
     ].join('\n');
-    await sendMessage(settings.botToken as string, chatId, help);
+    await sendMessage(settings.botToken as string, chatId, help, buildMainKeyboard());
     return;
   }
 
   if (command === '/summary') {
     const dateString = arg || getMoscowDateString();
     const summary = await buildDailySummary(prisma, dateString);
-    await sendMessage(settings.botToken as string, chatId, summary);
+    await sendMessage(settings.botToken as string, chatId, summary, buildMainKeyboard());
     return;
   }
 
@@ -403,7 +470,7 @@ async function handleBotCommand(
 
   if (command === '/pins') {
     const list = await buildPinsList(prisma, arg || undefined);
-    await sendMessage(settings.botToken as string, chatId, list);
+    await sendMessage(settings.botToken as string, chatId, list, buildMainKeyboard());
     return;
   }
 
@@ -426,8 +493,43 @@ async function handleBotCommand(
   await sendMessage(
     settings.botToken as string,
     chatId,
-    'Неизвестная команда. Напишите /help.'
+    'Неизвестная команда. Напишите /help.',
+    buildMainKeyboard()
   );
+}
+
+async function handleCallbackQuery(
+  prisma: PrismaClient,
+  settings: MonitoringSettings,
+  chatId: number,
+  data?: string
+) {
+  if (!data) return;
+  const [scope, value, dateToken] = data.split(':');
+
+  if (scope === 'help') {
+    await handleBotCommand(prisma, settings, chatId, '/help');
+    return;
+  }
+
+  if (scope === 'summary') {
+    const dateString = parseCallbackDate(value);
+    const summary = await buildDailySummary(prisma, dateString);
+    await sendMessage(settings.botToken as string, chatId, summary, buildMainKeyboard());
+    return;
+  }
+
+  if (scope === 'pins') {
+    const list = await buildPinsList(prisma);
+    await sendMessage(settings.botToken as string, chatId, list, buildMainKeyboard());
+    return;
+  }
+
+  if (scope === 'ip') {
+    const dateString = parseCallbackDate(dateToken);
+    const summary = await buildIpSummary(prisma, value, dateString);
+    await sendMessage(settings.botToken as string, chatId, summary);
+  }
 }
 
 async function processTelegramUpdates(
@@ -442,14 +544,15 @@ async function processTelegramUpdates(
     {
       offset,
       timeout: BOT_POLL_TIMEOUT_SEC,
-      allowed_updates: ['message'],
+      allowed_updates: ['message', 'callback_query'],
     }
   );
 
   for (const update of updates) {
     const message = update.message;
-    const chatId = message?.chat?.id;
-    if (!message || !chatId) {
+    const callback = update.callback_query;
+    const chatId = message?.chat?.id || callback?.message?.chat?.id;
+    if (!chatId) {
       offset = update.update_id + 1;
       continue;
     }
@@ -459,8 +562,15 @@ async function processTelegramUpdates(
       continue;
     }
 
-    if (message.text) {
+    if (message?.text) {
       await handleBotCommand(prisma, settings, chatId, message.text);
+    }
+
+    if (callback?.data) {
+      await handleCallbackQuery(prisma, settings, chatId, callback.data);
+      await callTelegramApi(settings.botToken, 'answerCallbackQuery', {
+        callback_query_id: callback.id,
+      });
     }
 
     offset = update.update_id + 1;
@@ -497,16 +607,20 @@ async function flushSessions(prisma: PrismaClient) {
       }
     })();
 
+    const dateString = getMoscowDateString(session.lastEventAt);
+    const pinLabel = session.pinLabel || 'Без PIN';
+
     const message = [
-      'Посещение завершено (нет активности 3 минуты)',
+      '✅ Сессия завершена (3 минуты без активности)',
       `IP: ${session.ip}`,
+      `PIN: ${pinLabel}`,
       `Начало: ${formatDateTime(session.startedAt)}`,
       `Конец: ${formatDateTime(session.lastEventAt)}`,
       'Действия:',
       summarizeActions(actions.map((a) => ({ path: a.path }))),
     ].join('\n');
 
-    await sendToAllowed(settings, message);
+    await sendToAllowed(settings, message, buildSessionKeyboard(session.ip, dateString));
 
     await prisma.monitoringSession.update({
       where: { id: session.id },
@@ -528,7 +642,7 @@ async function maybeSendDailySummary(prisma: PrismaClient) {
   if (settings.lastDailySummaryDate === today) return;
 
   const summary = await buildDailySummary(prisma, today);
-  await sendToAllowed(settings, summary);
+  await sendToAllowed(settings, summary, buildMainKeyboard());
   await updateMonitoringSettings(prisma, { lastDailySummaryDate: today });
 }
 
@@ -539,11 +653,20 @@ export async function recordVisitEvent(
     path: string;
     action: string;
     userAgent?: string | null;
+    pinId?: string | null;
   }
 ) {
   const now = new Date();
   const path = input.path.slice(0, 512);
   const action = input.action.slice(0, 64);
+  let pinLabel: string | null = null;
+  if (input.pinId) {
+    const pin = await prisma.pinCode.findUnique({
+      where: { id: input.pinId },
+      select: { label: true },
+    });
+    pinLabel = pin?.label || null;
+  }
 
   await prisma.monitoringEvent.create({
     data: {
@@ -551,6 +674,8 @@ export async function recordVisitEvent(
       path,
       action,
       userAgent: input.userAgent || null,
+      pinId: input.pinId || null,
+      pinLabel,
       createdAt: now,
     },
   });
@@ -575,6 +700,8 @@ export async function recordVisitEvent(
           { path, action, at: now.toISOString() },
         ]),
         userAgent: input.userAgent || null,
+        pinId: input.pinId || null,
+        pinLabel,
       },
     });
     return;
@@ -595,13 +722,19 @@ export async function recordVisitEvent(
       lastEventAt: now,
       actionsJson: JSON.stringify(trimmed),
       userAgent: input.userAgent || existing.userAgent,
+      pinId: input.pinId || existing.pinId,
+      pinLabel: pinLabel || existing.pinLabel,
     },
   });
 }
 
 export async function sendMonitoringTest(prisma: PrismaClient) {
   const settings = await getMonitoringSettings(prisma);
-  await sendToAllowed(settings, 'Тестовое сообщение: бот мониторинга активен.');
+  await sendToAllowed(
+    settings,
+    '🤖 Бот мониторинга активен.',
+    buildMainKeyboard()
+  );
 }
 
 export function startMonitoringService(prisma: PrismaClient) {

@@ -171,9 +171,12 @@ model MonitoringEvent {
   path      String
   action    String
   userAgent String?
+  pinId     String?
+  pinLabel  String?
   createdAt DateTime @default(now())
 
   @@index([ip, createdAt])
+  @@index([pinId, createdAt])
   @@map("monitoring_events")
 }
 
@@ -184,9 +187,12 @@ model MonitoringSession {
   lastEventAt DateTime
   actionsJson String
   userAgent   String?
+  pinId       String?
+  pinLabel    String?
   reportedAt  DateTime?
   createdAt   DateTime @default(now())
 
   @@index([ip, lastEventAt])
+  @@index([pinId, lastEventAt])
   @@map("monitoring_sessions")
 }
