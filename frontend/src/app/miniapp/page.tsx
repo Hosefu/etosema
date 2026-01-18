@@ -200,47 +200,6 @@ export default function MiniAppPage() {
     }
   };
 
-  const handleCreatePin = async () => {
-    if (!newPin.code) {
-      setError('Введите PIN-код');
-      return;
-    }
-    if (!newPin.accessAll && newPin.caseIds.length === 0) {
-      setError('Выберите хотя бы один кейс для доступа');
-      return;
-    }
-    setCreatingPin(true);
-    setError(null);
-    try {
-      await fetchJson('/api/public/monitoring/pins', {
-        method: 'POST',
-        body: JSON.stringify({
-          code: newPin.code,
-          label: newPin.label || null,
-          shortCode: newPin.shortCode || null,
-          accessAll: newPin.accessAll,
-          expiresAt: newPin.expiresAt || null,
-          caseIds: newPin.caseIds,
-        }),
-      });
-      setNewPin({
-        code: '',
-        label: '',
-        shortCode: '',
-        accessAll: false,
-        expiresAt: '',
-        caseIds: [],
-      });
-      const data = await fetchJson<PinRow[]>('/api/public/monitoring/pins');
-      setPins(data);
-      setSelectedPin(data[0] || null);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setCreatingPin(false);
-    }
-  };
-
   const handleQuickPin = async () => {
     if (!quickLabel.trim()) {
       setError('Введите название для нового PIN');
