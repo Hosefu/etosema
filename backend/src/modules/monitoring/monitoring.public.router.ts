@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { prisma } from '../../db/prisma';
 import {
   getDailySummaryData,
@@ -14,6 +15,15 @@ import {
 import { RequestWithPin } from '../../types/api';
 
 const router = Router();
+
+const generateShortCode = (length = 6): string => {
+  return crypto.randomBytes(Math.ceil(length / 2)).toString('hex').slice(0, length);
+};
+
+const generatePinCode = (): string => {
+  const value = Math.floor(1000 + Math.random() * 9000);
+  return String(value);
+};
 
 const getClientIp = (req: RequestWithPin) => {
   const ipHeader = req.headers['x-forwarded-for'];
@@ -191,6 +201,50 @@ router.post('/monitoring/pins', async (req: RequestWithPin, res: Response) => {
     });
   }
 });
+
+/**
+ * POST /api/public/monitoring/pins/quick
+ */
+router.post(
+  '/monitoring/pins/quick',
+  async (req: RequestWithPin, res: Response) => {
+    if (!(await ensureAllowedIp(req, res))) return;
+    const { label } = req.body as { label?: string | null };
+
+    let code = '';
+    let shortCode = '';
+    for (let i = 0; i < 6; i += 1) {
+      code = generatePinCode();
+      shortCode = generateShortCode();
+      const [codeExists, shortExists] = await Promise.all([
+        prisma.pinCode.findFirst({ where: { code } }),
+        prisma.pinCode.findFirst({ where: { shortCode } }),
+      ]);
+      if (!codeExists && !shortExists) break;
+    }
+
+    if (!code || !shortCode) {
+      res.status(500).json({
+        error: { code: 'generate_failed', message: 'Failed to generate PIN' },
+      });
+      return;
+    }
+
+    const codeHash = await bcrypt.hash(code, 10);
+    const pin = await prisma.pinCode.create({
+      data: {
+        label: label || null,
+        code,
+        shortCode,
+        codeHash,
+        accessAll: true,
+        expiresAt: null,
+      },
+    });
+
+    res.json({ success: true, data: pin });
+  }
+);
 
 /**
  * DELETE /api/public/monitoring/pins/:id

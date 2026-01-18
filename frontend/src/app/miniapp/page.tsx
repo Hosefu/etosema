@@ -39,11 +39,6 @@ type PinRow = {
   expiresAt: string | null;
 };
 
-type CaseOption = {
-  id: string;
-  title: string;
-  isNda: boolean;
-};
 
 type PinSummary = {
   pin: {
@@ -103,16 +98,9 @@ export default function MiniAppPage() {
   const [selectedPin, setSelectedPin] = useState<PinRow | null>(null);
   const [pinDate, setPinDate] = useState(todayString());
   const [pinSummary, setPinSummary] = useState<PinSummary | null>(null);
-  const [cases, setCases] = useState<CaseOption[]>([]);
-  const [newPin, setNewPin] = useState({
-    code: '',
-    label: '',
-    shortCode: '',
-    accessAll: false,
-    expiresAt: '',
-    caseIds: [] as string[],
-  });
   const [creatingPin, setCreatingPin] = useState(false);
+  const [quickLabel, setQuickLabel] = useState('');
+  const [quickResult, setQuickResult] = useState<PinRow | null>(null);
 
   const [settings, setSettings] = useState<MonitoringSettings | null>(null);
   const [saving, setSaving] = useState(false);
@@ -153,9 +141,6 @@ export default function MiniAppPage() {
             setSelectedPin((prev) => prev && data.find((p) => p.id === prev.id) ? prev : data[0]);
           }
         })
-        .catch((e) => setError(e.message));
-      fetchJson<CaseOption[]>('/api/public/monitoring/cases?nda=1')
-        .then(setCases)
         .catch((e) => setError(e.message));
     }
   }, [tab, pinQuery]);
@@ -253,6 +238,47 @@ export default function MiniAppPage() {
       setError(e.message);
     } finally {
       setCreatingPin(false);
+    }
+  };
+
+  const handleQuickPin = async () => {
+    if (!quickLabel.trim()) {
+      setError('Введите название для нового PIN');
+      return;
+    }
+    setCreatingPin(true);
+    setError(null);
+    try {
+      const pin = await fetchJson<PinRow>('/api/public/monitoring/pins/quick', {
+        method: 'POST',
+        body: JSON.stringify({ label: quickLabel }),
+      });
+      setQuickResult(pin);
+      setQuickLabel('');
+      const data = await fetchJson<PinRow[]>('/api/public/monitoring/pins');
+      setPins(data);
+      setSelectedPin(data[0] || null);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setCreatingPin(false);
+    }
+  };
+
+  const buildPinMessage = (pin: PinRow) => {
+    const short = pin.shortCode || '';
+    return [
+      'Привет! Вот мой сайт-портфолио:',
+      `https://etosema.ru/${short}`,
+      `Если сайт попросит ввести пин-код (если будешь пересылать коллегам), то твой пин-код — ${pin.code}`,
+    ].join('\n');
+  };
+
+  const copyText = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      setError('Не удалось скопировать');
     }
   };
 
@@ -396,6 +422,45 @@ export default function MiniAppPage() {
 
       {tab === 'pins' && (
         <section className={styles.section}>
+          <div className={styles.card}>
+            <div className={styles.cardTitle}>⚡ Новые PIN</div>
+            <div className={styles.quickRow}>
+              <input
+                placeholder="Название (например: Скинула Яндексу)"
+                value={quickLabel}
+                onChange={(e) => setQuickLabel(e.target.value)}
+              />
+              <button onClick={handleQuickPin} disabled={creatingPin}>
+                {creatingPin ? 'Создание...' : 'Создать'}
+              </button>
+            </div>
+            {quickResult && (
+              <div className={styles.quickResult}>
+                <div className={styles.big}>{quickResult.code}</div>
+                <div className={styles.muted}>
+                  https://etosema.ru/{quickResult.shortCode}
+                </div>
+                <div className={styles.messageBlock}>
+                  {buildPinMessage(quickResult)}
+                </div>
+                <div className={styles.quickButtons}>
+                  <button onClick={() => copyText(buildPinMessage(quickResult))}>
+                    📋 Скопировать текст
+                  </button>
+                  <button
+                    onClick={() =>
+                      copyText(`https://etosema.ru/${quickResult.shortCode}`)
+                    }
+                  >
+                    📋 Скопировать ссылку
+                  </button>
+                  <button onClick={() => copyText(quickResult.code || '')}>
+                    📋 Скопировать пин
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <div className={styles.controls}>
             <input
               placeholder="Поиск по названию"
@@ -422,61 +487,6 @@ export default function MiniAppPage() {
               ))}
             </div>
             <div className={styles.card}>
-              <div className={styles.cardTitle}>Создать PIN</div>
-              <div className={styles.formGrid}>
-                <input
-                  placeholder="PIN код"
-                  value={newPin.code}
-                  onChange={(e) => setNewPin({ ...newPin, code: e.target.value })}
-                />
-                <input
-                  placeholder="Метка"
-                  value={newPin.label}
-                  onChange={(e) => setNewPin({ ...newPin, label: e.target.value })}
-                />
-                <input
-                  placeholder="Short code"
-                  value={newPin.shortCode}
-                  onChange={(e) => setNewPin({ ...newPin, shortCode: e.target.value })}
-                />
-                <input
-                  type="date"
-                  value={newPin.expiresAt}
-                  onChange={(e) => setNewPin({ ...newPin, expiresAt: e.target.value })}
-                />
-              </div>
-              <label className={styles.checkboxRow}>
-                <input
-                  type="checkbox"
-                  checked={newPin.accessAll}
-                  onChange={(e) => setNewPin({ ...newPin, accessAll: e.target.checked })}
-                />
-                <span>Доступ ко всем кейсам</span>
-              </label>
-              {!newPin.accessAll && (
-                <div className={styles.caseList}>
-                  {cases.map((item) => (
-                    <label key={item.id}>
-                      <input
-                        type="checkbox"
-                        checked={newPin.caseIds.includes(item.id)}
-                        onChange={(e) =>
-                          setNewPin({
-                            ...newPin,
-                            caseIds: e.target.checked
-                              ? [...newPin.caseIds, item.id]
-                              : newPin.caseIds.filter((id) => id !== item.id),
-                          })
-                        }
-                      />
-                      <span>{item.title}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-              <button onClick={handleCreatePin} disabled={creatingPin}>
-                {creatingPin ? 'Создание...' : 'Создать PIN'}
-              </button>
               {pinSummary && (
                 <div className={styles.pinSummary}>
                   <div className={styles.cardTitle}>{pinSummary.pin.label || 'Без названия'}</div>

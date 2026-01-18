@@ -866,6 +866,9 @@ export async function recordVisitEvent(
     pinId?: string | null;
   }
 ) {
+  if (input.path.startsWith('/miniapp')) {
+    return;
+  }
   const now = new Date();
   const path = input.path.slice(0, 512);
   const action = input.action.slice(0, 64);

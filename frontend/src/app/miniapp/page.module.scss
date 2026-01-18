@@ -20,8 +20,8 @@
 }
 
 .tabs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: gap(1);
 }
 
@@ -189,45 +189,64 @@
   margin-bottom: gap(2);
 }
 
-.formGrid {
-  display: grid;
-  gap: gap(1);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-bottom: gap(1.5);
+.pinSummary {
+  margin-top: gap(2);
 }
 
-.formGrid input {
+.quickRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: gap(1);
+  margin-top: gap(1);
+}
+
+.quickRow input {
+  flex: 1;
+  min-width: 200px;
   padding: gap(1) gap(1.25);
   border-radius: radius(2);
   border: 1px solid var(--color-border, #e5e5e5);
 }
 
-.checkboxRow {
-  display: flex;
-  align-items: center;
-  gap: gap(1);
-  margin-bottom: gap(1.5);
+.quickRow button {
+  padding: gap(1) gap(2);
+  border-radius: radius(2);
+  border: 1px solid var(--color-border, #e5e5e5);
+  background: var(--color-text-primary, #111);
+  color: #fff;
+  cursor: pointer;
 }
 
-.caseList {
-  display: flex;
-  flex-direction: column;
-  gap: gap(0.5);
-  margin-bottom: gap(1.5);
-  padding: gap(1);
+.quickResult {
+  margin-top: gap(2);
+  padding: gap(1.5);
   border-radius: radius(2);
   border: 1px dashed var(--color-border, #e5e5e5);
+  background: #fff;
 }
 
-.caseList label {
-  display: flex;
-  align-items: center;
-  gap: gap(1);
+.messageBlock {
+  white-space: pre-line;
+  background: #f6f6f6;
+  padding: gap(1);
+  border-radius: radius(2);
+  margin-top: gap(1);
   font-size: 14px;
 }
 
-.pinSummary {
-  margin-top: gap(2);
+.quickButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: gap(1);
+  margin-top: gap(1);
+}
+
+.quickButtons button {
+  padding: gap(0.75) gap(1.25);
+  border-radius: radius(2);
+  border: 1px solid var(--color-border, #e5e5e5);
+  background: var(--color-card, #fff);
+  cursor: pointer;
 }
 
 .listStack {
@@ -239,10 +258,6 @@
 
 @include mobile {
   .split {
-    grid-template-columns: 1fr;
-  }
-
-  .formGrid {
     grid-template-columns: 1fr;
   }
 }
