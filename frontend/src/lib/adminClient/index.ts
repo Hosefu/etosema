@@ -732,6 +732,7 @@ export interface MonitoringSettings {
   enabled: boolean;
   botToken: string | null;
   allowedChatIds: number[];
+  allowedIps: string[];
   dailySummaryHour: number;
   lastDailySummaryDate?: string | null;
 }

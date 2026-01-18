@@ -23,10 +23,17 @@ router.get('/settings', async (req: AdminRequest, res) => {
  * PUT /api/admin/monitoring/settings
  */
 router.put('/settings', async (req: AdminRequest, res) => {
-  const { enabled, botToken, allowedChatIds, dailySummaryHour } = req.body as {
+  const {
+    enabled,
+    botToken,
+    allowedChatIds,
+    allowedIps,
+    dailySummaryHour,
+  } = req.body as {
     enabled?: boolean;
     botToken?: string | null;
     allowedChatIds?: number[];
+    allowedIps?: string[];
     dailySummaryHour?: number;
   };
 
@@ -34,6 +41,7 @@ router.put('/settings', async (req: AdminRequest, res) => {
     enabled,
     botToken,
     allowedChatIds,
+    allowedIps,
     dailySummaryHour,
   });
   res.json({ success: true, data: settings });

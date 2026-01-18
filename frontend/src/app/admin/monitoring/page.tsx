@@ -16,6 +16,13 @@ const normalizeChatIds = (value: string): number[] => {
 };
 
 const formatChatIds = (ids: number[]) => ids.join(', ');
+const normalizeIps = (value: string): string[] => {
+  return value
+    .split(/[,\s]+/)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+};
+const formatIps = (ips: string[]) => ips.join(', ');
 
 export default function AdminMonitoringPage() {
   const [form] = Form.useForm();
@@ -36,6 +43,7 @@ export default function AdminMonitoringPage() {
           enabled: res.data.enabled,
           botToken: res.data.botToken || '',
           allowedChatIds: formatChatIds(res.data.allowedChatIds || []),
+          allowedIps: formatIps(res.data.allowedIps || []),
           dailySummaryHour: res.data.dailySummaryHour ?? 22,
           lastDailySummaryDate: res.data.lastDailySummaryDate || '',
         });
@@ -52,10 +60,12 @@ export default function AdminMonitoringPage() {
       setSaving(true);
       const values = await form.validateFields();
       const allowedChatIds = normalizeChatIds(values.allowedChatIds || '');
+      const allowedIps = normalizeIps(values.allowedIps || '');
       const res = await adminUpdateMonitoringSettings({
         enabled: values.enabled,
         botToken: values.botToken || null,
         allowedChatIds,
+        allowedIps,
         dailySummaryHour: values.dailySummaryHour,
       });
       if (res.success) {
@@ -111,6 +121,14 @@ export default function AdminMonitoringPage() {
             label="ID пользователей (через запятую)"
             name="allowedChatIds"
             extra="Только эти ID получают уведомления и могут писать боту команды."
+          >
+            <Input.TextArea autoSize={{ minRows: 2, maxRows: 4 }} />
+          </Form.Item>
+
+          <Form.Item
+            label="Разрешенные IP для Mini App (через запятую)"
+            name="allowedIps"
+            extra="Mini App будет доступен только с этих IP."
           >
             <Input.TextArea autoSize={{ minRows: 2, maxRows: 4 }} />
           </Form.Item>

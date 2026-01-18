@@ -156,6 +156,7 @@ model MonitoringSettings {
   enabled              Boolean @default(true)
   botToken             String?
   allowedChatIdsJson   String  @default("[]")
+  allowedIpsJson       String  @default("[]")
   dailySummaryHour     Int     @default(22)
   lastDailySummaryDate String?
 
